@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/navigate"
+          android:title="@string/navigate_title" >
+    </item>
+    <item android:id="@+id/back"
+          android:title="@string/back_title" android:visible="false" >
+    </item>
+    <item android:id="@+id/park"
+          android:title="@string/park_title" >
+    </item>
+    <item android:id="@+id/unpark"
+          android:title="@string/unpark_title" android:visible="false" >
+    </item>
+    <item android:id="@+id/showstands"
+          android:title="@string/showstands_title" android:checkable="true" >
+    </item>
+    <item android:id="@+id/center"
+          android:title="@string/center_title" >
+    </item>
+</menu>
