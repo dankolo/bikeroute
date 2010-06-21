@@ -5,6 +5,7 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -46,7 +47,14 @@ public class BikeNav extends MapActivity {
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
 	/** Route planner. **/
-	private Planner planner;
+	private RouteManager planner;
+	/** Dialog ids. **/
+	/** Planning. **/
+	public static final int PLANNING_DIALOG = 0;
+	/** Planning failed. **/
+	public static final int PLAN_FAIL_DIALOG = 1;
+	/** Unpark. **/
+	public static final int UNPARK_DIALOG = 2;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -79,7 +87,65 @@ public class BikeNav extends MapActivity {
 		locOverlay.enableMyLocation();
 		mapView.getOverlays().add(locOverlay);
 		
-		planner = new Planner(this, mapView);
+		planner = new RouteManager(this, mapView);
+	}
+	
+	/**
+	 * Creates dialogs for loading, on errors, alerts.
+	 * Available dialogs:
+	 * Planning progress, planning error, unpark.
+	 */
+	
+	public Dialog onCreateDialog(final int id) {
+		Dialog dialog;
+		AlertDialog.Builder builder;
+		switch(id) {
+		case PLANNING_DIALOG:
+			ProgressDialog pDialog = new ProgressDialog(this);
+			pDialog.setCancelable(true);
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.setMessage(getText(R.string.plan_msg));
+			dialog = pDialog;
+			break;
+		case PLAN_FAIL_DIALOG:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
+					false).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+						}
+					});
+			dialog = builder.create();
+		case UNPARK_DIALOG:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage("Reached bike. Unpark?")
+					.setCancelable(false)
+					.setPositiveButton("Yes",
+							new DialogInterface.OnClickListener() {
+								public void onClick(
+										final DialogInterface dialog,
+										final int id) {
+									prk.unPark();
+									planner.clearRoute();
+									bikeAlert.unsetAlert();
+									dialog.dismiss();
+								}
+							})
+					.setNegativeButton("No",
+							new DialogInterface.OnClickListener() {
+								public void onClick(
+										final DialogInterface dialog,
+										final int id) {
+									dialog.cancel();
+								}
+							});
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
+		}
+		return dialog;
 	}
 
 	@Override
@@ -183,89 +249,6 @@ public class BikeNav extends MapActivity {
 			final GeoPoint dest = new GeoPoint(latLng.get(0), latLng.get(1));
 
 			planner.showRoute(locOverlay.getMyLocation(), dest);
-		}
-	}
-
-	/**
-	 * Display an alert on return to the location the bike was parked at,
-	 * 
-	 * @author jono@nanosheep.net
-	 * 
-	 */
-
-	private final class BikeAlert extends BroadcastReceiver {
-		/** Name for bike alert intents. **/
-		private static final String INTENT_ID = "com.nanosheep.bikeroute.BIKE_ALERT";
-		/** Intent. **/
-		private final Intent intent;
-		/** Pending Intent. **/
-		private final PendingIntent pi;
-
-		public BikeAlert(final Activity activity) {
-			super();
-			intent = new Intent(INTENT_ID);
-			pi = PendingIntent.getBroadcast(activity, 0, intent,
-					PendingIntent.FLAG_CANCEL_CURRENT);
-		}
-
-		/**
-		 * Display a dialog offering to unpark the bike.
-		 */
-
-		@Override
-		public void onReceive(final Context context, final Intent intent) {
-			final boolean enter = intent.getBooleanExtra(
-					LocationManager.KEY_PROXIMITY_ENTERING, false);
-			if (enter) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						BikeNav.this);
-				builder.setMessage("Reached bike. Unpark?")
-						.setCancelable(false).setPositiveButton("Yes",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-										prk.unPark();
-										planner.clearRoute();
-										unsetAlert();
-										dialog.dismiss();
-									}
-								}).setNegativeButton("No",
-								new DialogInterface.OnClickListener() {
-									public void onClick(
-											final DialogInterface dialog,
-											final int id) {
-										dialog.cancel();
-									}
-								});
-				AlertDialog alert = builder.create();
-				alert.show();
-			}
-		}
-
-		/**
-		 * Set a proximity alert at the given point for tracking bike position.
-		 * 
-		 * @param bikeLoc
-		 *            point to alert at.
-		 */
-
-		public void setBikeAlert(final GeoPoint bikeLoc) {
-			final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			lm.addProximityAlert(bikeLoc.getLatitudeE6() / Degrees.CNV, bikeLoc
-					.getLongitudeE6()
-					/ Degrees.CNV, 5f, -1, pi);
-			final IntentFilter filter = new IntentFilter(INTENT_ID);
-			registerReceiver(this, filter);
-		}
-
-		/**
-		 * Remove the alert.
-		 */
-
-		public void unsetAlert() {
-			final LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			lm.removeProximityAlert(pi);
 		}
 	}
 
