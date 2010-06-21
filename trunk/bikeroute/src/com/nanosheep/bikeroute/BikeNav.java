@@ -43,12 +43,10 @@ public class BikeNav extends MapActivity {
 	private LiveMarkers stands;
 	/** User location overlay. **/
 	private UserLocation locOverlay;
-	/** Route overlay. **/
-	private RouteOverlay route;
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
-	/** API feed. */
-	private static final String API = "http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
+	/** Route planner. **/
+	private Planner planner;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -80,6 +78,8 @@ public class BikeNav extends MapActivity {
 		locOverlay = new UserLocation(this, mapView, mc);
 		locOverlay.enableMyLocation();
 		mapView.getOverlays().add(locOverlay);
+		
+		planner = new Planner(this, mapView);
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class BikeNav extends MapActivity {
 			return true;
 		case R.id.back:
 			bikeAlert.setBikeAlert(prk.getLocation());
-			showRoute(locOverlay.getMyLocation(), prk.getLocation());
+			planner.showRoute(locOverlay.getMyLocation(), prk.getLocation());
 			return true;
 		case R.id.navigate:
 			Intent intent = new Intent(this, FindPlace.class);
@@ -139,7 +139,7 @@ public class BikeNav extends MapActivity {
 			return true;
 		case R.id.unpark:
 			prk.unPark();
-			clearRoute();
+			planner.clearRoute();
 			bikeAlert.unsetAlert();
 			return true;
 		case R.id.showstands:
@@ -174,76 +174,6 @@ public class BikeNav extends MapActivity {
 		super.onPause();
 	}
 
-	/**
-	 * Plan a route between the points given and show it on the map. Displays an
-	 * alert if the planning failed for some reason.
-	 * 
-	 * @param start
-	 *            Starting point.
-	 * @param dest
-	 *            Destination point.
-	 */
-
-	private void showRoute(final GeoPoint start, final GeoPoint dest) {
-		clearRoute();
-		List<GeoPoint> points = new ArrayList<GeoPoint>();
-		final ProgressDialog alert = ProgressDialog.show(this, "",
-				getText(R.string.plan_msg), true, true,
-				new DialogInterface.OnCancelListener() {
-					public void onCancel(final DialogInterface dialog) {
-						return;
-					}
-				});
-		try {
-			points = plan(start, dest);
-			alert.dismiss();
-			route = new RouteOverlay(points, Color.BLUE);
-			mapView.getOverlays().add(route);
-			mapView.invalidate();
-		} catch (Exception e) {
-			alert.dismiss();
-			final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
-					false).setPositiveButton("OK",
-					new DialogInterface.OnClickListener() {
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-						}
-					});
-			builder.create();
-		}
-	}
-
-	/**
-	 * Plan a route from here to a destination.
-	 * 
-	 * @param start
-	 *            Start point.
-	 * @param dest
-	 *            Destination.
-	 * @return a list of GeoPoints for the route.
-	 */
-
-	private List<GeoPoint> plan(final GeoPoint start, final GeoPoint dest) {
-		final StringBuffer sBuf = new StringBuffer(API);
-		sBuf.append("start_lat=");
-		sBuf.append(start.getLatitudeE6() / Degrees.CNV);
-		sBuf.append("&start_lng=");
-		sBuf.append(start.getLongitudeE6() / Degrees.CNV);
-		sBuf.append("&dest_lat=");
-		sBuf.append(dest.getLatitudeE6() / Degrees.CNV);
-		sBuf.append("&dest_lng=");
-		sBuf.append(dest.getLongitudeE6() / Degrees.CNV);
-
-		final CycleStreetsParser parser = new CycleStreetsParser(sBuf
-				.toString());
-		return parser.parse();
-	}
-
-	private void clearRoute() {
-		mapView.getOverlays().remove(route);
-		route = null;
-	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -252,7 +182,7 @@ public class BikeNav extends MapActivity {
 					.getIntegerArrayListExtra("latLng");
 			final GeoPoint dest = new GeoPoint(latLng.get(0), latLng.get(1));
 
-			showRoute(locOverlay.getMyLocation(), dest);
+			planner.showRoute(locOverlay.getMyLocation(), dest);
 		}
 	}
 
@@ -296,7 +226,7 @@ public class BikeNav extends MapActivity {
 											final DialogInterface dialog,
 											final int id) {
 										prk.unPark();
-										route.clear();
+										planner.clearRoute();
 										unsetAlert();
 										dialog.dismiss();
 									}
