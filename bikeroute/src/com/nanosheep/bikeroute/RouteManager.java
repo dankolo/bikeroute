@@ -1,28 +1,10 @@
-/**
- * 
- */
 package com.nanosheep.bikeroute;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 
@@ -32,25 +14,26 @@ import com.google.android.maps.MapView;
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
-public class RouteManager extends BroadcastReceiver {
+public class RouteManager {
+	/** Owning activity. **/
 	private Activity act;
+	/** Map view to draw routes into. **/
 	private MapView mv;
 	/** API feed. */
-	private static final String API = "http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
+	private static final String API =
+		"http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
 	/** Route overlay. **/
-	private RouteOverlay route;
-	/** Point -> PI map. **/
-	private Map<ArrayList<Integer>, PendingIntent> pendingIntents;
-	/** Name for bike alert intents. **/
-	private static final String INTENT_ID = "com.nanosheep.bikeroute.GPS_ALERT";
-	/** Intent for alerts. **/
-	private Intent intent;
+	private RouteOverlay routeOverlay;
+	/** Route planned switch. **/
+	private boolean isPlanned;
+	/** Route. **/
+	private Route route;
 	
-	public RouteManager (Activity activity, MapView mapview) {
+	public RouteManager(final Activity activity, final MapView mapview) {
+		super();
 		act = activity;
 		mv = mapview;
-		pendingIntents = new HashMap<ArrayList<Integer>, PendingIntent>();
-		intent = new Intent(INTENT_ID);
+		setPlanned(false);
 	}
 	
 	/**
@@ -67,49 +50,53 @@ public class RouteManager extends BroadcastReceiver {
 		clearRoute();
 		
 		act.showDialog(BikeNav.PLANNING_DIALOG);
-		Thread thread = new Thread() {
+		final Thread thread = new Thread() {
 			public void run() {
-				List<GeoPoint> points = new ArrayList<GeoPoint>();
 				Message msg = messageHandler.obtainMessage();
                 Bundle b = new Bundle();
                 b.putInt("result", 1);
 				try {
-					points = plan(start, dest);
-					setAlerts(points);
-					route = new RouteOverlay(points, Color.BLUE);
+					route = plan(start, dest);
+					routeOverlay = new RouteOverlay(route, Color.BLUE);
 				} catch (Exception e) {
 					b.putInt("result", 0); 
 				} finally {
 					msg.setData(b);
 	                messageHandler.sendMessage(msg);
+	                interrupt();
 				}
 			}
 		};
 		thread.start();
 	}
 	
+	/**
+	 * Handler for route planning thread.
+	 */
+	
 	private Handler messageHandler = new Handler() {
 		@Override
-		public void handleMessage(Message msg) {			
+		public void handleMessage(final Message msg) {
 			act.dismissDialog(BikeNav.PLANNING_DIALOG);
-			if(msg.getData().getInt("result") == 0) {
+			if (msg.getData().getInt("result") == 0) {
 				act.showDialog(BikeNav.PLAN_FAIL_DIALOG);
 			} else {
-				mv.getOverlays().add(route);
+				mv.getOverlays().add(routeOverlay);
 				mv.invalidate();
+				isPlanned = true;
 			}
 		}
 	};
 
 	/**
-	 * Plan a route from here to a destination.
+	 * Plan a route from the start point to a destination.
 	 * 
 	 * @param start Start point.
 	 * @param dest Destination.
-	 * @return a list of GeoPoints for the route.
+	 * @return a list of segments for the route.
 	 */
 
-	private List<GeoPoint> plan(final GeoPoint start, final GeoPoint dest) {
+	private Route plan(final GeoPoint start, final GeoPoint dest) {
 		final StringBuffer sBuf = new StringBuffer(API);
 		sBuf.append("start_lat=");
 		sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
@@ -124,49 +111,43 @@ public class RouteManager extends BroadcastReceiver {
 				.toString());
 		return parser.parse();
 	}
+	
+	/**
+	 * Clear the current route.
+	 */
 
 	public void clearRoute() {
-		mv.getOverlays().remove(route);
-		route = null;
+		mv.getOverlays().remove(routeOverlay);
+		routeOverlay = null;
+		isPlanned = false;
 	}
 
-	/* (non-Javadoc)
-	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+	/**
+	 * @param route the route to set
 	 */
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		final boolean enter = intent.getBooleanExtra(
-				LocationManager.KEY_PROXIMITY_ENTERING, false);
-		if (enter) {
-			unsetAlert(intent);
-		}
-		
+	public void setRoute(Route route) {
+		this.route = route;
 	}
-	
-	public void setAlerts(List<GeoPoint> points) {
-		final LocationManager lm = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 
-		PendingIntent pi;
-		ArrayList<Integer> latLng;
-		for(int i = 0; i < points.size(); i++) {
-			latLng = new ArrayList<Integer>(2);
-			latLng.add(points.get(i).getLatitudeE6());
-			latLng.add(points.get(i).getLongitudeE6());
-			intent.putIntegerArrayListExtra("latLng", latLng);
-			pi = PendingIntent.getBroadcast(act, i, intent,
-				PendingIntent.FLAG_CANCEL_CURRENT);
-			lm.addProximityAlert(Degrees.asDegrees(latLng.get(0)),
-				Degrees.asDegrees(latLng.get(1)), 5f, -1, pi);
-		}
-		final IntentFilter filter = new IntentFilter(INTENT_ID);
-		act.registerReceiver(this, filter);
+	/**
+	 * @return the route
+	 */
+	public Route getRoute() {
+		return route;
 	}
-	
-	public void unsetAlert(Intent intent) {
-		final LocationManager lm = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
-		List<Integer> latLng = intent.getIntegerArrayListExtra("latLng");
-		PendingIntent pi = pendingIntents.get(latLng);
-		lm.removeProximityAlert(pi);
+
+	/**
+	 * @param isPlanned the isPlanned to set
+	 */
+	public void setPlanned(boolean isPlanned) {
+		this.isPlanned = isPlanned;
+	}
+
+	/**
+	 * @return the isPlanned
+	 */
+	public boolean isPlanned() {
+		return isPlanned;
 	}
 
 }

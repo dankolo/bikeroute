@@ -11,27 +11,26 @@ import android.location.LocationManager;
 import com.google.android.maps.GeoPoint;
 
 /**
- * Display an alert on return to the location the bike was parked at,
+ * Display an alert on return to the location the bike was parked at.
  * 
  * @author jono@nanosheep.net
  * 
  */
 
 public final class BikeAlert extends BroadcastReceiver {
-	/** Name for bike alert intents. **/
-	private static final String INTENT_ID = "com.nanosheep.bikeroute.BIKE_ALERT";
-	/** Intent. **/
-	private final Intent intent;
+	/** Intent filter. **/
+	private final IntentFilter filter;
 	/** Pending Intent. **/
 	private final PendingIntent pi;
 	/** Owning activity. **/
-	Activity act;
+	private final Activity act;
 
 	public BikeAlert(final Activity activity) {
 		super();
 		act = activity;
-		intent = new Intent(INTENT_ID);
-		pi = PendingIntent.getBroadcast(activity, 0, intent,
+		String intentId = "com.nanosheep.bikeroute.BIKE_ALERT";
+		filter = new IntentFilter(intentId);
+		pi = PendingIntent.getBroadcast(activity, 0, new Intent(intentId),
 				PendingIntent.FLAG_CANCEL_CURRENT);
 	}
 
@@ -51,15 +50,13 @@ public final class BikeAlert extends BroadcastReceiver {
 	/**
 	 * Set a proximity alert at the given point for tracking bike position.
 	 * 
-	 * @param bikeLoc
-	 *            point to alert at.
+	 * @param bikeLoc point to alert at.
 	 */
 
 	public void setBikeAlert(final GeoPoint bikeLoc) {
 		final LocationManager lm = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
 		lm.addProximityAlert(Degrees.asDegrees(bikeLoc.getLatitudeE6()),
 				Degrees.asDegrees(bikeLoc.getLongitudeE6()), 5f, -1, pi);
-		final IntentFilter filter = new IntentFilter(INTENT_ID);
 		act.registerReceiver(this, filter);
 	}
 

@@ -21,6 +21,7 @@ public class LiveMarkers extends Markers {
 
 	/**
 	 * Overrides to update markers if a gesture has completed.
+	 * @return a boolean indicating whether this overlay dealt with the touch.
 	 */
 
 	@Override

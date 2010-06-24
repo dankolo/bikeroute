@@ -21,13 +21,13 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 	private List<Address> addresses;
 	private Geocoder geocoder;
 
-	public FindPlaceAdapter(Context context, int resource,
-			int textViewResourceId) {
+	public FindPlaceAdapter(final Context context, final int resource,
+			final int textViewResourceId) {
 		super(context, resource, textViewResourceId);
 		geocoder = new Geocoder(context);
 	}
 
-	public FindPlaceAdapter(Context context, int resource) {
+	public FindPlaceAdapter(final Context context, final int resource) {
 		super(context, resource);
 		geocoder = new Geocoder(context);
 	}
@@ -35,20 +35,22 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 	/**
 	 * Replaces ArrayAdapter's filter with one that retrieves suggestions
 	 * from the geocoder service.
+	 * @return a Filter object
 	 */
 	
 	@Override
 	public Filter getFilter() {
-		Filter filter = new Filter() {
+		final Filter filter = new Filter() {
 			@Override
-			protected Filter.FilterResults performFiltering(CharSequence ch) {
+			protected Filter.FilterResults performFiltering(final CharSequence ch) {
 				Filter.FilterResults res = new Filter.FilterResults();
 				ArrayList<String> addrs = new ArrayList<String>();
-				if (ch != null) {
+				if (ch == null) {
+					res.count = 0;
+				} else {
 					String addressInput = ch.toString();
 					try {
-						addresses = geocoder.getFromLocationName(addressInput,
-								5);
+						addresses = geocoder.getFromLocationName(addressInput, 5);
 					} catch (IOException e) {
 						// showIOError();
 					} catch (IllegalArgumentException e) {
@@ -69,15 +71,13 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 
 					res.count = addrs.size();
 					res.values = addrs;
-				} else {
-					res.count = 0;
 				}
 				return res;
 			}
 
 			@Override
-			protected void publishResults(CharSequence constraint,
-					FilterResults results) {
+			protected void publishResults(final CharSequence constraint,
+					final FilterResults results) {
 				if (results.count > 0) {
 					clear();
 					for (String s : (List<String>) results.values) {
