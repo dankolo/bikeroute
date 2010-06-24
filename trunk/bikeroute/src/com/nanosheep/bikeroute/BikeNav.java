@@ -1,25 +1,18 @@
 package com.nanosheep.bikeroute;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -55,6 +48,8 @@ public class BikeNav extends MapActivity {
 	public static final int PLAN_FAIL_DIALOG = 1;
 	/** Unpark. **/
 	public static final int UNPARK_DIALOG = 2;
+	/** Route parcel id. **/
+	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
 
 	/** Parking manager. */
 	private Parking prk;
@@ -70,6 +65,8 @@ public class BikeNav extends MapActivity {
 		setContentView(R.layout.main);
 		mapView = (MapView) findViewById(R.id.bikeview);
 		mapView.displayZoomControls(true);
+		mapView.setReticleDrawMode(MapView.ReticleDrawMode.DRAW_RETICLE_UNDER);
+		
 		mc = mapView.getController();
 		mc.setZoom(ZOOM);
 
@@ -94,6 +91,7 @@ public class BikeNav extends MapActivity {
 	 * Creates dialogs for loading, on errors, alerts.
 	 * Available dialogs:
 	 * Planning progress, planning error, unpark.
+	 * @return the approriate Dialog object
 	 */
 	
 	public Dialog onCreateDialog(final int id) {
@@ -117,6 +115,7 @@ public class BikeNav extends MapActivity {
 						}
 					});
 			dialog = builder.create();
+			break;
 		case UNPARK_DIALOG:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage("Reached bike. Unpark?")
@@ -155,6 +154,7 @@ public class BikeNav extends MapActivity {
 
 	/**
 	 * Create the options menu.
+	 * @return true if menu created.
 	 */
 
 	@Override
@@ -167,6 +167,7 @@ public class BikeNav extends MapActivity {
 	/**
 	 * Prepare the menu. Set parking related menus to reflect parked or unparked
 	 * state.
+	 * @return a boolean indicating super's state.
 	 */
 
 	@Override
@@ -174,6 +175,7 @@ public class BikeNav extends MapActivity {
 		final MenuItem park = menu.findItem(R.id.park);
 		final MenuItem back = menu.findItem(R.id.back);
 		final MenuItem unPark = menu.findItem(R.id.unpark);
+		final MenuItem steps = menu.findItem(R.id.directions);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -183,11 +185,17 @@ public class BikeNav extends MapActivity {
 			park.setVisible(true);
 			unPark.setVisible(false);
 		}
+		if (planner.isPlanned()) {
+			steps.setVisible(true);
+		} else {
+			steps.setVisible(false);
+		}
 		return super.onPrepareOptionsMenu(menu);
 	}
 
 	/**
 	 * Handle option selection.
+	 * @return true if option selected.
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
@@ -200,8 +208,8 @@ public class BikeNav extends MapActivity {
 			planner.showRoute(locOverlay.getMyLocation(), prk.getLocation());
 			return true;
 		case R.id.navigate:
-			Intent intent = new Intent(this, FindPlace.class);
-			startActivityForResult(intent, 0);
+			Intent intentNav = new Intent(this, FindPlace.class);
+			startActivityForResult(intentNav, 0);
 			return true;
 		case R.id.unpark:
 			prk.unPark();
@@ -221,6 +229,11 @@ public class BikeNav extends MapActivity {
 			return true;
 		case R.id.park:
 			prk.park(locOverlay.getMyLocation());
+			return true;
+		case R.id.directions:
+			Intent intentDir = new Intent(this, DirectionsView.class);
+			intentDir.putExtra(ROUTE, planner.getRoute());
+			startActivityForResult(intentDir, 1);
 			return true;
 		default:
 			return false;
@@ -242,13 +255,16 @@ public class BikeNav extends MapActivity {
 
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (resultCode == RESULT_OK) {
+	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+		if ((resultCode == RESULT_OK) && (requestCode == 0)) {
 			final List<Integer> latLng = data
 					.getIntegerArrayListExtra("latLng");
 			final GeoPoint dest = new GeoPoint(latLng.get(0), latLng.get(1));
 
 			planner.showRoute(locOverlay.getMyLocation(), dest);
+		} else if ((requestCode == 1) && (resultCode != -1)) {
+			mc.setCenter(planner.getRoute().getSegments().get(resultCode).startPoint());
+			mc.setZoom(16);
 		}
 	}
 

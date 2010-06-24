@@ -36,13 +36,10 @@ public class FindPlace extends MapActivity {
 	private ProgressDialog searching;
 	/** Geocoder. **/
 	private Geocoder geocoder;
-	/** Search thread. **/
-	private Thread search;
 	/** Found addresses list. **/
 	private List<Address> addresses;
 	/** Address box. **/
 	private AutoCompleteTextView addressField;
-	private FindPlaceAdapter adapter;
 	/** Handler codes. **/
 	private static final int IOERROR = -1;
 	private static final int ARGERROR = -2;
@@ -65,15 +62,15 @@ public class FindPlace extends MapActivity {
 		geocoder = new Geocoder(this);
 
 		addressField = (AutoCompleteTextView) findViewById(R.id.address_input);
-		adapter = new FindPlaceAdapter(this,
+		final FindPlaceAdapter adapter = new FindPlaceAdapter(this,
 				android.R.layout.simple_dropdown_item_1line);
 		addressField.setAdapter(adapter);
 
 		searchButton.setOnClickListener(new OnClickListener() {
-			public void onClick(View view) {
+			public void onClick(final View view) {
 				searching = ProgressDialog.show(FindPlace.this, "Working..",
 						"Searching..", true, false);
-				search = new Thread() {
+				final Thread search = new Thread() {
 					@Override
 					public void run() {
 						String addressInput = addressField.getText().toString();
@@ -99,9 +96,9 @@ public class FindPlace extends MapActivity {
 
 	}
 
-	private Handler results = new Handler() {
+	private final Handler results = new Handler() {
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(final Message msg) {
 			searching.dismiss();
 
 			switch (msg.what) {
@@ -111,11 +108,11 @@ public class FindPlace extends MapActivity {
 			case ARGERROR:
 				break;
 			default:
-				if (addresses.size() == 0) {
+				if (addresses.isEmpty()) {
 					showResultError();
 					break;
 				} else {
-					Address addr = addresses.get(0);
+					final Address addr = addresses.get(0);
 					latLng.add((int) (addr.getLatitude() * Degrees.CNV));
 					latLng.add((int) (addr.getLongitude() * Degrees.CNV));
 					finish();
@@ -148,16 +145,16 @@ public class FindPlace extends MapActivity {
 	}
 
 	private void showIOError() {
-		AlertDialog.Builder builder = new AlertDialog.Builder(FindPlace.this);
+		final AlertDialog.Builder builder = new AlertDialog.Builder(FindPlace.this);
 		builder.setTitle("Error").setPositiveButton(R.string.ok, null)
 				.setMessage("Network unavailable.");
 
-		Dialog ioError = builder.create();
+		final Dialog ioError = builder.create();
 		ioError.show();
 	}
 
 	private void showResultError() {
-		Dialog locationError = new AlertDialog.Builder(FindPlace.this).setIcon(
+		final Dialog locationError = new AlertDialog.Builder(FindPlace.this).setIcon(
 				0).setTitle("Error").setPositiveButton(R.string.ok, null)
 				.setMessage("Address not found.").create();
 		locationError.show();
