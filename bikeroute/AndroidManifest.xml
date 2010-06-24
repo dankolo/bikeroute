@@ -20,5 +20,7 @@
        </activity>
        <activity android:name="com.nanosheep.bikeroute.FindPlace" android:label="Find Address">
        </activity>
+       <activity android:name="com.nanosheep.bikeroute.DirectionsView" android:label="Directions">
+       </activity>
    </application>
 </manifest>
