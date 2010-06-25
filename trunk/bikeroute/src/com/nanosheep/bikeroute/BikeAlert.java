@@ -28,7 +28,7 @@ public final class BikeAlert extends BroadcastReceiver {
 	public BikeAlert(final Activity activity) {
 		super();
 		act = activity;
-		String intentId = "com.nanosheep.bikeroute.BIKE_ALERT";
+		final String intentId = "com.nanosheep.bikeroute.BIKE_ALERT";
 		filter = new IntentFilter(intentId);
 		pi = PendingIntent.getBroadcast(activity, 0, new Intent(intentId),
 				PendingIntent.FLAG_CANCEL_CURRENT);

@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -37,10 +36,10 @@ public class BikeNav extends MapActivity {
 	private LiveMarkers stands;
 	/** User location overlay. **/
 	private UserLocation locOverlay;
-	/** Initial zoom level. */
-	private static final int ZOOM = 15;
 	/** Route planner. **/
 	private RouteManager planner;
+	
+	/* Constants. */
 	/** Dialog ids. **/
 	/** Planning. **/
 	public static final int PLANNING_DIALOG = 0;
@@ -48,8 +47,21 @@ public class BikeNav extends MapActivity {
 	public static final int PLAN_FAIL_DIALOG = 1;
 	/** Unpark. **/
 	public static final int UNPARK_DIALOG = 2;
+	/** Navigate dialog. **/
+	public static final int NAVIGATE = 3;
+	/** Awaiting GPS fix dialog. **/
+	public static final int AWAITING_FIX = 4;
 	/** Route parcel id. **/
 	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
+	/** Initial zoom level. */
+	private static final int ZOOM = 15;
+	/* Request ids */
+	/** Navigation destination request. **/
+	private static final int DEST_REQ = 0;
+	/** Navigation start point request. **/
+	private static final int START_REQ = 1;
+	/** Jump request. **/
+	private static final int JUMP_REQ = 2;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -85,6 +97,21 @@ public class BikeNav extends MapActivity {
 		mapView.getOverlays().add(locOverlay);
 		
 		planner = new RouteManager(this, mapView);
+		
+		//Handle rotations
+		final Object[] data = (Object[]) getLastNonConfigurationInstance();
+		if (data != null) {
+			if (data[0] != null) {
+				planner.setRoute((Route) data[0]);
+			}
+			if (data[1] != null) {
+				planner.setStart((GeoPoint) data[1]);
+			}
+			if (data[2] != null) {
+				planner.setDest((GeoPoint) data[2]);
+				planner.showRoute();
+			}
+		}
 	}
 	
 	/**
@@ -95,7 +122,7 @@ public class BikeNav extends MapActivity {
 	 */
 	
 	public Dialog onCreateDialog(final int id) {
-		Dialog dialog;
+		final Dialog dialog;
 		AlertDialog.Builder builder;
 		switch(id) {
 		case PLANNING_DIALOG:
@@ -141,6 +168,51 @@ public class BikeNav extends MapActivity {
 							});
 			dialog = builder.create();
 			break;
+		case NAVIGATE:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage("Navigate from current location?")
+					.setCancelable(false)
+					.setPositiveButton("Yes",
+							new DialogInterface.OnClickListener() {
+								public void onClick(
+										final DialogInterface dialog,
+										final int id) {
+									final Intent intentNav = new Intent(BikeNav.this, FindPlace.class);
+									intentNav.putExtra("title", "Destination");
+									dialog.dismiss();
+									BikeNav.this.showDialog(AWAITING_FIX);
+									BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
+										@Override
+										public void run() {
+											BikeNav.this.dismissDialog(AWAITING_FIX);
+											BikeNav.this.planner.setStart(
+													BikeNav.this.locOverlay.getMyLocation());
+											startActivityForResult(intentNav, DEST_REQ);
+										}
+										
+									});
+								}
+							})
+					.setNegativeButton("No",
+							new DialogInterface.OnClickListener() {
+								public void onClick(
+										final DialogInterface dialog,
+										final int id) {
+									Intent intentNav = new Intent(BikeNav.this, FindPlace.class);
+									intentNav.putExtra("title", "Start Point");
+									startActivityForResult(intentNav, START_REQ);
+									dialog.dismiss();
+								}
+							});
+			dialog = builder.create();
+			break;
+		case AWAITING_FIX:
+			ProgressDialog pdialog = new ProgressDialog(this);
+			pdialog.setCancelable(true);
+			pdialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pdialog.setMessage(getText(R.string.fix_msg));
+			dialog = pdialog;
+			break;
 		default:
 			dialog = null;
 		}
@@ -166,7 +238,7 @@ public class BikeNav extends MapActivity {
 
 	/**
 	 * Prepare the menu. Set parking related menus to reflect parked or unparked
-	 * state.
+	 * state, set directions menu visible only if a route has been planned.
 	 * @return a boolean indicating super's state.
 	 */
 
@@ -201,15 +273,30 @@ public class BikeNav extends MapActivity {
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.center:
-			mc.animateTo(locOverlay.getMyLocation());
+			showDialog(AWAITING_FIX);
+			BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
+				@Override
+				public void run() {
+					dismissDialog(AWAITING_FIX);
+					mc.animateTo(locOverlay.getMyLocation());
+				}
+			});
 			return true;
 		case R.id.back:
 			bikeAlert.setBikeAlert(prk.getLocation());
-			planner.showRoute(locOverlay.getMyLocation(), prk.getLocation());
+			showDialog(AWAITING_FIX);
+			BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
+				@Override
+				public void run() {
+					dismissDialog(AWAITING_FIX);
+					planner.setStart(locOverlay.getMyLocation());
+					planner.setDest(prk.getLocation());
+					planner.showRoute();
+				}
+			});
 			return true;
 		case R.id.navigate:
-			Intent intentNav = new Intent(this, FindPlace.class);
-			startActivityForResult(intentNav, 0);
+			showDialog(NAVIGATE);
 			return true;
 		case R.id.unpark:
 			prk.unPark();
@@ -233,7 +320,7 @@ public class BikeNav extends MapActivity {
 		case R.id.directions:
 			Intent intentDir = new Intent(this, DirectionsView.class);
 			intentDir.putExtra(ROUTE, planner.getRoute());
-			startActivityForResult(intentDir, 1);
+			startActivityForResult(intentDir, JUMP_REQ);
 			return true;
 		default:
 			return false;
@@ -254,18 +341,45 @@ public class BikeNav extends MapActivity {
 	}
 
 
+	/**
+	 * Handles responses from started activities. In this case, deal with navigation
+	 * requests and jumping to a point in the list of directions for a route.
+	 */
+	
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-		if ((resultCode == RESULT_OK) && (requestCode == 0)) {
+		//Glue for place finding screens.
+		if ((resultCode == RESULT_OK)) {
 			final List<Integer> latLng = data
-					.getIntegerArrayListExtra("latLng");
-			final GeoPoint dest = new GeoPoint(latLng.get(0), latLng.get(1));
-
-			planner.showRoute(locOverlay.getMyLocation(), dest);
-		} else if ((requestCode == 1) && (resultCode != -1)) {
+				.getIntegerArrayListExtra("latLng");
+			final GeoPoint point = new GeoPoint(latLng.get(0), latLng.get(1));
+			if (requestCode == DEST_REQ) {
+				planner.setDest(point);
+				planner.showRoute();
+			} else {
+				planner.setStart(point);
+				final Intent intentNav = new Intent(this, FindPlace.class);
+				intentNav.putExtra("title", "Destination");
+				startActivityForResult(intentNav, DEST_REQ);
+			}
+		//Jump to point in directions on the map.	
+		} else if ((requestCode == JUMP_REQ) && (resultCode != -1)) {
 			mc.setCenter(planner.getRoute().getSegments().get(resultCode).startPoint());
 			mc.setZoom(16);
 		}
+	}
+	
+	/**
+	 * Retain any route data if the screen is rotated.
+	 */
+	
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+		Object[] objs = new Object[3];
+		objs[0] = planner.getRoute();
+		objs[1] = planner.getStart();
+		objs[2] = planner.getDest();
+	    return objs;
 	}
 
 }

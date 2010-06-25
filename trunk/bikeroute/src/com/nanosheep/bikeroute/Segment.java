@@ -61,7 +61,7 @@ public class Segment implements Parcelable {
 	/**
 	 * @param in
 	 */
-	public Segment(Parcel in) {
+	public Segment(final Parcel in) {
 		readFromParcel(in);
 	}
 
@@ -123,7 +123,7 @@ public class Segment implements Parcelable {
 	 */
 	
 	public Segment copy() {
-		Segment copy = new Segment();
+		final Segment copy = new Segment();
 		copy.name = name;
 		copy.start = start;
 		copy.turn = turn;
@@ -135,7 +135,7 @@ public class Segment implements Parcelable {
 	/**
 	 * @param walk the walk to set
 	 */
-	public void setWalk(boolean walk) {
+	public void setWalk(final boolean walk) {
 		this.walk = walk;
 	}
 
@@ -158,7 +158,7 @@ public class Segment implements Parcelable {
 	 * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
 	 */
 	@Override
-	public void writeToParcel(Parcel dest, int flags) {
+	public void writeToParcel(final Parcel dest, final int flags) {
 		dest.writeString(name);
 		dest.writeString(turn);
 		dest.writeValue(walk);
@@ -167,7 +167,7 @@ public class Segment implements Parcelable {
 		dest.writeInt(start.getLongitudeE6());
 	}
 	
-	public void readFromParcel(Parcel in) {
+	public void readFromParcel(final Parcel in) {
 		name = in.readString();
 		turn = in.readString();
 		walk = (Boolean) in.readValue(Boolean.class.getClassLoader());
@@ -178,7 +178,7 @@ public class Segment implements Parcelable {
 	/**
 	 * @param length the length to set
 	 */
-	public void setLength(int length) {
+	public void setLength(final int length) {
 		this.length = length;
 	}
 
@@ -191,12 +191,12 @@ public class Segment implements Parcelable {
 
 	public static final Parcelable.Creator<Segment> CREATOR =
     	new Parcelable.Creator<Segment>() {
-            public Segment createFromParcel(Parcel in) {
+            public Segment createFromParcel(final Parcel in) {
                 return new Segment(in);
             }
 
 			@Override
-			public Segment[] newArray(int size) {
+			public Segment[] newArray(final int size) {
 				return new Segment[size];
 			}
         };

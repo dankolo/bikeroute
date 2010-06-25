@@ -22,7 +22,7 @@ public class Route implements Parcelable{
 		segments = new ArrayList<Segment>();
 	}
 	
-	public Route(Parcel in) {
+	public Route(final Parcel in) {
 		points = new ArrayList<GeoPoint>();
 		readFromParcel(in);
 	}
@@ -46,7 +46,7 @@ public class Route implements Parcelable{
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public void setName(final String name) {
 		this.name = name;
 	}
 
@@ -70,12 +70,12 @@ public class Route implements Parcelable{
 	 * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
 	 */
 	@Override
-	public void writeToParcel(Parcel dest, int flags) {
+	public void writeToParcel(final Parcel dest, final int flags) {
 		dest.writeString(name);
 		dest.writeTypedList(segments);
 	}
 	
-	public void readFromParcel(Parcel in) {
+	public void readFromParcel(final Parcel in) {
 		name = in.readString();
 		segments = new ArrayList<Segment>();
 		in.readTypedList(segments, Segment.CREATOR);
@@ -83,12 +83,12 @@ public class Route implements Parcelable{
 	
 	public static final Parcelable.Creator CREATOR =
     	new Parcelable.Creator() {
-            public Route createFromParcel(Parcel in) {
+            public Route createFromParcel(final Parcel in) {
                 return new Route(in);
             }
 
 			@Override
-			public Route[] newArray(int size) {
+			public Route[] newArray(final int size) {
 				return new Route[size];
 			}
         };

@@ -10,6 +10,7 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -18,31 +19,35 @@ import android.widget.ListView;
  * @version Jun 24, 2010
  */
 public class DirectionsView extends ListActivity {
+	/** Route object. **/
 	private Route route;
 	
 	@Override
-	public void onCreate(Bundle in) {
+	public void onCreate(final Bundle in) {
 	  super.onCreate(in);
+	  getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+              WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
 	  setResult(-1, new Intent());
-	  Bundle bundle = getIntent().getExtras();
+	  final Bundle bundle = getIntent().getExtras();
 	  
 	  route = bundle.getParcelable(BikeNav.ROUTE);
 	  setTitle(route.getName());
-	  List<String> step = new ArrayList<String>();
+	  final List<String> step = new ArrayList<String>();
 	  StringBuffer sBuf;
 	  for (Segment s : route.getSegments()) {
 		  sBuf = new StringBuffer();
-		  if (!s.getTurn().equals("unknown")) {
+		  if (!s.getTurn().equals("Unknown")) {
+			 
 			  sBuf.append(s.getTurn());
 			  sBuf.append(" at ");
 		  }
 		  sBuf.append(s.getName());
-		  sBuf.append(" ");
+		  sBuf.append(' ');
 		  if (s.isWalk()) {
 			  sBuf.append("(dismount) ");
 		  }
 		  sBuf.append(s.getLength());
-		  sBuf.append("m");
+		  sBuf.append('m');
 		  step.add(sBuf.toString());
 	  }
 
@@ -51,8 +56,14 @@ public class DirectionsView extends ListActivity {
 	  getListView().setTextFilterEnabled(true);
 	}
 	
+	/**
+	 * Return to the navigation activity if a direction item is
+	 * clicked, focus the map there.
+	 */
+	
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	protected void onListItemClick(final ListView l, final View v,
+			final int position, final long id) {
 		setResult(position, new Intent());
 		finish();
 	}	
