@@ -4,11 +4,11 @@
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
 <string name="center_title">Center</string>
-<string name="navigate_title">Navigate to..</string>
+<string name="navigate_title">Navigate...</string>
 <string name="back_title">Back to bike</string>
 <string name="showstands_title">Show bike stands</string>
-<string name="directions_title">Steps</string>
-<string name="plan_msg">Planning route..</string>
+<string name="directions_title">Directions</string>
+<string name="plan_msg">Planning route...</string>
 <string name="planfail_msg">Route planning failed.</string>
 <string name="search">Find</string>
 <string name="input">Address</string>
