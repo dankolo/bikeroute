@@ -3,12 +3,11 @@ package com.nanosheep.bikeroute;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.android.maps.MapActivity;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -17,6 +16,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 
@@ -28,7 +28,7 @@ import android.widget.Button;
  * 
  */
 
-public class FindPlace extends MapActivity {
+public class FindPlace extends Activity {
 
 	/** Lat & lng of resulting address. **/
 	private List<Integer> latLng;
@@ -41,14 +41,22 @@ public class FindPlace extends MapActivity {
 	/** Address box. **/
 	private AutoCompleteTextView addressField;
 	/** Handler codes. **/
-	private static final int IOERROR = -1;
-	private static final int ARGERROR = -2;
+	/** Io/network error. **/
+	public static final int IOERROR = -1;
+	/** Argument exception. **/
+	public static final int ARGERROR = -2;
+	/** Result ok. **/
 	private static final int OK = 1;
+	/** Empty result set. **/
+	private static final int RES_ERROR = -3;
 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.findplace);
+		
+		String title = getIntent().getStringExtra("title");
+		setTitle(title);
 
 		searching = new ProgressDialog(this);
 
@@ -56,8 +64,9 @@ public class FindPlace extends MapActivity {
 		addresses = new ArrayList<Address>();
 
 		final Button searchButton = (Button) findViewById(R.id.search_button);
-		// final EditText addressField = (EditText)
-		// findViewById(R.id.address_input);
+		
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
+                WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
 
 		geocoder = new Geocoder(this);
 
@@ -78,14 +87,10 @@ public class FindPlace extends MapActivity {
 						try {
 							addresses = geocoder.getFromLocationName(
 									addressInput, 1);
-							Thread.sleep(1500);
 						} catch (IOException e) {
 							msg = IOERROR;
 						} catch (IllegalArgumentException e) {
 							msg = ARGERROR;
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
 						results.sendEmptyMessage(msg);
 					}
@@ -100,23 +105,17 @@ public class FindPlace extends MapActivity {
 		@Override
 		public void handleMessage(final Message msg) {
 			searching.dismiss();
-
-			switch (msg.what) {
-			case IOERROR:
-				showIOError();
-				break;
-			case ARGERROR:
-				break;
-			default:
+			if (msg.what == OK) {
 				if (addresses.isEmpty()) {
-					showResultError();
-					break;
+					showDialog(RES_ERROR);
 				} else {
 					final Address addr = addresses.get(0);
-					latLng.add((int) (addr.getLatitude() * Degrees.CNV));
-					latLng.add((int) (addr.getLongitude() * Degrees.CNV));
+					latLng.add(Degrees.asMicroDegrees(addr.getLatitude()));
+					latLng.add(Degrees.asMicroDegrees(addr.getLongitude()));
 					finish();
 				}
+			} else {
+				showDialog(msg.what);
 			}
 		}
 	};
@@ -137,27 +136,53 @@ public class FindPlace extends MapActivity {
 		}
 		super.finish();
 	}
-
-	@Override
-	protected boolean isRouteDisplayed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	private void showIOError() {
-		final AlertDialog.Builder builder = new AlertDialog.Builder(FindPlace.this);
-		builder.setTitle("Error").setPositiveButton(R.string.ok, null)
-				.setMessage("Network unavailable.");
-
-		final Dialog ioError = builder.create();
-		ioError.show();
-	}
-
-	private void showResultError() {
-		final Dialog locationError = new AlertDialog.Builder(FindPlace.this).setIcon(
-				0).setTitle("Error").setPositiveButton(R.string.ok, null)
-				.setMessage("Address not found.").create();
-		locationError.show();
-	}
+	
+	/**
+	 * Creates dialogs for loading, on errors, alerts.
+	 * Available dialogs:
+	 * Planning progress, planning error, unpark.
+	 * @return the approriate Dialog object
+	 */
+	
+	public Dialog onCreateDialog(final int id) {
+		Dialog dialog;
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);;
+		switch(id) {
+		case IOERROR:
+			builder.setMessage(getText(R.string.io_error_msg)).setCancelable(
+					false).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+						}
+					});
+			dialog = builder.create();
+			break;
+		case ARGERROR:
+			builder.setMessage(getText(R.string.arg_error_msg)).setCancelable(
+					false).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+						}
+					});
+			dialog = builder.create();
+			break;
+		case RES_ERROR:
+			builder.setMessage(getText(R.string.result_error_msg)).setCancelable(
+					false).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+						}
+					});
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
+			break;
+		}
+		return dialog;
+		}
 
 }

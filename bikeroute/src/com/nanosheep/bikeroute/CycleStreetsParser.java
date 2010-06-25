@@ -1,12 +1,6 @@
 package com.nanosheep.bikeroute;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
 import com.google.android.maps.GeoPoint;
 
 import android.sax.Element;
@@ -45,29 +39,28 @@ public class CycleStreetsParser extends XMLParser {
 				
 				final String pointString = attributes.getValue("points");
 				final String nameString = attributes.getValue("name");
-				final String turnString = attributes.getValue("turn");
+				String turnString = attributes.getValue("turn");
 				final String type = attributes.getValue("type");
 				final String geom = attributes.getValue("coordinates");
 				final String walk = attributes.getValue("walk");
 				final String length = attributes.getValue("distance");
 				
 				/** Parse segment. **/
-				if (type.equals("segment")) {
+				if ("segment".equals(type)) {
 					segment.setName(nameString);
 									
 					final String[] pointsArray = pointString.split(" ", -1);
 					
 					//Split points string to geopoints list.
 					final String[] point = pointsArray[0].split(",", -1);
-					final double lat = new Double(point[1]);
-					final double lng = new Double(point[0]);
-					p = new GeoPoint((int)
-							(lat * Degrees.CNV), 
-							(int) (lng * Degrees.CNV));
+
+					p = new GeoPoint(Degrees.asMicroDegrees(Double.parseDouble(point[1])), 
+							Degrees.asMicroDegrees(Double.parseDouble(point[0])));
 				
 					segment.setPoint(p);
+					turnString = Character.toUpperCase(turnString.charAt(0)) + turnString.substring(1);
 					segment.setTurn(turnString);
-					if (walk.equals("1")) {
+					if ("1".equals(walk)) {
 						segment.setWalk(true);
 					} else {
 						segment.setWalk(false);
@@ -78,13 +71,11 @@ public class CycleStreetsParser extends XMLParser {
 					/** Parse route details. **/
 					route.setName(nameString);
 					final String[] pointsArray = geom.split(" ", -1);
-					for (int i = 0; i < pointsArray.length; i++) {
+					final int len = pointsArray.length;
+					for (int i = 0; i < len; i++) {
 						final String[] point = pointsArray[i].split(",", -1);
-						final double lat = new Double(point[1]);
-						final double lng = new Double(point[0]);
-						p = new GeoPoint((int)
-								(lat * Degrees.CNV), 
-								(int) (lng * Degrees.CNV));
+						p = new GeoPoint(Degrees.asMicroDegrees(Double.parseDouble(point[1])), 
+								Degrees.asMicroDegrees(Double.parseDouble(point[0])));
 						route.addPoint(p);
 					}
 				}
@@ -100,9 +91,7 @@ public class CycleStreetsParser extends XMLParser {
 		try {
 			Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, root
 					.getContentHandler());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (SAXException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		return route;

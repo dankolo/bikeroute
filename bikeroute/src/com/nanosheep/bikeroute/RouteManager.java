@@ -16,24 +16,28 @@ import com.google.android.maps.MapView;
  */
 public class RouteManager {
 	/** Owning activity. **/
-	private Activity act;
+	private final Activity act;
 	/** Map view to draw routes into. **/
-	private MapView mv;
+	private final MapView mv;
 	/** API feed. */
 	private static final String API =
 		"http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
 	/** Route overlay. **/
 	private RouteOverlay routeOverlay;
 	/** Route planned switch. **/
-	private boolean isPlanned;
+	private boolean planned;
 	/** Route. **/
 	private Route route;
+	/** Start point. **/
+	private GeoPoint start;
+	/** Destination point. **/
+	private GeoPoint dest;
 	
 	public RouteManager(final Activity activity, final MapView mapview) {
 		super();
 		act = activity;
 		mv = mapview;
-		setPlanned(false);
+		planned = false;
 	}
 	
 	/**
@@ -41,12 +45,9 @@ public class RouteManager {
 	 * alert if the planning failed for some reason.
 	 * Executes planning process in a separate thread, displays a progress
 	 * dialog while planning.
-	 * 
-	 * @param start Starting point.
-	 * @param dest Destination point.
 	 */
 
-	public void showRoute(final GeoPoint start, final GeoPoint dest) {
+	public void showRoute() {
 		clearRoute();
 		
 		act.showDialog(BikeNav.PLANNING_DIALOG);
@@ -74,7 +75,7 @@ public class RouteManager {
 	 * Handler for route planning thread.
 	 */
 	
-	private Handler messageHandler = new Handler() {
+	private final Handler messageHandler = new Handler() {
 		@Override
 		public void handleMessage(final Message msg) {
 			act.dismissDialog(BikeNav.PLANNING_DIALOG);
@@ -83,7 +84,7 @@ public class RouteManager {
 			} else {
 				mv.getOverlays().add(routeOverlay);
 				mv.invalidate();
-				isPlanned = true;
+				planned = true;
 			}
 		}
 	};
@@ -119,14 +120,18 @@ public class RouteManager {
 	public void clearRoute() {
 		mv.getOverlays().remove(routeOverlay);
 		routeOverlay = null;
-		isPlanned = false;
+		planned = false;
 	}
 
 	/**
 	 * @param route the route to set
 	 */
-	public void setRoute(Route route) {
+	public void setRoute(final Route route) {
 		this.route = route;
+		routeOverlay = new RouteOverlay(route, Color.BLUE);
+		mv.getOverlays().add(routeOverlay);
+		mv.invalidate();
+		planned = true;
 	}
 
 	/**
@@ -139,15 +144,49 @@ public class RouteManager {
 	/**
 	 * @param isPlanned the isPlanned to set
 	 */
-	public void setPlanned(boolean isPlanned) {
-		this.isPlanned = isPlanned;
+	public void setPlanned(final boolean isPlanned) {
+		this.planned = isPlanned;
 	}
 
 	/**
 	 * @return the isPlanned
 	 */
 	public boolean isPlanned() {
-		return isPlanned;
+		return planned;
+	}
+	
+	/**
+	 * @return the starting geopoint
+	 */
+	
+	public GeoPoint getStart() {
+		return start;
+	}
+	
+	/**
+	 * @return the destination geopoint.
+	 */
+	
+	public GeoPoint getDest() {
+		return dest;
+	}
+	
+	/**
+	 * Set the start point for the route.
+	 * @param start start point.
+	 */
+	
+	public void setStart(final GeoPoint start) {
+		this.start = start;
+	}
+	
+	/**
+	 * Set the destination point for the route.
+	 * @param end point.
+	 */
+	
+	public void setDest(final GeoPoint end) {
+		this.dest = end;
 	}
 
 }

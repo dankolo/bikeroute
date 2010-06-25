@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
@@ -19,7 +20,7 @@ import android.widget.Filter;
 
 public class FindPlaceAdapter extends ArrayAdapter<String> {
 	private List<Address> addresses;
-	private Geocoder geocoder;
+	private final Geocoder geocoder;
 
 	public FindPlaceAdapter(final Context context, final int resource,
 			final int textViewResourceId) {
@@ -49,24 +50,24 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 					res.count = 0;
 				} else {
 					String addressInput = ch.toString();
+					Activity act = (Activity) getContext();
 					try {
 						addresses = geocoder.getFromLocationName(addressInput, 5);
 					} catch (IOException e) {
-						// showIOError();
+						act.showDialog(FindPlace.IOERROR);
 					} catch (IllegalArgumentException e) {
-						// showResultError();
+						act.showDialog(FindPlace.ARGERROR);
 					}
-					// clear();
 					for (Address addr : addresses) {
 						StringBuffer sb = new StringBuffer();
-						for (int i = 0; i < addr.getMaxAddressLineIndex() + 1; i++) {
+						final int top = addr.getMaxAddressLineIndex() + 1;
+						for (int i = 0; i < top; i++) {
 							sb.append(addr.getAddressLine(i));
-							if (i != addr.getMaxAddressLineIndex()) {
+							if (i != top) {
 								sb.append(", ");
 							}
 						}
 						addrs.add(sb.toString());
-						// add(sb.toString());
 					}
 
 					res.count = addrs.size();
@@ -75,6 +76,7 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				return res;
 			}
 
+			@SuppressWarnings("unchecked")
 			@Override
 			protected void publishResults(final CharSequence constraint,
 					final FilterResults results) {

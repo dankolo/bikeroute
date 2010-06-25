@@ -30,13 +30,12 @@ public class RouteOverlay extends Overlay {
 	/** Stroke width. **/
 	private static final float STROKE = 4.5f;
 	/** Route path. **/
-	private Path path;
+	private final Path path;
 	/** Point to draw with. **/
 	private final Point p;
 	/** Paint for path. **/
 	private final Paint paint;
-	/** Projection. **/
-	private Projection prj;
+
 
 	/**
 	 * Public constructor.
@@ -92,9 +91,9 @@ public class RouteOverlay extends Overlay {
 	 */
 	
 	private void redrawPath(final MapView mv) {
-		prj = mv.getProjection();
+		final Projection prj = mv.getProjection();
 		path.rewind();
-		Iterator<GeoPoint> it = routePoints.iterator();
+		final Iterator<GeoPoint> it = routePoints.iterator();
 		prj.toPixels(it.next(), p);
 		path.moveTo(p.x, p.y);
 		while (it.hasNext()) {
