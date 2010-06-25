@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="version">Alpha</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
