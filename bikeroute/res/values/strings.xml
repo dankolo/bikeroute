@@ -14,4 +14,8 @@
 <string name="input">Address</string>
 <string name="address">Find an Address</string>
 <string name="ok">OK</string>
+<string name="arg_error_msg">Illegal argument.</string>
+<string name="io_error_msg">IOException. Network or service unavailable.</string>
+<string name="result_error_msg">Address not found.</string>
+<string name="fix_msg">Waiting for GPS fix...</string>
 </resources>
