@@ -6,6 +6,8 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -68,6 +70,9 @@ public class BikeNav extends MapActivity {
 
 	/** Bike alert manager. **/
 	private BikeAlert bikeAlert;
+	
+	/** Dialog display. **/
+	private Dialog dialog;
 
 	@Override
 	public void onCreate(final Bundle savedInstanceState) {
@@ -111,6 +116,9 @@ public class BikeNav extends MapActivity {
 				planner.setDest((GeoPoint) data[2]);
 				planner.showRoute();
 			}
+			if (data[3] != null) {
+				dialog = (Dialog) data[3];
+			}
 		}
 	}
 	
@@ -122,14 +130,19 @@ public class BikeNav extends MapActivity {
 	 */
 	
 	public Dialog onCreateDialog(final int id) {
-		final Dialog dialog;
 		AlertDialog.Builder builder;
 		switch(id) {
 		case PLANNING_DIALOG:
 			ProgressDialog pDialog = new ProgressDialog(this);
-			pDialog.setCancelable(true);
+			pDialog.setCancelable(false);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			pDialog.setMessage(getText(R.string.plan_msg));
+			pDialog.setOnDismissListener(new OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface arg0) {
+					BikeNav.this.removeDialog(PLANNING_DIALOG);
+				}
+			});
 			dialog = pDialog;
 			break;
 		case PLAN_FAIL_DIALOG:
@@ -184,10 +197,12 @@ public class BikeNav extends MapActivity {
 									BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
 										@Override
 										public void run() {
-											BikeNav.this.dismissDialog(AWAITING_FIX);
-											BikeNav.this.planner.setStart(
+											if (BikeNav.this.dialog.isShowing()) {
+												BikeNav.this.dismissDialog(AWAITING_FIX);
+												BikeNav.this.planner.setStart(
 													BikeNav.this.locOverlay.getMyLocation());
-											startActivityForResult(intentNav, DEST_REQ);
+												startActivityForResult(intentNav, DEST_REQ);
+											}
 										}
 										
 									});
@@ -211,6 +226,12 @@ public class BikeNav extends MapActivity {
 			pdialog.setCancelable(true);
 			pdialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			pdialog.setMessage(getText(R.string.fix_msg));
+			pdialog.setOnDismissListener(new OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface arg0) {
+					BikeNav.this.removeDialog(AWAITING_FIX);
+				}
+			});
 			dialog = pdialog;
 			break;
 		default:
@@ -277,21 +298,25 @@ public class BikeNav extends MapActivity {
 			BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
 				@Override
 				public void run() {
-					dismissDialog(AWAITING_FIX);
-					mc.animateTo(locOverlay.getMyLocation());
+					if (BikeNav.this.dialog.isShowing()) {
+						BikeNav.this.dismissDialog(AWAITING_FIX);
+						BikeNav.this.mc.animateTo(BikeNav.this.locOverlay.getMyLocation());
+					}
 				}
 			});
 			return true;
 		case R.id.back:
 			bikeAlert.setBikeAlert(prk.getLocation());
 			showDialog(AWAITING_FIX);
-			BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
+			locOverlay.runOnFirstFix(new Runnable() {
 				@Override
 				public void run() {
-					dismissDialog(AWAITING_FIX);
-					planner.setStart(locOverlay.getMyLocation());
-					planner.setDest(prk.getLocation());
-					planner.showRoute();
+					if (BikeNav.this.dialog.isShowing()) {
+						BikeNav.this.dismissDialog(AWAITING_FIX);
+						BikeNav.this.planner.setStart(BikeNav.this.locOverlay.getMyLocation());
+						BikeNav.this.planner.setDest(BikeNav.this.prk.getLocation());
+						BikeNav.this.planner.showRoute();
+					}
 				}
 			});
 			return true;
@@ -379,6 +404,7 @@ public class BikeNav extends MapActivity {
 		objs[0] = planner.getRoute();
 		objs[1] = planner.getStart();
 		objs[2] = planner.getDest();
+		objs[3] = dialog;
 	    return objs;
 	}
 
