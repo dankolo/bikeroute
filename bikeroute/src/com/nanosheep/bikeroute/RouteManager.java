@@ -53,17 +53,17 @@ public class RouteManager {
 		act.showDialog(BikeNav.PLANNING_DIALOG);
 		final Thread thread = new Thread() {
 			public void run() {
-				Message msg = messageHandler.obtainMessage();
+				Message msg = RouteManager.this.messageHandler.obtainMessage();
                 Bundle b = new Bundle();
                 b.putInt("result", 1);
 				try {
-					route = plan(start, dest);
-					routeOverlay = new RouteOverlay(route, Color.BLUE);
+					RouteManager.this.route = plan(start, dest);
+					RouteManager.this.routeOverlay = new RouteOverlay(route, Color.BLUE);
 				} catch (Exception e) {
 					b.putInt("result", 0); 
 				} finally {
 					msg.setData(b);
-	                messageHandler.sendMessage(msg);
+					RouteManager.this.messageHandler.sendMessage(msg);
 	                interrupt();
 				}
 			}
