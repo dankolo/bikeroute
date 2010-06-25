@@ -23,4 +23,5 @@
        <activity android:name="com.nanosheep.bikeroute.DirectionsView" android:label="Directions">
        </activity>
    </application>
+
 </manifest>
