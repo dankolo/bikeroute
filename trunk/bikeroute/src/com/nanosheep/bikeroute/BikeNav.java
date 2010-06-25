@@ -89,7 +89,7 @@ public class BikeNav extends MapActivity {
 
 		// Initialize stands overlay
 		Drawable drawable = this.getResources().getDrawable(
-				R.drawable.androidmarker);
+				R.drawable.parking);
 		stands = new LiveMarkers(drawable);
 
 		// Initialise parking manager
