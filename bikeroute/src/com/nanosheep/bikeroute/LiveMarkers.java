@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 /**
  * A class to display markers on a map and update them after a scrolling
@@ -37,7 +38,7 @@ public class LiveMarkers extends Markers {
 	 */
 
 	public void refresh(final GeoPoint p) {
-		act.showDialog(BikeNav.LOADSTANDS);
+		//act.showDialog(BikeNav.LOADSTANDS);
 		update = new Thread() {
 			public void run() {
 				int msg = 0;
@@ -60,7 +61,6 @@ public class LiveMarkers extends Markers {
 			LiveMarkers.this.populate();
 			setLastFocusedIndex(-1);
 			mv.invalidate();
-			act.dismissDialog(BikeNav.LOADSTANDS);
 		}
 	};
 
