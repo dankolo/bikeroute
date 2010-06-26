@@ -89,6 +89,7 @@ public class RouteManager {
 			} else {
 				mv.getOverlays().add(routeOverlay);
 				mv.invalidate();
+				mv.getController().animateTo(route.getPoints().get(0));
 				planned = true;
 			}
 		}

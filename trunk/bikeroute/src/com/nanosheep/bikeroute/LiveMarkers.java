@@ -1,10 +1,14 @@
 package com.nanosheep.bikeroute;
 
+import java.util.List;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
+import com.google.android.maps.OverlayItem;
 
+import android.app.Activity;
 import android.graphics.drawable.Drawable;
-import android.os.Bundle;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.view.MotionEvent;
@@ -18,34 +22,26 @@ import android.view.MotionEvent;
 
 public class LiveMarkers extends Markers {
 	private Thread update;
+	private MapView mv;
+	private List<OverlayItem> markers;
+	private Activity act;
 
-	public LiveMarkers(final Drawable defaultMarker) {
+	public LiveMarkers(final Drawable defaultMarker, final MapView mapview, final Activity activity) {
 		super(defaultMarker);
-	}
-
-	/**
-	 * Overrides to update markers if a gesture has completed.
-	 * @return a boolean indicating whether this overlay dealt with the touch.
-	 */
-
-	@Override
-	public boolean onTouchEvent(final MotionEvent event, final MapView mapView) {
-		if (event.getAction() == MotionEvent.ACTION_UP) {
-			final GeoPoint p = mapView.getMapCenter();
-			reCenter(p);
-		}
-		return false;
+		mv = mapview;
+		act = activity;
 	}
 
 	/**
 	 * Update markers around given point.
 	 */
 
-	public void reCenter(final GeoPoint p) {
+	public void refresh(final GeoPoint p) {
+		act.showDialog(BikeNav.LOADSTANDS);
 		update = new Thread() {
 			public void run() {
 				int msg = 0;
-				mOverlays = Stands.getMarkers(p, RADIUS);
+				markers = Stands.getMarkers(p, RADIUS);
 				LiveMarkers.this.messageHandler.sendEmptyMessage(msg);
 			}
 		};
@@ -59,8 +55,12 @@ public class LiveMarkers extends Markers {
 	private final Handler messageHandler = new Handler() {
 		@Override
 		public void handleMessage(final Message msg) {
+			mOverlays.clear();
+			mOverlays.addAll(markers);
 			LiveMarkers.this.populate();
-			
+			setLastFocusedIndex(-1);
+			mv.invalidate();
+			act.dismissDialog(BikeNav.LOADSTANDS);
 		}
 	};
 
