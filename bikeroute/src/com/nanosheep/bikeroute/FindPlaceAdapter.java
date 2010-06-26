@@ -3,6 +3,7 @@ package com.nanosheep.bikeroute;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,12 +26,12 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 	public FindPlaceAdapter(final Context context, final int resource,
 			final int textViewResourceId) {
 		super(context, resource, textViewResourceId);
-		geocoder = new Geocoder(context);
+		geocoder = new Geocoder(context, Locale.getDefault());
 	}
 
 	public FindPlaceAdapter(final Context context, final int resource) {
 		super(context, resource);
-		geocoder = new Geocoder(context);
+		geocoder = new Geocoder(context, Locale.getDefault());
 	}
 
 	/**
@@ -63,7 +64,7 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 						final int top = addr.getMaxAddressLineIndex() + 1;
 						for (int i = 0; i < top; i++) {
 							sb.append(addr.getAddressLine(i));
-							if (i != top) {
+							if (i != top - 1) {
 								sb.append(", ");
 							}
 						}

@@ -1,5 +1,7 @@
 package com.nanosheep.bikeroute;
 
+import java.util.Locale;
+
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -22,6 +24,9 @@ public class RouteManager {
 	/** API feed. */
 	private static final String API =
 		"http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
+	/** US API. **/
+	private static final String US_API =
+		"http://maps.google.com/maps/api/directions/json?";
 	/** Route overlay. **/
 	private RouteOverlay routeOverlay;
 	/** Route planned switch. **/
@@ -98,6 +103,8 @@ public class RouteManager {
 	 */
 
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
+		Parser parser;
+		if (Locale.getDefault().equals(Locale.UK)) {
 		final StringBuffer sBuf = new StringBuffer(API);
 		sBuf.append("start_lat=");
 		sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
@@ -108,9 +115,25 @@ public class RouteManager {
 		sBuf.append("&dest_lng=");
 		sBuf.append(Degrees.asDegrees(dest.getLongitudeE6()));
 
-		final CycleStreetsParser parser = new CycleStreetsParser(sBuf
+		parser = new CycleStreetsParser(sBuf
 				.toString());
-		return parser.parse();
+		} else if (Locale.getDefault().equals(Locale.US)) {
+			final StringBuffer sBuf = new StringBuffer(US_API);
+			sBuf.append("origin=");
+			sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
+			sBuf.append(',');
+			sBuf.append(Degrees.asDegrees(start.getLongitudeE6()));
+			sBuf.append("&destination=");
+			sBuf.append(Degrees.asDegrees(dest.getLatitudeE6()));
+			sBuf.append(',');
+			sBuf.append(Degrees.asDegrees(dest.getLongitudeE6()));
+			sBuf.append("&sensor=true&mode=bicycling");
+		parser = new GoogleParser(sBuf.toString());
+		} else {
+			parser = null;
+		}
+		Route r =  parser.parse();
+		return r;
 	}
 	
 	/**
