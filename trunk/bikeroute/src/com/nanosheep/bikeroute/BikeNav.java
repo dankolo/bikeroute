@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapActivity;
@@ -53,8 +54,6 @@ public class BikeNav extends MapActivity {
 	public static final int NAVIGATE = 3;
 	/** Awaiting GPS fix dialog. **/
 	public static final int AWAITING_FIX = 4;
-	/** Loading stands dialog. **/
-	public static final int LOADSTANDS = 5;
 	/** Route parcel id. **/
 	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
 	/** Initial zoom level. */
@@ -144,19 +143,6 @@ public class BikeNav extends MapActivity {
 				@Override
 				public void onDismiss(DialogInterface arg0) {
 					BikeNav.this.removeDialog(PLANNING_DIALOG);
-				}
-			});
-			dialog = pDialog;
-			break;
-		case LOADSTANDS:
-			pDialog = new ProgressDialog(this);
-			pDialog.setCancelable(false);
-			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			pDialog.setMessage(getText(R.string.load_stands_msg));
-			pDialog.setOnDismissListener(new OnDismissListener() {
-				@Override
-				public void onDismiss(DialogInterface arg0) {
-					BikeNav.this.removeDialog(LOADSTANDS);
 				}
 			});
 			dialog = pDialog;
@@ -349,6 +335,8 @@ public class BikeNav extends MapActivity {
 				item.setChecked(false);
 				mapView.getOverlays().remove(stands);
 			} 
+			Toast.makeText(this, "Getting stands from OpenStreetMap..",
+					Toast.LENGTH_LONG).show();
 			item.setChecked(true);
 			stands.refresh(mapView.getMapCenter());
 			mapView.getOverlays().add(stands);
