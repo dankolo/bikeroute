@@ -15,7 +15,7 @@ import android.util.Xml;
  * @version Jun 21, 2010
  */
 
-public class CycleStreetsParser extends XMLParser {
+public class CycleStreetsParser extends XMLParser implements Parser {
 
 	public CycleStreetsParser(final String feedUrl) {
 		super(feedUrl);
@@ -29,6 +29,7 @@ public class CycleStreetsParser extends XMLParser {
 	public final Route parse() {
 		final Segment segment = new Segment();
 		final Route route = new Route();
+		route.setCopyright("Route planning by CycleStreets.net");
 		final RootElement root = new RootElement(MARKERS);
 		final Element marker = root.getChild(MARKER);
 		// Listen for start of tag, get attributes and set them
