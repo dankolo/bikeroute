@@ -37,6 +37,8 @@ public class RouteManager {
 	private GeoPoint start;
 	/** Destination point. **/
 	private GeoPoint dest;
+	/** Country the route is in. **/
+	private String country;
 	
 	public RouteManager(final Activity activity, final MapView mapview) {
 		super();
@@ -105,7 +107,7 @@ public class RouteManager {
 
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
 		Parser parser;
-		if (Locale.getDefault().equals(Locale.UK)) {
+		if ("GB".equals(country)) {
 		final StringBuffer sBuf = new StringBuffer(API);
 		sBuf.append("start_lat=");
 		sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
@@ -118,7 +120,7 @@ public class RouteManager {
 
 		parser = new CycleStreetsParser(sBuf
 				.toString());
-		} else if (Locale.getDefault().equals(Locale.US)) {
+		} else {
 			final StringBuffer sBuf = new StringBuffer(US_API);
 			sBuf.append("origin=");
 			sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
@@ -128,11 +130,13 @@ public class RouteManager {
 			sBuf.append(Degrees.asDegrees(dest.getLatitudeE6()));
 			sBuf.append(',');
 			sBuf.append(Degrees.asDegrees(dest.getLongitudeE6()));
-			sBuf.append("&sensor=true&mode=bicycling");
+			if ("US".equals(country)) {
+				sBuf.append("&sensor=true&mode=bicycling");
+			} else {
+				sBuf.append("&sensor=true&mode=driving");
+			}
 		parser = new GoogleParser(sBuf.toString());
-		} else {
-			parser = null;
-		}
+		} 
 		Route r =  parser.parse();
 		return r;
 	}
@@ -211,6 +215,20 @@ public class RouteManager {
 	
 	public void setDest(final GeoPoint end) {
 		this.dest = end;
+	}
+
+	/**
+	 * @param country the country to set
+	 */
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+	/**
+	 * @return the country
+	 */
+	public String getCountry() {
+		return country;
 	}
 
 }

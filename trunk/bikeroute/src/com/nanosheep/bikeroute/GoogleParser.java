@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.nanosheep.bikeroute;
 
 import java.io.BufferedReader;
@@ -61,6 +58,12 @@ public class GoogleParser extends XMLParser implements Parser {
 		return route;
 	}
 
+	/**
+	 * Convert an inputstream to a string.
+	 * @param input inputstream to convert.
+	 * @return a String of the inputstream.
+	 */
+	
 	private static String convertStreamToString(InputStream input) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         StringBuilder sBuf = new StringBuilder();
@@ -81,6 +84,12 @@ public class GoogleParser extends XMLParser implements Parser {
         }
         return sBuf.toString();
     }
+	
+	/**
+	 * Decode a polyline string into a list of GeoPoints.
+	 * @param poly polyline encoded string to decode.
+	 * @return the list of GeoPoints represented by this polystring.
+	 */
 	
 	private List<GeoPoint> decodePolyLine(final String poly) {
 		int len = poly.length();

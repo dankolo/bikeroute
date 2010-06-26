@@ -32,6 +32,8 @@ public class FindPlace extends Activity {
 
 	/** Lat & lng of resulting address. **/
 	private List<Integer> latLng;
+	/** Country for the address. **/
+	private String country;
 	/** Progress dialog. **/
 	private ProgressDialog searching;
 	/** Geocoder. **/
@@ -112,6 +114,7 @@ public class FindPlace extends Activity {
 					final Address addr = addresses.get(0);
 					latLng.add(Degrees.asMicroDegrees(addr.getLatitude()));
 					latLng.add(Degrees.asMicroDegrees(addr.getLongitude()));
+					country = addr.getCountryCode();
 					finish();
 				}
 			} else {
@@ -130,6 +133,7 @@ public class FindPlace extends Activity {
 		if (latLng.size() == 2) {
 			intent.putIntegerArrayListExtra("latLng",
 					(ArrayList<Integer>) latLng);
+			intent.putExtra("country", country);
 			setResult(RESULT_OK, intent);
 		} else {
 			setResult(RESULT_CANCELED, intent);

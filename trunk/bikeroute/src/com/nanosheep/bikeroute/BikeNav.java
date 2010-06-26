@@ -395,6 +395,7 @@ public class BikeNav extends MapActivity {
 			final GeoPoint point = new GeoPoint(latLng.get(0), latLng.get(1));
 			if (requestCode == DEST_REQ) {
 				planner.setDest(point);
+				planner.setCountry(data.getStringExtra("country"));
 				planner.showRoute();
 			} else {
 				planner.setStart(point);
