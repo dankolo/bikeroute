@@ -35,7 +35,7 @@ public class Marker {
 	 */
 
 	public final void setLat(final String p) {
-		lat = (int) (Double.parseDouble(p) * Degrees.CNV);
+		lat = Degrees.asMicroDegrees(Double.parseDouble(p));
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class Marker {
 	 */
 
 	public final void setLng(final String p) {
-		lng = (int) (Double.parseDouble(p) * Degrees.CNV);
+		lng = Degrees.asMicroDegrees(Double.parseDouble(p));
 	}
 
 	/**

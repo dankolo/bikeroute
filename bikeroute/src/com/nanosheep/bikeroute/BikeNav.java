@@ -53,6 +53,8 @@ public class BikeNav extends MapActivity {
 	public static final int NAVIGATE = 3;
 	/** Awaiting GPS fix dialog. **/
 	public static final int AWAITING_FIX = 4;
+	/** Loading stands dialog. **/
+	public static final int LOADSTANDS = 5;
 	/** Route parcel id. **/
 	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
 	/** Initial zoom level. */
@@ -90,7 +92,7 @@ public class BikeNav extends MapActivity {
 		// Initialize stands overlay
 		Drawable drawable = this.getResources().getDrawable(
 				R.drawable.parking);
-		stands = new LiveMarkers(drawable);
+		stands = new LiveMarkers(drawable, mapView, this);
 
 		// Initialise parking manager
 		prk = new Parking(this);
@@ -131,9 +133,10 @@ public class BikeNav extends MapActivity {
 	
 	public Dialog onCreateDialog(final int id) {
 		AlertDialog.Builder builder;
+		ProgressDialog pDialog;
 		switch(id) {
 		case PLANNING_DIALOG:
-			ProgressDialog pDialog = new ProgressDialog(this);
+			pDialog = new ProgressDialog(this);
 			pDialog.setCancelable(false);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			pDialog.setMessage(getText(R.string.plan_msg));
@@ -141,6 +144,19 @@ public class BikeNav extends MapActivity {
 				@Override
 				public void onDismiss(DialogInterface arg0) {
 					BikeNav.this.removeDialog(PLANNING_DIALOG);
+				}
+			});
+			dialog = pDialog;
+			break;
+		case LOADSTANDS:
+			pDialog = new ProgressDialog(this);
+			pDialog.setCancelable(false);
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.setMessage(getText(R.string.load_stands_msg));
+			pDialog.setOnDismissListener(new OnDismissListener() {
+				@Override
+				public void onDismiss(DialogInterface arg0) {
+					BikeNav.this.removeDialog(LOADSTANDS);
 				}
 			});
 			dialog = pDialog;
@@ -222,17 +238,17 @@ public class BikeNav extends MapActivity {
 			dialog = builder.create();
 			break;
 		case AWAITING_FIX:
-			ProgressDialog pdialog = new ProgressDialog(this);
-			pdialog.setCancelable(true);
-			pdialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			pdialog.setMessage(getText(R.string.fix_msg));
-			pdialog.setOnDismissListener(new OnDismissListener() {
+			pDialog = new ProgressDialog(this);
+			pDialog.setCancelable(true);
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.setMessage(getText(R.string.fix_msg));
+			pDialog.setOnDismissListener(new OnDismissListener() {
 				@Override
 				public void onDismiss(DialogInterface arg0) {
 					BikeNav.this.removeDialog(AWAITING_FIX);
 				}
 			});
-			dialog = pdialog;
+			dialog = pDialog;
 			break;
 		default:
 			dialog = null;
@@ -332,11 +348,10 @@ public class BikeNav extends MapActivity {
 			if (item.isChecked()) {
 				item.setChecked(false);
 				mapView.getOverlays().remove(stands);
-			} else {
-				item.setChecked(true);
-				stands.reCenter(mapView.getMapCenter());
-				mapView.getOverlays().add(stands);
-			}
+			} 
+			item.setChecked(true);
+			stands.refresh(mapView.getMapCenter());
+			mapView.getOverlays().add(stands);
 			mapView.invalidate();
 			return true;
 		case R.id.park:

@@ -14,7 +14,7 @@ import com.google.android.maps.OverlayItem;
 public class Markers extends ItemizedOverlay {
 	protected List<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
 	// Radius to return markers within.
-	protected static final int RADIUS = 1;
+	protected static final double RADIUS = 0.5;
 
 	public Markers(final Drawable defaultMarker) {
 		super(boundCenterBottom(defaultMarker));

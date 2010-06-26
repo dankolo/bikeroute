@@ -16,6 +16,8 @@ import com.google.android.maps.GeoPoint;
 public final class Stands {
 
 	private static final String QUERY_URL = "http://vega.soi.city.ac.uk/~abjy800/bike/xml.php?poly=";
+	private static final String OSM_API =
+		"http://www.informationfreeway.org/api/0.6/node[amenity=bicycle_parking]";
 
 	private Stands() {
 	}
@@ -23,21 +25,20 @@ public final class Stands {
 	/**
 	 * Get markers from the api.
 	 * 
-	 * @param p
-	 *            Center point
-	 * @param distance
-	 *            radius to collect markers within.
+	 * @param p Center point
+	 * @param distance radius to collect markers within.
 	 * @return an arraylist of OverlayItems corresponding to markers in range.
 	 */
 
 	public static List<OverlayItem> getMarkers(final GeoPoint p,
-			final int distance) {
+			final double distance) {
 		// URL encode the WKT representation of the MBR for the circle
 		// described by the center & distance given.
-		final String poly = getWKTPoly(getBounds(p, distance));
-		final String query = QUERY_URL + URLEncoder.encode(poly);
+		//final String poly = getWKTPoly(getBounds(p, distance));
+		//final String query = QUERY_URL + URLEncoder.encode(poly);
+		final String query = OSM_API + getOSMBounds(getBounds(p, distance));
 		final List<OverlayItem> markers = new ArrayList<OverlayItem>();
-		final StandsParser parser = new StandsParser(query);
+		final OSMParser parser = new OSMParser(query);
 
 		// Parse XML to overlayitems (cycle stands)
 		for (Marker m : parser.parse()) {
@@ -52,13 +53,11 @@ public final class Stands {
 	 * Generate an array of points representing a MBR for the circle described
 	 * by the radius given.
 	 * 
-	 * @param p
-	 *            point to use as center
-	 * @param distance
-	 *            radius to bound within.
+	 * @param p point to use as center
+	 * @param distance radius to bound within.
 	 * @return an array of 4 geopoints.
 	 */
-	private static List<GeoPoint> getBounds(final GeoPoint p, final int distance) {
+	private static List<GeoPoint> getBounds(final GeoPoint p, final double distance) {
 		final List<GeoPoint> points = new ArrayList<GeoPoint>(4);
 		final double pi180 = Math.PI / 180;
 		final int degrees = (int) (distance * Degrees.CNV) / 69;
@@ -86,19 +85,38 @@ public final class Stands {
 	 * @return a WKT string of the form POLYGON(..
 	 */
 
+	@Deprecated
 	private static String getWKTPoly(final List<GeoPoint> points) {
 		final StringBuffer sBuf = new StringBuffer("POLYGON((");
-		for (GeoPoint p : points) {
-			sBuf.append(p.getLatitudeE6() / Degrees.CNV);
-			sBuf.append(' ');
-			sBuf.append(p.getLongitudeE6() / Degrees.CNV);
-			sBuf.append(", ");
-		}
-		final GeoPoint pnt = points.get(0);
-		sBuf.append(pnt.getLatitudeE6() / Degrees.CNV);
-		sBuf.append(' ');
-		sBuf.append(pnt.getLongitudeE6() / Degrees.CNV);
-		sBuf.append("))");
+        for (GeoPoint p : points) {
+                sBuf.append(p.getLatitudeE6() / Degrees.CNV);
+                sBuf.append(' ');
+                sBuf.append(p.getLongitudeE6() / Degrees.CNV);
+                sBuf.append(", ");
+        }
+        final GeoPoint pnt = points.get(0);
+        sBuf.append(pnt.getLatitudeE6() / Degrees.CNV);
+        sBuf.append(' ');
+        sBuf.append(pnt.getLongitudeE6() / Degrees.CNV);
+        sBuf.append("))");
+
+        return sBuf.toString();
+	}
+	
+	/**
+	 * Get an OSM bounding box string of an array of GeoPoints.
+	 */
+	
+	private static String getOSMBounds(final List<GeoPoint> points) {
+		final StringBuffer sBuf = new StringBuffer("[bbox=");
+		sBuf.append(Degrees.asDegrees(points.get(0).getLongitudeE6()));
+		sBuf.append(',');
+		sBuf.append(Degrees.asDegrees(points.get(2).getLatitudeE6()));
+		sBuf.append(',');
+		sBuf.append(Degrees.asDegrees(points.get(2).getLongitudeE6()));
+		sBuf.append(',');
+		sBuf.append(Degrees.asDegrees(points.get(0).getLatitudeE6()));
+		sBuf.append(']');
 
 		return sBuf.toString();
 	}
