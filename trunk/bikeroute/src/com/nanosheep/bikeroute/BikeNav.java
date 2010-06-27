@@ -6,7 +6,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -74,8 +73,8 @@ public class BikeNav extends MapActivity {
 	private Dialog dialog;
 
 	@Override
-	public void onCreate(final Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreate(final Bundle savedState) {
+		super.onCreate(savedState);
 
 		// Initialize map, view & controller
 		setContentView(R.layout.main);
@@ -87,9 +86,9 @@ public class BikeNav extends MapActivity {
 		mc.setZoom(ZOOM);
 
 		// Initialize stands overlay
-		Drawable drawable = this.getResources().getDrawable(
+		final Drawable drawable = this.getResources().getDrawable(
 				R.drawable.parking);
-		stands = new LiveMarkers(drawable, mapView, this);
+		stands = new LiveMarkers(drawable, mapView);
 
 		// Initialise parking manager
 		prk = new Parking(this);
@@ -296,13 +295,8 @@ public class BikeNav extends MapActivity {
 			bikeAlert.unsetAlert();
 			return true;
 		case R.id.showstands:
-			if (item.isChecked()) {
-				item.setChecked(false);
-				mapView.getOverlays().remove(stands);
-			} 
 			Toast.makeText(this, "Getting stands from OpenStreetMap..",
 					Toast.LENGTH_LONG).show();
-			item.setChecked(true);
 			stands.refresh(mapView.getMapCenter());
 			return true;
 		case R.id.park:

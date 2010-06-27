@@ -32,28 +32,26 @@ import android.widget.Button;
 public class FindPlace extends Activity {
 
 	/** Lat & lng of resulting address. **/
-	private List<Integer> latLng;
+	private transient List<Integer> latLng;
 	/** Country for the address. **/
-	private String country;
+	private transient String country;
 	/** Progress dialog. **/
-	private ProgressDialog searching;
+	private transient ProgressDialog searching;
 	/** Geocoder. **/
-	private Geocoder geocoder;
+	private transient Geocoder geocoder;
 	/** Found addresses list. **/
-	private List<Address> addresses;
+	private transient List<Address> addresses;
 	/** Start Address box. **/
-	private AutoCompleteTextView startAddressField;
+	private transient AutoCompleteTextView startAddressField;
 	/** End address box. **/
-	private AutoCompleteTextView endAddressField;
+	private transient AutoCompleteTextView endAddressField;
 	/** Handler codes. **/
 	/** Io/network error. **/
-	public static final int IOERROR = -1;
+	public static final int IOERROR = 1;
 	/** Argument exception. **/
-	public static final int ARGERROR = -2;
-	/** Result ok. **/
-	private static final int OK = 1;
+	public static final int ARGERROR = 2;
 	/** Empty result set. **/
-	private static final int RES_ERROR = -3;
+	private static final int RES_ERROR = 3;
 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -79,17 +77,17 @@ public class FindPlace extends Activity {
 		
 		
 		/* Get current lat & lng if available. */
-		int startLat = getIntent().getIntExtra("lat", -1);
-		int startLng = getIntent().getIntExtra("lng", -1);
+		final int startLat = getIntent().getIntExtra("lat", -1);
+		final int startLng = getIntent().getIntExtra("lng", -1);
 		
 		/* Autofill starting location by reverse geocoding current
 		 * lat & lng
 		 */
 		if (startLat != -1 && startLng != -1) {
 			try {
-				Address startAddress = geocoder.getFromLocation(Degrees.asDegrees(startLat),
+				final Address startAddress = geocoder.getFromLocation(Degrees.asDegrees(startLat),
 					Degrees.asDegrees(startLng), 1).get(0);
-				StringBuffer sb = new StringBuffer();
+				final StringBuffer sb = new StringBuffer();
 				final int top = startAddress.getMaxAddressLineIndex() + 1;
 				for (int i = 0; i < top; i++) {
 					sb.append(startAddress.getAddressLine(i));
@@ -104,23 +102,27 @@ public class FindPlace extends Activity {
 			}
 		}
 
+		//Initialise searching dialog
 		searching = new ProgressDialog(this);
 
+		//Initialise latlng extras arraylist & addresses.
 		latLng = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
 
 		//Initialise search button
 		searchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(final View view) {
-				searching = ProgressDialog.show(FindPlace.this, "Working..",
+				searching = ProgressDialog.show(FindPlace.this, "",
 						"Searching..", true, false);
+				/* Spawn a new thread to geocode the input addresses
+				 * return the 1st found to the handler.
+				 */
 				final Thread search = new Thread() {
 					@Override
 					public void run() {
-						//String addressInput = addressField.getText().toString();
 						String startAddressInput = startAddressField.getText().toString();
 						String endAddressInput = endAddressField.getText().toString();
-						int msg = OK;
+						int msg = RESULT_OK;
 						try {
 							addresses = geocoder.getFromLocationName(
 									startAddressInput, 1);
@@ -140,11 +142,16 @@ public class FindPlace extends Activity {
 
 	}
 
+	/**
+	 * Handler for geocoding addresses. Calls finish if addresses
+	 * are found, packages geopoints as integer array.
+	 */
+	
 	private final Handler results = new Handler() {
 		@Override
 		public void handleMessage(final Message msg) {
 			searching.dismiss();
-			if (msg.what == OK) {
+			if (msg.what == RESULT_OK) {
 				if (addresses.isEmpty()) {
 					showDialog(RES_ERROR);
 				} else {
@@ -162,7 +169,8 @@ public class FindPlace extends Activity {
 	};
 
 	/**
-	 * Set latLng as extra to return to main activity.
+	 * Set latLng and countrycode of destination as extras
+	 *  to return to main activity.
 	 */
 
 	@Override
@@ -182,13 +190,14 @@ public class FindPlace extends Activity {
 	/**
 	 * Creates dialogs for loading, on errors, alerts.
 	 * Available dialogs:
-	 * Planning progress, planning error, unpark.
+	 * IOError, argument error, result error.
 	 * @return the approriate Dialog object
 	 */
 	
+	@Override
 	public Dialog onCreateDialog(final int id) {
 		Dialog dialog;
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this);;
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		switch(id) {
 		case IOERROR:
 			builder.setMessage(getText(R.string.io_error_msg)).setCancelable(

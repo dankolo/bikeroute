@@ -16,6 +16,7 @@ import com.google.android.maps.MyLocationOverlay;
  */
 
 public class UserLocation extends MyLocationOverlay {
+	/** Map controller to use when animating. **/
 	private MapController mc;
 
 	public UserLocation(final Context context, final MapView mapView) {
@@ -28,12 +29,19 @@ public class UserLocation extends MyLocationOverlay {
 		mc = mapControl;
 	}
 
+	/** Follow the user by animating the map around their location.
+	 * @param location the new location.
+	 */
 	@Override
 	public void onLocationChanged(final Location location) {
 		super.onLocationChanged(location);
 		mc.animateTo(getMyLocation());
 	}
 
+	/**
+	 * Center the map on the current user location.
+	 */
+	
 	public void center() {
 		mc.animateTo(getMyLocation());
 	}

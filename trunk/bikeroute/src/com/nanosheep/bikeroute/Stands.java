@@ -1,6 +1,5 @@
 package com.nanosheep.bikeroute;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,10 +13,13 @@ import com.google.android.maps.GeoPoint;
  */
 
 public final class Stands {
-
-	private static final String QUERY_URL = "http://vega.soi.city.ac.uk/~abjy800/bike/xml.php?poly=";
+	/** API url. OpenStreetMap xapi interface. **/
 	private static final String OSM_API =
 		"http://www.informationfreeway.org/api/0.6/node[amenity=bicycle_parking]";
+	/** Pi/180 for converting degrees - radians. **/
+	private static final double PI_180 = Math.PI / 180;
+	/** Radius of the earth for degrees - miles calculations. **/
+	private static final double EARTH_RADIUS = 3960.0;
 
 	private Stands() {
 	}
@@ -32,10 +34,6 @@ public final class Stands {
 
 	public static List<OverlayItem> getMarkers(final GeoPoint p,
 			final double distance) {
-		// URL encode the WKT representation of the MBR for the circle
-		// described by the center & distance given.
-		//final String poly = getWKTPoly(getBounds(p, distance));
-		//final String query = QUERY_URL + URLEncoder.encode(poly);
 		final String query = OSM_API + getOSMBounds(getBounds(p, distance));
 		final List<OverlayItem> markers = new ArrayList<OverlayItem>();
 		final OSMParser parser = new OSMParser(query);
@@ -55,15 +53,13 @@ public final class Stands {
 	 * 
 	 * @param p point to use as center
 	 * @param distance radius to bound within.
-	 * @return an array of 4 geopoints.
+	 * @return an array of 4 geopoints representing an mbr drawn clockwise from the ne corner.
 	 */
 	private static List<GeoPoint> getBounds(final GeoPoint p, final double distance) {
 		final List<GeoPoint> points = new ArrayList<GeoPoint>(4);
-		final double pi180 = Math.PI / 180;
-		final double earthRadius = 3960.0;
-		final int degrees = Degrees.asMicroDegrees(((distance / earthRadius) * (1/pi180)));
-		final double latRadius = earthRadius * Math.cos(degrees * pi180);
-		final int degreesLng = Degrees.asMicroDegrees( (distance / latRadius) * (1/pi180));
+		final int degrees = Degrees.asMicroDegrees(((distance / EARTH_RADIUS) * (1/PI_180)));
+		final double latRadius = EARTH_RADIUS * Math.cos(degrees * PI_180);
+		final int degreesLng = Degrees.asMicroDegrees( (distance / latRadius) * (1/PI_180));
 
 		final int maxLng = degreesLng + p.getLongitudeE6();
 		final int maxLat = degrees + p.getLatitudeE6();
@@ -78,34 +74,12 @@ public final class Stands {
 
 		return points;
 	}
-
-	/**
-	 * Get a WKT polygon representation of an array of geopoints.
-	 * 
-	 * @param points
-	 * @return a WKT string of the form POLYGON(..
-	 */
-
-	@Deprecated
-	private static String getWKTPoly(final List<GeoPoint> points) {
-		final StringBuffer sBuf = new StringBuffer("POLYGON((");
-        for (GeoPoint p : points) {
-                sBuf.append(p.getLatitudeE6() / Degrees.CNV);
-                sBuf.append(' ');
-                sBuf.append(p.getLongitudeE6() / Degrees.CNV);
-                sBuf.append(", ");
-        }
-        final GeoPoint pnt = points.get(0);
-        sBuf.append(pnt.getLatitudeE6() / Degrees.CNV);
-        sBuf.append(' ');
-        sBuf.append(pnt.getLongitudeE6() / Degrees.CNV);
-        sBuf.append("))");
-
-        return sBuf.toString();
-	}
 	
 	/**
-	 * Get an OSM bounding box string of an array of GeoPoints.
+	 * Get an OSM bounding box string of an array of GeoPoints representing
+	 * a bounding box drawn clockwise from the northeast.
+	 * @param points List of geopoints
+	 * @return a string in OSM xapi bounding box form.
 	 */
 	
 	private static String getOSMBounds(final List<GeoPoint> points) {

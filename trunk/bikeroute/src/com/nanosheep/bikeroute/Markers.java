@@ -12,8 +12,9 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 
 public class Markers extends ItemizedOverlay<OverlayItem> {
+	/** List of overlay items. **/
 	protected List<OverlayItem> mOverlays = new ArrayList<OverlayItem>();
-	// Radius to return markers within.
+	/** Radius to return markers within. **/
 	protected static final double RADIUS = 0.5;
 
 	public Markers(final Drawable defaultMarker) {

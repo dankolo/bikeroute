@@ -59,6 +59,7 @@ public class Segment implements Parcelable {
 	}
 	
 	/**
+	 * Create a segment from a previously parcelled segment.
 	 * @param in
 	 */
 	public Segment(final Parcel in) {
@@ -85,6 +86,7 @@ public class Segment implements Parcelable {
 	
 	/**
 	 * Set the turn instruction.
+	 * @param turn Turn instruction string.
 	 */
 	
 	public void setTurn(final String turn) {
@@ -133,14 +135,14 @@ public class Segment implements Parcelable {
 	}
 
 	/**
-	 * @param walk the walk to set
+	 * @param walk Set whether this is a walking segment or not.
 	 */
 	public void setWalk(final boolean walk) {
 		this.walk = walk;
 	}
 
 	/**
-	 * @return the walk
+	 * @return the whether this segment is a walking one.
 	 */
 	public boolean isWalk() {
 		return walk;
@@ -166,6 +168,11 @@ public class Segment implements Parcelable {
 		dest.writeInt(start.getLatitudeE6());
 		dest.writeInt(start.getLongitudeE6());
 	}
+	
+	/**
+	 * Rehydrate a segment from a parcel.
+	 * @param in The parcel to rehydrate.
+	 */
 	
 	public void readFromParcel(final Parcel in) {
 		name = in.readString();

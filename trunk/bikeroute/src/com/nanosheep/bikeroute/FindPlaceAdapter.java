@@ -1,9 +1,7 @@
 package com.nanosheep.bikeroute;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,18 +18,17 @@ import android.widget.Filter;
  */
 
 public class FindPlaceAdapter extends ArrayAdapter<String> {
-	private List<Address> addresses;
 	private final Geocoder geocoder;
 
 	public FindPlaceAdapter(final Context context, final int resource,
-			final int textViewResourceId) {
-		super(context, resource, textViewResourceId);
-		geocoder = new Geocoder(context, Locale.getDefault());
+			final int txtViewResId) {
+		super(context, resource, txtViewResId);
+		geocoder = new Geocoder(context);
 	}
 
 	public FindPlaceAdapter(final Context context, final int resource) {
 		super(context, resource);
-		geocoder = new Geocoder(context, Locale.getDefault());
+		geocoder = new Geocoder(context);
 	}
 
 	/**
@@ -42,56 +39,81 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 	
 	@Override
 	public Filter getFilter() {
-		final Filter filter = new Filter() {
-			@Override
-			protected Filter.FilterResults performFiltering(final CharSequence ch) {
-				Filter.FilterResults res = new Filter.FilterResults();
-				ArrayList<String> addrs = new ArrayList<String>();
-				if (ch == null) {
-					res.count = 0;
-				} else {
-					String addressInput = ch.toString();
-					Activity act = (Activity) getContext();
-					try {
-						addresses = geocoder.getFromLocationName(addressInput, 5);
-					} catch (IOException e) {
-						act.showDialog(FindPlace.IOERROR);
-					} catch (IllegalArgumentException e) {
-						act.showDialog(FindPlace.ARGERROR);
-					}
-					for (Address addr : addresses) {
-						StringBuffer sb = new StringBuffer();
-						final int top = addr.getMaxAddressLineIndex() + 1;
-						for (int i = 0; i < top; i++) {
-							sb.append(addr.getAddressLine(i));
-							if (i != top - 1) {
-								sb.append(", ");
-							}
-						}
-						addrs.add(sb.toString());
-					}
-
-					res.count = addrs.size();
-					res.values = addrs;
+		return new GeoFilter();
+	}
+	
+	/**
+	 * Psuedo filter, returns addresses based on an input char sequence.
+	 * @author jono@nanosheep.net
+	 * @version Jun 27, 2010
+	 */
+	
+	private class GeoFilter extends Filter {
+		private List<Address> addresses;
+		
+		/**
+		 * Perform filtering by using the character sequence
+		 * as a search string for a geocoder.
+		 */
+		
+		@Override
+		protected Filter.FilterResults performFiltering(final CharSequence ch) {
+			final Filter.FilterResults res = new Filter.FilterResults();
+			if (ch == null) {
+				res.count = 0;
+			} else {
+				final String addressInput = ch.toString();
+				final Activity act = (Activity) getContext();
+				try {
+					addresses = geocoder.getFromLocationName(addressInput, 5);
+				} catch (IOException e) {
+					act.showDialog(FindPlace.IOERROR);
+				} catch (IllegalArgumentException e) {
+					act.showDialog(FindPlace.ARGERROR);
 				}
-				return res;
+				
+				res.count = addresses.size();
+				res.values = addresses;
 			}
+			return res;
+		}
+		
+		/**
+		 * Publish results back to the adapter for display.
+		 */
 
-			@SuppressWarnings("unchecked")
-			@Override
-			protected void publishResults(final CharSequence constraint,
-					final FilterResults results) {
-				if (results.count > 0) {
-					clear();
-					for (String s : (List<String>) results.values) {
-						add(s);
-					}
-					FindPlaceAdapter.this.notifyDataSetChanged();
-				} else {
-					notifyDataSetInvalidated();
+		@SuppressWarnings("unchecked")
+		@Override
+		protected void publishResults(final CharSequence constraint,
+				final FilterResults results) {
+			if (results.count > 0) {
+				clear();
+				for (Address address : (List<Address>) results.values) {
+					add(addressToString(address));
+				}
+				FindPlaceAdapter.this.notifyDataSetChanged();
+			} else {
+				FindPlaceAdapter.this.notifyDataSetInvalidated();
+			}
+		}
+		
+		/**
+		 * Convert an address result to a string for display in the
+		 * adapter.
+		 * @param address Address object to convert
+		 * @return a string of the address.
+		 */
+		
+		public String addressToString(final Address address) {
+			final StringBuffer sb = new StringBuffer();
+			final int top = address.getMaxAddressLineIndex() + 1;
+			for (int i = 0; i < top; i++) {
+				sb.append(address.getAddressLine(i));
+				if (i != top - 1) {
+					sb.append(", ");
 				}
 			}
-		};
-		return filter;
+			return sb.toString();			
+		}
 	}
 }
