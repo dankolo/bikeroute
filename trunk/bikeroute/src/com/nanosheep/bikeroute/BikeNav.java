@@ -392,7 +392,7 @@ public class BikeNav extends MapActivity {
 				startActivityForResult(intentNav, DEST_REQ);
 			}
 		//Jump to point in directions on the map.	
-		} else if ((requestCode == JUMP_REQ) && (resultCode != -1)) {
+		} else if ((requestCode == JUMP_REQ) && (resultCode != RESULT_CANCELED)) {
 			mc.setCenter(planner.getRoute().getSegments().get(resultCode).startPoint());
 			mc.setZoom(16);
 		}

@@ -65,6 +65,7 @@ public class RouteManager {
                 b.putInt("result", 1);
 				try {
 					RouteManager.this.route = plan(start, dest);
+					RouteManager.this.route.setCountry(country);
 					RouteManager.this.routeOverlay = new RouteOverlay(route, Color.BLUE);
 				} catch (Exception e) {
 					b.putInt("result", 0); 
