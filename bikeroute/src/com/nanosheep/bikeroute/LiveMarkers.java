@@ -38,7 +38,6 @@ public class LiveMarkers extends Markers {
 	 */
 
 	public void refresh(final GeoPoint p) {
-		//act.showDialog(BikeNav.LOADSTANDS);
 		update = new Thread() {
 			public void run() {
 				int msg = 0;
@@ -60,6 +59,7 @@ public class LiveMarkers extends Markers {
 			mOverlays.addAll(markers);
 			LiveMarkers.this.populate();
 			setLastFocusedIndex(-1);
+			mv.getOverlays().add(LiveMarkers.this);
 			mv.invalidate();
 		}
 	};
