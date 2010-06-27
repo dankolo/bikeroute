@@ -5,14 +5,14 @@
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
 <string name="center_title">Center</string>
-<string name="navigate_title">Navigate...</string>
+<string name="navigate_title">Navigate</string>
 <string name="back_title">Back to bike</string>
 <string name="showstands_title">Show bike stands</string>
 <string name="directions_title">Directions</string>
 <string name="plan_msg">Planning route...</string>
 <string name="load_stands_msg">Loading stands from OpenStreetMap...</string>
 <string name="planfail_msg">Route planning failed.</string>
-<string name="search">Find</string>
+<string name="search">Go</string>
 <string name="start_input">Start Address</string>
 <string name="end_input">End Address</string>
 <string name="start">From</string>
