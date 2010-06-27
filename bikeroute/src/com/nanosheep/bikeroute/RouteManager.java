@@ -1,12 +1,12 @@
 package com.nanosheep.bikeroute;
 
-import java.util.Locale;
-
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 
@@ -67,8 +67,13 @@ public class RouteManager {
 					RouteManager.this.route = plan(start, dest);
 					RouteManager.this.route.setCountry(country);
 					RouteManager.this.routeOverlay = new RouteOverlay(route, Color.BLUE);
+					if (RouteManager.this.route.getPoints().isEmpty()) {
+						throw new PlanException("Route is empty.");
+					}
 				} catch (Exception e) {
+					Log.e(e.getMessage(), "Planner");
 					b.putInt("result", 0); 
+					b.putCharSequence("errMsg", e.getMessage());
 				} finally {
 					msg.setData(b);
 					RouteManager.this.messageHandler.sendMessage(msg);
@@ -230,6 +235,30 @@ public class RouteManager {
 	 */
 	public String getCountry() {
 		return country;
+	}
+	
+	/**
+	 * Exception type for route planning exceptions.
+	 * 
+	 * @author jono@nanosheep.net
+	 * @version Jun 27, 2010
+	 */
+	private class PlanException extends Exception {
+
+		/**
+		 * Empty planexception.
+		 */
+		public PlanException() {
+		}
+
+		/**
+		 * PlanException with specified message.
+		 * @param detailMessage
+		 */
+		public PlanException(String detailMessage) {
+			super(detailMessage);
+		}
+
 	}
 
 }

@@ -19,6 +19,7 @@ public class Route implements Parcelable{
 	private String copyright;
 	private String warning;
 	private String country;
+	private int length;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
@@ -83,6 +84,7 @@ public class Route implements Parcelable{
 		dest.writeString(copyright);
 		dest.writeString(warning);
 		dest.writeString(country);
+		dest.writeInt(length);
 	}
 	
 	public void readFromParcel(final Parcel in) {
@@ -92,6 +94,7 @@ public class Route implements Parcelable{
 		copyright = in.readString();
 		warning = in.readString();
 		country = in.readString();
+		length = in.readInt();
 	}
 	
 	/**
@@ -134,6 +137,20 @@ public class Route implements Parcelable{
 	 */
 	public String getCountry() {
 		return country;
+	}
+
+	/**
+	 * @param length the length to set
+	 */
+	public void setLength(int length) {
+		this.length = length;
+	}
+
+	/**
+	 * @return the length
+	 */
+	public int getLength() {
+		return length;
 	}
 
 	public static final Parcelable.Creator CREATOR =

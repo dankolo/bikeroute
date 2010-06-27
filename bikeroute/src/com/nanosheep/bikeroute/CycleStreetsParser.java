@@ -7,6 +7,7 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -45,6 +46,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				final String geom = attributes.getValue("coordinates");
 				final String walk = attributes.getValue("walk");
 				final String length = attributes.getValue("distance");
+				final String totalDistance = attributes.getValue("length");
 				
 				/** Parse segment. **/
 				if ("segment".equals(type)) {
@@ -71,6 +73,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				} else {
 					/** Parse route details. **/
 					route.setName(nameString);
+					route.setLength(Integer.parseInt(totalDistance));
 					final String[] pointsArray = geom.split(" ", -1);
 					final int len = pointsArray.length;
 					for (int i = 0; i < len; i++) {
@@ -93,7 +96,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 			Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, root
 					.getContentHandler());
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			Log.e(e.getMessage(), "CycleStreets parser - " + feedUrl);
 		}
 		return route;
 	}

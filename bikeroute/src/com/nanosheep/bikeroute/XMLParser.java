@@ -1,10 +1,11 @@
 package com.nanosheep.bikeroute;
 
 import java.net.URL;
-import java.net.URLConnection;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.io.InputStream;
+
+import android.util.Log;
 
 public class XMLParser {
 	// names of the XML tags
@@ -17,17 +18,17 @@ public class XMLParser {
 		try {
 			this.feedUrl = new URL(feedUrl);
 		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
+			Log.e(e.getMessage(), "XML parser - " + feedUrl);
+			throw new RuntimeException(e.getMessage());
 		}
 	}
 
 	protected InputStream getInputStream() {
 		try {
-			URLConnection connection = feedUrl.openConnection();
-			connection.setReadTimeout(10000);
-			return connection.getInputStream();
+			return feedUrl.openConnection().getInputStream();
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			Log.e(e.getMessage(), "XML parser - " + feedUrl);
+			return null;
 		}
 	}
 }

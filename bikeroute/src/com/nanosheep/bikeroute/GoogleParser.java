@@ -11,6 +11,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.util.Log;
+
 import com.google.android.maps.GeoPoint;
 
 /**
@@ -36,6 +38,7 @@ public class GoogleParser extends XMLParser implements Parser {
 			int numSteps = steps.length();
 			route.setName(leg.getString("start_address") + " to " + leg.getString("end_address"));
 			route.setCopyright(r.getString("copyrights"));
+			route.setLength(leg.getJSONObject("distance").getInt("value"));
 			if (!r.getJSONArray("warnings").isNull(0)) {
 				route.setWarning(r.getJSONArray("warnings").getString(0));
 			}
@@ -53,7 +56,7 @@ public class GoogleParser extends XMLParser implements Parser {
 				route.addSegment(segment.copy());
 			}
 		} catch (JSONException e) {
-			e.printStackTrace();
+			Log.e(e.getMessage(), "Google JSON Parser - " + feedUrl);
 		}
 		return route;
 	}
@@ -74,12 +77,12 @@ public class GoogleParser extends XMLParser implements Parser {
                 sBuf.append(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.e(e.getMessage(), "Google parser, stream2string");
         } finally {
             try {
                 input.close();
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.e(e.getMessage(), "Google parser, stream2string");
             }
         }
         return sBuf.toString();

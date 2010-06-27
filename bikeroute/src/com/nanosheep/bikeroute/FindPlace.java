@@ -14,6 +14,7 @@ import android.location.Geocoder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
@@ -40,8 +41,10 @@ public class FindPlace extends Activity {
 	private Geocoder geocoder;
 	/** Found addresses list. **/
 	private List<Address> addresses;
-	/** Address box. **/
-	private AutoCompleteTextView addressField;
+	/** Start Address box. **/
+	private AutoCompleteTextView startAddressField;
+	/** End address box. **/
+	private AutoCompleteTextView endAddressField;
 	/** Handler codes. **/
 	/** Io/network error. **/
 	public static final int IOERROR = -1;
@@ -57,26 +60,56 @@ public class FindPlace extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.findplace);
 		
-		String title = getIntent().getStringExtra("title");
-		setTitle(title);
+		//String title = getIntent().getStringExtra("title");
+		//setTitle(title);
+		
+		//Initialise geocoder
+		geocoder = new Geocoder(this);
+		
+		//Initialise fields
+		startAddressField = (AutoCompleteTextView) findViewById(R.id.start_address_input);
+		endAddressField = (AutoCompleteTextView) findViewById(R.id.end_address_input);		
+		final Button searchButton = (Button) findViewById(R.id.search_button);
+		
+		//Initialise adapter
+		final FindPlaceAdapter adapter = new FindPlaceAdapter(this,
+				android.R.layout.simple_dropdown_item_1line);
+		startAddressField.setAdapter(adapter);
+		endAddressField.setAdapter(adapter);
+		
+		
+		/* Get current lat & lng if available. */
+		int startLat = getIntent().getIntExtra("lat", -1);
+		int startLng = getIntent().getIntExtra("lng", -1);
+		
+		/* Autofill starting location by reverse geocoding current
+		 * lat & lng
+		 */
+		if (startLat != -1 && startLng != -1) {
+			try {
+				Address startAddress = geocoder.getFromLocation(Degrees.asDegrees(startLat),
+					Degrees.asDegrees(startLng), 1).get(0);
+				StringBuffer sb = new StringBuffer();
+				final int top = startAddress.getMaxAddressLineIndex() + 1;
+				for (int i = 0; i < top; i++) {
+					sb.append(startAddress.getAddressLine(i));
+					if (i != top - 1) {
+						sb.append(", ");
+					}
+				}
+				startAddressField.setText(sb);
+			} catch (Exception e) {
+				Log.e(e.getMessage(), "FindPlace - lat: " +
+						startLat + ", lng: " + startLng);
+			}
+		}
 
 		searching = new ProgressDialog(this);
 
 		latLng = new ArrayList<Integer>();
 		addresses = new ArrayList<Address>();
 
-		final Button searchButton = (Button) findViewById(R.id.search_button);
-		
-		getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
-                WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
-
-		geocoder = new Geocoder(this);
-
-		addressField = (AutoCompleteTextView) findViewById(R.id.address_input);
-		final FindPlaceAdapter adapter = new FindPlaceAdapter(this,
-				android.R.layout.simple_dropdown_item_1line);
-		addressField.setAdapter(adapter);
-
+		//Initialise search button
 		searchButton.setOnClickListener(new OnClickListener() {
 			public void onClick(final View view) {
 				searching = ProgressDialog.show(FindPlace.this, "Working..",
@@ -84,15 +117,19 @@ public class FindPlace extends Activity {
 				final Thread search = new Thread() {
 					@Override
 					public void run() {
-						String addressInput = addressField.getText().toString();
+						//String addressInput = addressField.getText().toString();
+						String startAddressInput = startAddressField.getText().toString();
+						String endAddressInput = endAddressField.getText().toString();
 						int msg = OK;
 						try {
 							addresses = geocoder.getFromLocationName(
-									addressInput, 1);
-						} catch (IOException e) {
+									startAddressInput, 1);
+							addresses.addAll(geocoder.getFromLocationName(
+									endAddressInput, 1));
+						} catch (Exception e) {
 							msg = IOERROR;
-						} catch (IllegalArgumentException e) {
-							msg = ARGERROR;
+							Log.e(e.getMessage(), "FindPlace: " + startAddressInput +
+									" - " + endAddressInput);
 						}
 						results.sendEmptyMessage(msg);
 					}
@@ -111,12 +148,13 @@ public class FindPlace extends Activity {
 				if (addresses.isEmpty()) {
 					showDialog(RES_ERROR);
 				} else {
-					final Address addr = addresses.get(0);
-					latLng.add(Degrees.asMicroDegrees(addr.getLatitude()));
-					latLng.add(Degrees.asMicroDegrees(addr.getLongitude()));
-					country = addr.getCountryCode();
-					finish();
+					for (Address addr : addresses) {
+						latLng.add(Degrees.asMicroDegrees(addr.getLatitude()));
+						latLng.add(Degrees.asMicroDegrees(addr.getLongitude()));
+						country = addr.getCountryCode();
+					}
 				}
+				finish();
 			} else {
 				showDialog(msg.what);
 			}
@@ -130,7 +168,7 @@ public class FindPlace extends Activity {
 	@Override
 	public void finish() {
 		final Intent intent = new Intent();
-		if (latLng.size() == 2) {
+		if (latLng.size() == 4) {
 			intent.putIntegerArrayListExtra("latLng",
 					(ArrayList<Integer>) latLng);
 			intent.putExtra("country", country);
@@ -158,6 +196,7 @@ public class FindPlace extends Activity {
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
+							dialog.dismiss();
 						}
 					});
 			dialog = builder.create();
@@ -168,6 +207,7 @@ public class FindPlace extends Activity {
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
+							dialog.dismiss();
 						}
 					});
 			dialog = builder.create();
@@ -178,6 +218,7 @@ public class FindPlace extends Activity {
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
+							dialog.dismiss();
 						}
 					});
 			dialog = builder.create();
