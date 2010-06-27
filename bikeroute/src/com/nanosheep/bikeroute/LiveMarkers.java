@@ -6,35 +6,33 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
-import android.app.Activity;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
-import android.view.MotionEvent;
-import android.widget.Toast;
 
 /**
- * A class to display markers on a map and update them after a scrolling
- * event.
+ * A class to display markers on a map and update them from a remote
+ * feed.
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
 
 public class LiveMarkers extends Markers {
+	/** Update thread. **/
 	private Thread update;
-	private MapView mv;
+	/** Reference to map view to draw markers over. **/
+	private final MapView mv;
+	/** Markers list for use by thread. **/
 	private List<OverlayItem> markers;
-	private Activity act;
 
-	public LiveMarkers(final Drawable defaultMarker, final MapView mapview, final Activity activity) {
+	public LiveMarkers(final Drawable defaultMarker, final MapView mapview) {
 		super(defaultMarker);
 		mv = mapview;
-		act = activity;
 	}
 
 	/**
 	 * Update markers around given point.
+	 * @param p the Geopoint to gather markers around.
 	 */
 
 	public void refresh(final GeoPoint p) {
@@ -50,11 +48,16 @@ public class LiveMarkers extends Markers {
 	
 	/**
 	 * Handler for stands thread.
+	 * Remove the existing stands overlay if it exists and
+	 * replace it with the new one from the thread.
 	 */
 	
 	private final Handler messageHandler = new Handler() {
 		@Override
 		public void handleMessage(final Message msg) {
+			if (mv.getOverlays().contains(LiveMarkers.this)) {
+				mv.getOverlays().remove(LiveMarkers.this);
+			}
 			mOverlays.clear();
 			mOverlays.addAll(markers);
 			LiveMarkers.this.populate();

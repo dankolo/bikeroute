@@ -14,10 +14,15 @@ import com.google.android.maps.GeoPoint;
  */
 
 public class Parking {
+	/** Preference name. **/
 	private static final String PREFS_NAME = "bikepark_location";
+	/** Preference key (latitude). **/
 	private static final String LAT = "lat";
+	/** Preference key (longitude) **/
 	private static final String LNG = "lng";
+	/** Shared preferences object. **/
 	private final SharedPreferences settings;
+	/** Preferences editor. **/
 	private final SharedPreferences.Editor editor;
 
 	public Parking(final Activity activity) {
@@ -33,8 +38,7 @@ public class Parking {
 	 * 'Park' at the location given. Set values for lng & lat in
 	 * sharedpreferences.
 	 * 
-	 * @param p
-	 *            Location to park at.
+	 * @param p Location to park at.
 	 */
 
 	public final void park(final GeoPoint p) {

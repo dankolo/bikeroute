@@ -27,7 +27,7 @@ public class DirectionsView extends ListActivity {
 	@Override
 	public void onCreate(final Bundle in) {
 	  super.onCreate(in);
-	  //sert basic return for exit, do not jump the main map
+	  //set basic return for exit, do not jump the main map view
 	  setResult(RESULT_CANCELED, new Intent());
 	  getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
               WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
@@ -38,6 +38,8 @@ public class DirectionsView extends ListActivity {
 	  setTitle(route.getName());
 	  final List<String> step = new ArrayList<String>();
 	  StringBuffer sBuf;
+	  //Output directions based on the parser that was used to
+	  //assemble the segment.
 	  if ("GB".equals(route.getCountry())) {
 	  for (Segment s : route.getSegments()) {
 		  sBuf = new StringBuffer();
@@ -67,7 +69,7 @@ public class DirectionsView extends ListActivity {
 		  }
 	  }
 
-	  
+	  //Create a header for the list.
 	  TextView header = new TextView(this);
 	  sBuf = new StringBuffer("Total distance: ");
 	  sBuf.append(route.getLength());
@@ -75,6 +77,7 @@ public class DirectionsView extends ListActivity {
 	  header.setText(sBuf.toString());
 	  getListView().addHeaderView(header, "", false);
 	  
+	  //Create a footer to display warnings & copyrights
 	  TextView footer = new TextView(this);
 	  sBuf = new StringBuffer();
 	  if (route.getWarning() != null) {
@@ -86,6 +89,7 @@ public class DirectionsView extends ListActivity {
 	  }
 	  footer.setText(sBuf.toString());
 	  getListView().addFooterView(footer, "", false);
+	  //Add the list of directions and set it filterable
 	  setListAdapter(new ArrayAdapter<String>(this,
 	          android.R.layout.simple_list_item_1, step));
 	  getListView().setTextFilterEnabled(true);
