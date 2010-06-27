@@ -304,8 +304,6 @@ public class BikeNav extends MapActivity {
 					Toast.LENGTH_LONG).show();
 			item.setChecked(true);
 			stands.refresh(mapView.getMapCenter());
-			mapView.getOverlays().add(stands);
-			mapView.invalidate();
 			return true;
 		case R.id.park:
 			prk.park(locOverlay.getMyLocation());
