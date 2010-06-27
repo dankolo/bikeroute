@@ -59,10 +59,8 @@ public class BikeNav extends MapActivity {
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
 	/* Request ids */
-	/** Navigation destination request. **/
-	private static final int DEST_REQ = 0;
-	/** Navigation start point request. **/
-	private static final int START_REQ = 1;
+	/** Navigation request. **/
+	private static final int FIND_REQ = 0;
 	/** Jump request. **/
 	private static final int JUMP_REQ = 2;
 
@@ -183,46 +181,6 @@ public class BikeNav extends MapActivity {
 							});
 			dialog = builder.create();
 			break;
-		case NAVIGATE:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage("Navigate from current location?")
-					.setCancelable(false)
-					.setPositiveButton("Yes",
-							new DialogInterface.OnClickListener() {
-								public void onClick(
-										final DialogInterface dialog,
-										final int id) {
-									final Intent intentNav = new Intent(BikeNav.this, FindPlace.class);
-									intentNav.putExtra("title", "Destination");
-									dialog.dismiss();
-									BikeNav.this.showDialog(AWAITING_FIX);
-									BikeNav.this.locOverlay.runOnFirstFix(new Runnable() {
-										@Override
-										public void run() {
-											if (BikeNav.this.dialog.isShowing()) {
-												BikeNav.this.dismissDialog(AWAITING_FIX);
-												BikeNav.this.planner.setStart(
-													BikeNav.this.locOverlay.getMyLocation());
-												startActivityForResult(intentNav, DEST_REQ);
-											}
-										}
-										
-									});
-								}
-							})
-					.setNegativeButton("No",
-							new DialogInterface.OnClickListener() {
-								public void onClick(
-										final DialogInterface dialog,
-										final int id) {
-									Intent intentNav = new Intent(BikeNav.this, FindPlace.class);
-									intentNav.putExtra("title", "Start Point");
-									startActivityForResult(intentNav, START_REQ);
-									dialog.dismiss();
-								}
-							});
-			dialog = builder.create();
-			break;
 		case AWAITING_FIX:
 			pDialog = new ProgressDialog(this);
 			pDialog.setCancelable(true);
@@ -323,7 +281,14 @@ public class BikeNav extends MapActivity {
 			});
 			return true;
 		case R.id.navigate:
-			showDialog(NAVIGATE);
+			Intent intentNav = new Intent(BikeNav.this, FindPlace.class);
+			if (BikeNav.this.locOverlay.getMyLocation() != null) {
+				intentNav.putExtra("lat",
+						BikeNav.this.locOverlay.getMyLocation().getLatitudeE6());
+				intentNav.putExtra("lng",
+						BikeNav.this.locOverlay.getMyLocation().getLongitudeE6());
+			}
+			startActivityForResult(intentNav, FIND_REQ);
 			return true;
 		case R.id.unpark:
 			prk.unPark();
@@ -377,22 +342,17 @@ public class BikeNav extends MapActivity {
 	@Override
 	protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
 		//Glue for place finding screens.
-		if ((resultCode == RESULT_OK)) {
+		if (resultCode == RESULT_OK && requestCode == FIND_REQ) {
 			final List<Integer> latLng = data
 				.getIntegerArrayListExtra("latLng");
-			final GeoPoint point = new GeoPoint(latLng.get(0), latLng.get(1));
-			if (requestCode == DEST_REQ) {
-				planner.setDest(point);
-				planner.setCountry(data.getStringExtra("country"));
-				planner.showRoute();
-			} else {
-				planner.setStart(point);
-				final Intent intentNav = new Intent(this, FindPlace.class);
-				intentNav.putExtra("title", "Destination");
-				startActivityForResult(intentNav, DEST_REQ);
-			}
+			final GeoPoint startPoint = new GeoPoint(latLng.get(0), latLng.get(1));
+			final GeoPoint endPoint = new GeoPoint(latLng.get(2), latLng.get(3));
+			planner.setStart(startPoint);
+			planner.setDest(endPoint);
+			planner.setCountry(data.getStringExtra("country"));
+			planner.showRoute();
 		//Jump to point in directions on the map.	
-		} else if ((requestCode == JUMP_REQ) && (resultCode != RESULT_CANCELED)) {
+		} else if (requestCode == JUMP_REQ && resultCode != RESULT_CANCELED) {
 			mc.setCenter(planner.getRoute().getSegments().get(resultCode).startPoint());
 			mc.setZoom(16);
 		}

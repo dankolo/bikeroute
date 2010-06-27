@@ -11,6 +11,7 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -53,9 +54,9 @@ public class StandsParser extends XMLParser {
 			Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, root
 					.getContentHandler());
 		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (SAXException e) {
-			throw new RuntimeException(e);
+			Log.e(e.getMessage(), "Stands parser - " + feedUrl);
+			} catch (SAXException e) {
+			Log.e(e.getMessage(), "Stands parser - " + feedUrl);
 		}
 		return marks;
 	}

@@ -67,6 +67,14 @@ public class DirectionsView extends ListActivity {
 		  }
 	  }
 
+	  
+	  TextView header = new TextView(this);
+	  sBuf = new StringBuffer("Total distance: ");
+	  sBuf.append(route.getLength());
+	  sBuf.append('m');
+	  header.setText(sBuf.toString());
+	  getListView().addHeaderView(header, "", false);
+	  
 	  TextView footer = new TextView(this);
 	  sBuf = new StringBuffer();
 	  if (route.getWarning() != null) {
