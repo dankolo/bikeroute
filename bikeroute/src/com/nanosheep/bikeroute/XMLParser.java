@@ -1,6 +1,7 @@
 package com.nanosheep.bikeroute;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.io.InputStream;
@@ -22,7 +23,9 @@ public class XMLParser {
 
 	protected InputStream getInputStream() {
 		try {
-			return feedUrl.openConnection().getInputStream();
+			URLConnection connection = feedUrl.openConnection();
+			connection.setReadTimeout(10000);
+			return connection.getInputStream();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

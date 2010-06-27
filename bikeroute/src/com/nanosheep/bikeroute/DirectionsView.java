@@ -28,7 +28,7 @@ public class DirectionsView extends ListActivity {
 	public void onCreate(final Bundle in) {
 	  super.onCreate(in);
 	  //sert basic return for exit, do not jump the main map
-	  setResult(-1, new Intent());
+	  setResult(RESULT_CANCELED, new Intent());
 	  getWindow().setFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND,
               WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
 	  //Get bundled route.
@@ -38,7 +38,7 @@ public class DirectionsView extends ListActivity {
 	  setTitle(route.getName());
 	  final List<String> step = new ArrayList<String>();
 	  StringBuffer sBuf;
-	  if (Locale.getDefault().equals(Locale.UK)) {
+	  if ("GB".equals(route.getCountry())) {
 	  for (Segment s : route.getSegments()) {
 		  sBuf = new StringBuffer();
 		  if (!s.getTurn().equals("Unknown")) {
@@ -56,7 +56,7 @@ public class DirectionsView extends ListActivity {
 		  sBuf.append('m');
 		  step.add(sBuf.toString());
 	  }
-	  } else if (Locale.getDefault().equals(Locale.US)) {
+	  } else {
 		  for (Segment s : route.getSegments()) {
 			  sBuf = new StringBuffer();
 			  sBuf.append(s.getTurn());
