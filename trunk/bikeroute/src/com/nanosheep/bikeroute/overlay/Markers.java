@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.overlay;
 
 /**
  * Overlays a set of markers onto the current map.

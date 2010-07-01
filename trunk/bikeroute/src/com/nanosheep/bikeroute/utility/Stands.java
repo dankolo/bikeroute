@@ -1,10 +1,14 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import android.location.Address;
+
 import com.google.android.maps.OverlayItem;
 import com.google.android.maps.GeoPoint;
+import com.nanosheep.bikeroute.overlay.Marker;
+import com.nanosheep.bikeroute.parser.OSMParser;
 
 /**
  * Utility class for querying cycle stands api based on gis data.
@@ -22,6 +26,37 @@ public final class Stands {
 	private static final double EARTH_RADIUS = 3960.0;
 
 	private Stands() {
+	}
+	
+	/**
+	 * Find the nearest cycle stand to the point given, or
+	 * return null if there's not one in a mile.
+	 * @param point GeoPoint to search near
+	 * @return a GeoPoint representing the cycle stand position or null.
+	 */
+	
+	public static GeoPoint getNearest(final GeoPoint point) {
+		GeoPoint closest = null;
+		double xD;
+		double yD;
+		double best = 9999999;
+		double dist;
+		for (OverlayItem o : getMarkers(point, 1)) {
+			xD = o.getPoint().getLatitudeE6() - point.getLatitudeE6();
+			yD = o.getPoint().getLongitudeE6() - point.getLongitudeE6();
+			dist = Math.sqrt(xD*xD + yD*yD);
+			if (best > dist) {
+				best = dist;
+				closest = o.getPoint();
+			}	
+		}
+		return closest;
+	}
+	
+	public static GeoPoint getNearest(final Address address) {
+		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
+				Degrees.asMicroDegrees(address.getLongitude()));
+		return getNearest(p);
 	}
 
 	/**

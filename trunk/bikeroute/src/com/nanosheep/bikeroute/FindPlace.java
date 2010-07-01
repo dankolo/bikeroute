@@ -3,6 +3,10 @@ package com.nanosheep.bikeroute;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
+import com.nanosheep.bikeroute.utility.Degrees;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -57,9 +61,6 @@ public class FindPlace extends Activity {
 	public final void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.findplace);
-		
-		//String title = getIntent().getStringExtra("title");
-		//setTitle(title);
 		
 		//Initialise geocoder
 		geocoder = new Geocoder(this);

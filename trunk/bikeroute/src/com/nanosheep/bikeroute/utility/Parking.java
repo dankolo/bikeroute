@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 import android.app.Activity;
 import android.content.SharedPreferences;

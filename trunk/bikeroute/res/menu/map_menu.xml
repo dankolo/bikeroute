@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/navigate"
+          android:title="@string/navigate_title" 
+          android:icon="@drawable/ic_menu_navigate">
+    </item>
+    <item android:id="@+id/directions"
+          android:title="@string/directions_title"
+          android:icon="@drawable/ic_menu_directions" >
+    </item>
+    <item android:id="@+id/map"
+    android:title="@string/map_title"
+    android:icon="@drawable/ic_menu_map"></item>
+    <item android:id="@+id/park"
+          android:title="@string/park_title" 
+          android:icon="@drawable/ic_menu_park">
+    </item>
+    <item android:id="@+id/unpark"
+          android:title="@string/unpark_title" android:visible="false" 
+          android:icon="@drawable/ic_menu_unpark">
+    </item>
+    <item android:id="@+id/center"
+          android:title="@string/center_title"
+          android:icon="@drawable/ic_menu_mylocation" >
+    </item>
+    <item android:id="@+id/turnbyturn"
+    	android:title="@string/turnbyturn"
+    	android:icon="@drawable/ic_menu_turnbyturn">
+    	</item>
+    <item android:id="@+id/showstands"
+          android:title="@string/showstands_title" android:checkable="true"
+          android:icon="@drawable/ic_menu_stand" >
+    </item>
+</menu>

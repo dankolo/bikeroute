@@ -1,7 +1,10 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.parser;
 
 import org.xml.sax.Attributes;
 import com.google.android.maps.GeoPoint;
+import com.nanosheep.bikeroute.Route;
+import com.nanosheep.bikeroute.Segment;
+import com.nanosheep.bikeroute.utility.Degrees;
 
 import android.sax.Element;
 import android.sax.EndElementListener;
@@ -17,6 +20,8 @@ import android.util.Xml;
  */
 
 public class CycleStreetsParser extends XMLParser implements Parser {
+	/** Distance covered. **/
+	private double distance;
 
 	public CycleStreetsParser(final String feedUrl) {
 		super(feedUrl);
@@ -50,7 +55,19 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				
 				/** Parse segment. **/
 				if ("segment".equals(type)) {
-					segment.setName(nameString);
+					 StringBuffer sBuf = new StringBuffer();
+					  if (!"unknown".equals(turnString)) {
+						 
+						  sBuf.append(Character.toUpperCase(
+								  turnString.charAt(0)) + turnString.substring(1));
+						  sBuf.append(" at ");
+					  }
+					  sBuf.append(nameString);
+					  sBuf.append(' ');
+					  if ("1".equals(walk)) {
+						  sBuf.append("(dismount)");
+					  }
+					  segment.setInstruction(sBuf.toString());
 									
 					final String[] pointsArray = pointString.split(" ", -1);
 					
@@ -61,14 +78,11 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 							Degrees.asMicroDegrees(Double.parseDouble(point[0])));
 				
 					segment.setPoint(p);
-					turnString = Character.toUpperCase(turnString.charAt(0)) + turnString.substring(1);
-					segment.setTurn(turnString);
-					if ("1".equals(walk)) {
-						segment.setWalk(true);
-					} else {
-						segment.setWalk(false);
-					}
-					segment.setLength(Integer.parseInt(length));
+					int len = Integer.parseInt(length);
+					distance += len;
+					segment.setDistance(distance/1000);
+					segment.setLength(len);
+					
 					
 				} else {
 					/** Parse route details. **/
@@ -87,7 +101,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 		});
 		marker.setEndElementListener(new EndElementListener() {
 			public void end() {
-				if (segment.getName() != null) {
+				if (segment.getInstruction() != null) {
 					route.addSegment(segment.copy());
 				}
 			}

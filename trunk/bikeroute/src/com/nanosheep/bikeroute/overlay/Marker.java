@@ -1,6 +1,7 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.overlay;
 
 import com.google.android.maps.GeoPoint;
+import com.nanosheep.bikeroute.utility.Degrees;
 
 /**
  * Represents a cycle stand on a map.

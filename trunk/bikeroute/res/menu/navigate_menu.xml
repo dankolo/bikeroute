@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/directions"
+          android:title="@string/directions_title"
+          android:icon="@drawable/ic_menu_directions" >
+    </item>
+    <item android:id="@+id/map"
+    android:title="@string/map_title"
+    android:icon="@drawable/ic_menu_map"></item>
+    <item android:id="@+id/bike"
+    android:title="@string/back_title"
+    android:icon="@drawable/ic_menu_bike"></item>
+    <item android:id="@+id/stand"
+          android:title="@string/nearstands_title" android:checkable="true" 
+          android:icon="@drawable/ic_menu_stand">
+    </item>
+</menu>

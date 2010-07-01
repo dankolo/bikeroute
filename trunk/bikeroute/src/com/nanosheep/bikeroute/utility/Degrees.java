@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 /**
  * Utility class to provide degrees-microdegrees conversion.
