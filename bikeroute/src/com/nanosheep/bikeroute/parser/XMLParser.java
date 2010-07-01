@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.parser;
 
 import java.net.URL;
 import java.io.IOException;

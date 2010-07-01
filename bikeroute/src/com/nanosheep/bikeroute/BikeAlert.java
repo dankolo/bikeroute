@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 
 import com.google.android.maps.GeoPoint;
+import com.nanosheep.bikeroute.utility.Degrees;
 
 /**
  * Display an alert on return to the location the bike was parked at.
@@ -43,7 +44,7 @@ public final class BikeAlert extends BroadcastReceiver {
 		final boolean enter = intent.getBooleanExtra(
 				LocationManager.KEY_PROXIMITY_ENTERING, false);
 		if (enter) {
-			act.showDialog(BikeNav.UNPARK_DIALOG);
+			act.showDialog(RouteMap.UNPARK_DIALOG);
 		}
 	}
 

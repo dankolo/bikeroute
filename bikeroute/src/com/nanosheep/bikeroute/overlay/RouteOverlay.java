@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.overlay;
 
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +12,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.Projection;
+import com.nanosheep.bikeroute.Route;
 
 /**
  * A class to overlay a route onto a map given a list of geopoints.

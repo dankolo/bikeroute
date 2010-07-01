@@ -16,14 +16,12 @@ import com.google.android.maps.GeoPoint;
 public class Segment implements Parcelable {
 	/** Points in this segment. **/
 	private GeoPoint start;
-	/** Road name for this segment. **/
-	private String name;
 	/** Turn instruction to reach next segment. **/
-	private String turn;
-	/** Walk switch. **/
-	private boolean walk;
+	private String instruction;
 	/** Length of segment. **/
 	private int length;
+	/** Distance covered. **/
+	private double distance;
 	
 	/**
 	 * Create an empty segment.
@@ -33,55 +31,11 @@ public class Segment implements Parcelable {
 	}
 	
 	/**
-	 * Creates a segment with a name.
-	 * @param name Name for this segment.
-	 */
-	
-	public Segment(final String name) {
-		this.name = name;
-	}
-	
-	/**
-	 * Creates a segment with a name and turn instruction.
-	 * @param name Name for this segment.
-	 * @param turn Turn instruction to reach next.
-	 */
-	
-	public Segment(final String name, final String turn) {
-		this.name = name;
-		this.turn = turn;
-	}
-	
-	public Segment(final String name, final String turn, final GeoPoint point) {
-		this.name = name;
-		this.turn = turn;
-		start = point;
-	}
-	
-	/**
 	 * Create a segment from a previously parcelled segment.
 	 * @param in
 	 */
 	public Segment(final Parcel in) {
 		readFromParcel(in);
-	}
-
-	/**
-	 * Set the road name.
-	 * @param name
-	 */
-	
-	public void setName(final String name) {
-		this.name = name;
-	}
-	
-	/**
-	 * Get the road name.
-	 * @return the roadname as a string.
-	 */
-	
-	public String getName() {
-		return name;
 	}
 	
 	/**
@@ -89,8 +43,8 @@ public class Segment implements Parcelable {
 	 * @param turn Turn instruction string.
 	 */
 	
-	public void setTurn(final String turn) {
-		this.turn = turn;
+	public void setInstruction(final String turn) {
+		this.instruction = turn;
 	}
 	
 	/**
@@ -98,8 +52,8 @@ public class Segment implements Parcelable {
 	 * @return a String of the turn instruction.
 	 */
 	
-	public String getTurn() {
-		return turn;
+	public String getInstruction() {
+		return instruction;
 	}
 	
 	/**
@@ -126,26 +80,11 @@ public class Segment implements Parcelable {
 	
 	public Segment copy() {
 		final Segment copy = new Segment();
-		copy.name = name;
 		copy.start = start;
-		copy.turn = turn;
+		copy.instruction = instruction;
 		copy.length = length;
-		copy.walk = walk;
+		copy.distance = distance;
 		return copy;
-	}
-
-	/**
-	 * @param walk Set whether this is a walking segment or not.
-	 */
-	public void setWalk(final boolean walk) {
-		this.walk = walk;
-	}
-
-	/**
-	 * @return the whether this segment is a walking one.
-	 */
-	public boolean isWalk() {
-		return walk;
 	}
 
 	/* (non-Javadoc)
@@ -161,12 +100,11 @@ public class Segment implements Parcelable {
 	 */
 	@Override
 	public void writeToParcel(final Parcel dest, final int flags) {
-		dest.writeString(name);
-		dest.writeString(turn);
-		dest.writeValue(walk);
+		dest.writeString(instruction);
 		dest.writeInt(length);
 		dest.writeInt(start.getLatitudeE6());
 		dest.writeInt(start.getLongitudeE6());
+		dest.writeDouble(distance);
 	}
 	
 	/**
@@ -175,11 +113,10 @@ public class Segment implements Parcelable {
 	 */
 	
 	public void readFromParcel(final Parcel in) {
-		name = in.readString();
-		turn = in.readString();
-		walk = (Boolean) in.readValue(Boolean.class.getClassLoader());
+		instruction = in.readString();
 		length = in.readInt();
 		start = new GeoPoint(in.readInt(), in.readInt());
+		distance = in.readDouble();
 	}
 	
 	/**
@@ -194,6 +131,20 @@ public class Segment implements Parcelable {
 	 */
 	public int getLength() {
 		return length;
+	}
+
+	/**
+	 * @param distance the distance to set
+	 */
+	public void setDistance(double distance) {
+		this.distance = distance;
+	}
+
+	/**
+	 * @return the distance
+	 */
+	public double getDistance() {
+		return distance;
 	}
 
 	public static final Parcelable.Creator<Segment> CREATOR =

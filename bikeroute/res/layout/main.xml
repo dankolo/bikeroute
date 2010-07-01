@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
-    android:layout_width="fill_parent" 
-    android:layout_height="fill_parent">
-    <com.google.android.maps.MapView
-    	android:id="@+id/bikeview"
-        android:layout_width="fill_parent" 
-        android:layout_height="fill_parent"
-        android:enabled="true"
-        android:clickable="true"
-        android:apiKey=""
-        />
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent">
+<com.google.android.maps.MapView
+android:id="@+id/bikeview"
+android:layout_width="fill_parent" 
+android:layout_height="fill_parent"
+android:enabled="true"
+android:clickable="true"
+android:apiKey=""/>
+<LinearLayout
+android:focusableInTouchMode="true"
+android:focusable="true"
+android:orientation="vertical"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+android:gravity="bottom"
+android:paddingLeft="5px"
+android:paddingTop="5px"
+android:paddingRight="5px">
+<com.nanosheep.bikeroute.view.StepView
+android:layout_width="fill_parent"
+android:id="@+id/directions_overlay"
+android:layout_height="wrap_content"
+android:orientation="vertical"
+android:gravity="center"
+android:padding="10px">
+<TextView
+android:id="@+id/step_no"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="step no"
+android:gravity="center">
+</TextView>
+<TextView
+android:id="@+id/turn"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Turn direction">
+</TextView>
+<TextView
+android:id="@+id/distance"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="Distance (total distance)"
+android:gravity="center">
+</TextView>
+</com.nanosheep.bikeroute.view.StepView>
 </LinearLayout>
+</merge>

@@ -29,15 +29,6 @@ public class UserLocation extends MyLocationOverlay {
 		mc = mapControl;
 	}
 
-	/** Follow the user by animating the map around their location.
-	 * @param location the new location.
-	 */
-	@Override
-	public void onLocationChanged(final Location location) {
-		super.onLocationChanged(location);
-		mc.animateTo(getMyLocation());
-	}
-
 	/**
 	 * Center the map on the current user location.
 	 */

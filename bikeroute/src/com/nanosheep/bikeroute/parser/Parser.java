@@ -1,7 +1,9 @@
 /**
  * 
  */
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.parser;
+
+import com.nanosheep.bikeroute.Route;
 
 /**
  * @author jono@nanosheep.net

@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,6 +14,9 @@ import org.json.JSONObject;
 import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
+import com.nanosheep.bikeroute.Route;
+import com.nanosheep.bikeroute.Segment;
+import com.nanosheep.bikeroute.utility.Degrees;
 
 /**
  * Parse a google directions json object to a route.
@@ -22,6 +25,9 @@ import com.google.android.maps.GeoPoint;
  * @version Jun 25, 2010
  */
 public class GoogleParser extends XMLParser implements Parser {
+	/** Distance covered. **/
+	private int distance;
+	
 	public GoogleParser(String feedUrl) {
 		super(feedUrl);
 	}
@@ -72,9 +78,12 @@ public class GoogleParser extends XMLParser implements Parser {
 						Degrees.asMicroDegrees(start.getDouble("lng")));
 				segment.setPoint(position);
 				//Set the length of this segment in metres
-				segment.setLength(step.getJSONObject("distance").getInt("value"));
+				final int length = step.getJSONObject("distance").getInt("value");
+				distance += length;
+				segment.setLength(length);
+				segment.setDistance(distance/1000);
 				//Strip html from google directions and set as turn instruction
-				segment.setTurn(step.getString("html_instructions").replaceAll("<(.*?)*>", ""));
+				segment.setInstruction(step.getString("html_instructions").replaceAll("<(.*?)*>", ""));
 				//Retrieve & decode this segment's polyline and add it to the route.
 				route.addPoints(decodePolyLine(step.getJSONObject("polyline").getString("points")));
 				//Push a copy of the segment to the route

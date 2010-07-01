@@ -1,7 +1,9 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.adapter;
 
 import java.io.IOException;
 import java.util.List;
+
+import com.nanosheep.bikeroute.FindPlace;
 
 import android.app.Activity;
 import android.content.Context;

@@ -13,6 +13,8 @@ import com.google.android.maps.GeoPoint;
  * @version Jun 22, 2010
  */
 public class Route implements Parcelable{
+	/** Route parcel id. **/
+	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
 	private String name;
 	private final List<GeoPoint> points;
 	private List<Segment> segments;
@@ -85,6 +87,12 @@ public class Route implements Parcelable{
 		dest.writeString(warning);
 		dest.writeString(country);
 		dest.writeInt(length);
+		int pointSize = points.size();
+		dest.writeInt(pointSize);
+		for (int i = 0; i < pointSize; i++) {
+			dest.writeInt(points.get(i).getLatitudeE6());
+			dest.writeInt(points.get(i).getLongitudeE6());
+		}
 	}
 	
 	public void readFromParcel(final Parcel in) {
@@ -95,6 +103,10 @@ public class Route implements Parcelable{
 		warning = in.readString();
 		country = in.readString();
 		length = in.readInt();
+		int pointSize = in.readInt();
+		for (int i = 0; i < pointSize; i++) {
+			points.add(new GeoPoint(in.readInt(), in.readInt()));
+		}
 	}
 	
 	/**

@@ -1,7 +1,12 @@
 package com.nanosheep.bikeroute;
 
+import java.io.IOException;
+
 import android.app.Activity;
 import android.graphics.Color;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -9,6 +14,11 @@ import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
+import com.nanosheep.bikeroute.overlay.RouteOverlay;
+import com.nanosheep.bikeroute.parser.CycleStreetsParser;
+import com.nanosheep.bikeroute.parser.GoogleParser;
+import com.nanosheep.bikeroute.parser.Parser;
+import com.nanosheep.bikeroute.utility.Degrees;
 
 /**
  * Plans routes and displays them as overlays on the provided mapview.
@@ -19,8 +29,6 @@ import com.google.android.maps.MapView;
 public class RouteManager {
 	/** Owning activity. **/
 	private final Activity act;
-	/** Map view to draw routes into. **/
-	private final MapView mv;
 	/** API feed. */
 	private static final String API =
 		"http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
@@ -39,12 +47,14 @@ public class RouteManager {
 	private GeoPoint dest;
 	/** Country the route is in. **/
 	private String country;
+	/** Geocoder. **/
+	private Geocoder geocoder;
 	
-	public RouteManager(final Activity activity, final MapView mapview) {
+	public RouteManager(final Activity activity) {
 		super();
 		act = activity;
-		mv = mapview;
 		planned = false;
+		geocoder = new Geocoder(act);
 	}
 	
 	/**
@@ -54,54 +64,24 @@ public class RouteManager {
 	 * dialog while planning.
 	 */
 
-	public void showRoute() {
+	public boolean showRoute() {
 		clearRoute();
-		
-		act.showDialog(BikeNav.PLANNING_DIALOG);
-		final Thread thread = new Thread() {
-			public void run() {
-				Message msg = RouteManager.this.messageHandler.obtainMessage();
-                Bundle b = new Bundle();
-                b.putInt("result", 1);
-				try {
-					RouteManager.this.route = plan(start, dest);
-					RouteManager.this.route.setCountry(country);
-					RouteManager.this.routeOverlay = new RouteOverlay(route, Color.BLUE);
-					if (RouteManager.this.route.getPoints().isEmpty()) {
-						throw new PlanException("Route is empty.");
-					}
-				} catch (Exception e) {
-					Log.e(e.getMessage(), "Planner");
-					b.putInt("result", 0); 
-					b.putCharSequence("errMsg", e.getMessage());
-				} finally {
-					msg.setData(b);
-					RouteManager.this.messageHandler.sendMessage(msg);
-	                interrupt();
-				}
+		try {
+			country = geocoder
+					.getFromLocation(Degrees.asDegrees(dest.getLatitudeE6()),
+							Degrees.asDegrees(dest.getLongitudeE6()), 1)
+					.get(0).getCountryCode();
+			route = plan(start, dest);
+			route.setCountry(country);
+			if (RouteManager.this.route.getPoints().isEmpty()) {
+				throw new PlanException("Route is empty.");
 			}
-		};
-		thread.start();
-	}
-	
-	/**
-	 * Handler for route planning thread.
-	 */
-	
-	private final Handler messageHandler = new Handler() {
-		@Override
-		public void handleMessage(final Message msg) {
-			act.dismissDialog(BikeNav.PLANNING_DIALOG);
-			if (msg.getData().getInt("result") == 0) {
-				act.showDialog(BikeNav.PLAN_FAIL_DIALOG);
-			} else {
-				mv.getOverlays().add(routeOverlay);
-				mv.invalidate();
-				mv.getController().animateTo(route.getPoints().get(0));
-				planned = true;
-			}
+		} catch (Exception e) {
+			Log.e(e.getMessage(), "Planner");
+			return false;
 		}
-	};
+		return true;
+	}
 
 	/**
 	 * Plan a route from the start point to a destination.
@@ -152,7 +132,6 @@ public class RouteManager {
 	 */
 
 	public void clearRoute() {
-		mv.getOverlays().remove(routeOverlay);
 		routeOverlay = null;
 		planned = false;
 	}
@@ -163,8 +142,6 @@ public class RouteManager {
 	public void setRoute(final Route route) {
 		this.route = route;
 		routeOverlay = new RouteOverlay(route, Color.BLUE);
-		mv.getOverlays().add(routeOverlay);
-		mv.invalidate();
 		planned = true;
 	}
 
@@ -215,12 +192,68 @@ public class RouteManager {
 	}
 	
 	/**
+	 * Set a start point which is an address.
+	 * @param address
+	 */
+	
+	public void setStart(final Address address) {
+		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
+				Degrees.asMicroDegrees(address.getLongitude()));
+		setStart(p);
+	}
+	
+	/**
+	 * Set a destination point which is an address
+	 * @param address
+	 */
+	
+	public void setDest(final Address address) {
+		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
+				Degrees.asMicroDegrees(address.getLongitude()));
+		setDest(p);
+	}
+	
+	/**
+	 * Set a start point which is a location
+	 * @param location
+	 */
+	
+	public void setStart(final Location location) {
+		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(location.getLatitude()),
+				Degrees.asMicroDegrees(location.getLongitude()));
+		setStart(p);
+	}
+	
+	/**
+	 * Set a destination which is a location.
+	 * @param location
+	 */
+	
+	public void setDest(final Location location) {
+		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(location.getLatitude()),
+				Degrees.asMicroDegrees(location.getLongitude()));
+		setDest(p);
+	}
+	
+	/**
 	 * Set the destination point for the route.
 	 * @param end point.
 	 */
 	
 	public void setDest(final GeoPoint end) {
 		this.dest = end;
+	}
+	
+	public void setDest(final String name) throws IOException {
+		Address address = geocoder.getFromLocationName(
+				name, 1).get(0);
+		setDest(address);
+	}
+	
+	public void setStart(final String name) throws IOException {
+		Address address = geocoder.getFromLocationName(
+				name, 1).get(0);
+		setStart(address);
 	}
 
 	/**
