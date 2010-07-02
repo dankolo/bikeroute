@@ -117,23 +117,21 @@ public class RouteMap extends MapActivity {
 		//Route and route overlay
 		Bundle routeBundle = getIntent().getExtras();
 		
-		if (routeBundle != null) {
-			route = routeBundle.getParcelable(Route.ROUTE);
+		
+		//Route and segment
+		route = ((BikeRouteApp)getApplication()).getRoute();
+		segId = ((BikeRouteApp)getApplication()).getSegId();
+		
+		if (route != null) {
 			routeOverlay = new RouteOverlay(route, Color.BLUE);
 			mapView.getOverlays().add(routeOverlay);
-			segId = routeBundle.getInt("segment", -1);
-			if (segId == -1) {
-				segId = 0;
-				currSegment = route.getSegments().get(0);
-			} else {
-				currSegment = route.getSegments().get(segId);
-				if (routeBundle.getBoolean("jump", false)) {
-					mc.setZoom(16);
-					showStep();
-				}
+			currSegment = route.getSegments().get(segId);
+			if (getIntent().getBooleanExtra("jump", false)) {
+				showStep();
 			}
 			mc.setCenter(currSegment.startPoint());
 		}
+
 
 		// Initialize stands overlay
 		final Drawable drawable = this.getResources().getDrawable(
@@ -152,11 +150,9 @@ public class RouteMap extends MapActivity {
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		if (data != null) {
-			if (data[0] != null) {
-				route = ((Route) data[0]);
-			}
-			if (data[3] != null) {
-				dialog = (Dialog) data[1];
+			if ((Boolean) data[0]) {
+				mc.setZoom(16);
+				showStep();
 			}
 		}
 	}
@@ -264,6 +260,7 @@ public class RouteMap extends MapActivity {
 				map.setVisible(false);
 			}
 		} else {
+			map.setVisible(false);
 			steps.setVisible(false);
 			turnByTurn.setVisible(false);
 		}
@@ -315,7 +312,7 @@ public class RouteMap extends MapActivity {
 			intent.putExtra(Route.ROUTE, route);
 			intent.putExtra("segment", segId);
 			startActivity(intent);
-			finish();
+			
 			return true;
 		case R.id.turnbyturn:
 			showStep();
@@ -330,7 +327,7 @@ public class RouteMap extends MapActivity {
 				intent.putExtra("segment", segId);
 			} 
 			startActivity(intent);
-			finish();
+			
 			return true;
 		default:
 			return false;
@@ -356,9 +353,8 @@ public class RouteMap extends MapActivity {
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		Object[] objs = new Object[2];
-		objs[0] = route;
-		objs[1] = dialog;
+		Object[] objs = new Object[1];
+		objs[0] = directionsVisible;
 	    return objs;
 	}
 	
@@ -403,10 +399,44 @@ public class RouteMap extends MapActivity {
 	public void showStep() {
 		directionsVisible = true;
 		currSegment = route.getSegments().get(segId);
+		mc.setZoom(16);
 		mc.setCenter(currSegment.startPoint());
 		View overlay = (View) findViewById(R.id.directions_overlay);
 		overlay.requestFocus();
 		mapView.setClickable(false);
+		
+		//Setup buttons
+		Button back = (Button) overlay.findViewById(R.id.back_button);
+		back.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				lastStep();
+			}
+			
+		});
+		
+		Button next = (Button) overlay.findViewById(R.id.next_button);
+		next.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View v) {
+				nextStep();
+			}
+			
+		});
+		
+		if (segId > 0) {
+			back.setVisibility(View.VISIBLE);
+		} else {
+			back.setVisibility(View.INVISIBLE);
+		}
+		
+		if (segId + 1 < route.getSegments().size()) {
+			next.setVisibility(View.VISIBLE);
+		} else {
+			next.setVisibility(View.INVISIBLE);
+		}
 		
 		overlay.setOnTouchListener(gestureListener);
 		

@@ -1,8 +1,10 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
+import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
+import com.nanosheep.bikeroute.utility.StringAddress;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -77,6 +79,9 @@ public class Navigate extends Activity {
 	/** Current gps location. **/
 	private Location self;
 	
+	/** Address db. **/
+	private AddressDatabase db;
+	
 	
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -84,6 +89,9 @@ public class Navigate extends Activity {
 	requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 	setContentView(R.layout.findplace);
 	setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
+	
+	//DB
+	db = ((BikeRouteApp) getApplication()).getDb();
 	
 	//Parking manager
 	prk = new Parking(this);
@@ -127,15 +135,7 @@ public class Navigate extends Activity {
 		try {
 			final Address startAddress = geocoder.getFromLocation(self.getLatitude(),
 				self.getLongitude(), 1).get(0);
-			final StringBuffer sb = new StringBuffer();
-			final int top = startAddress.getMaxAddressLineIndex() + 1;
-			for (int i = 0; i < top; i++) {
-				sb.append(startAddress.getAddressLine(i));
-				if (i != top - 1) {
-					sb.append(", ");
-				}
-			}
-			startAddressField.setText(sb);
+			startAddressField.setText(StringAddress.asString(startAddress));
 		} catch (Exception e) {
 			Log.e(e.getMessage(), "FindPlace - location: " + self);
 		}
@@ -316,7 +316,6 @@ public class Navigate extends Activity {
 				intent.putExtra("segment", segId);
 			}
 			startActivity(intent);
-			finish();
 			break;
 		case R.id.map:
 			intent = new Intent(this, RouteMap.class);
@@ -325,7 +324,6 @@ public class Navigate extends Activity {
 				intent.putExtra("segment", segId);
 			}
 			startActivity(intent);
-			finish();
 			break;
 		case R.id.bike:
 			Navigate.this.showDialog(Navigate.PLAN);
@@ -394,10 +392,13 @@ public class Navigate extends Activity {
 		public void handleMessage(final Message msg) {
 			if (msg.what == RESULT_OK) {
 				Navigate.this.dismissDialog(Navigate.PLAN);
+				db.insert(startAddressField.getText().toString());
+				if (!"".equals(endAddressField.getText().toString())) {
+					db.insert(endAddressField.getText().toString());
+				}
+				((BikeRouteApp)getApplication()).setRoute(planner.getRoute());
 				Intent map = new Intent(Navigate.this, RouteMap.class);
-				map.putExtra(Route.ROUTE, planner.getRoute());
 				startActivity(map);
-				finish();
 			} else {
 				Navigate.this.dismissDialog(Navigate.PLAN);
 				showDialog(msg.what);

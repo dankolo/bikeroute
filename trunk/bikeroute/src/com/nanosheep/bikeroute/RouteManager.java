@@ -7,13 +7,10 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+
 import android.util.Log;
 
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapView;
 import com.nanosheep.bikeroute.overlay.RouteOverlay;
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
 import com.nanosheep.bikeroute.parser.GoogleParser;
