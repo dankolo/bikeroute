@@ -217,7 +217,7 @@ public class Navigate extends Activity {
 		case PLAN_FAIL_DIALOG:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
-					false).setPositiveButton("OK",
+					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
@@ -228,7 +228,7 @@ public class Navigate extends Activity {
 		case IOERROR:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.io_error_msg)).setCancelable(
-					false).setPositiveButton("OK",
+					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
@@ -240,7 +240,7 @@ public class Navigate extends Activity {
 		case ARGERROR:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.arg_error_msg)).setCancelable(
-					false).setPositiveButton("OK",
+					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {
@@ -252,7 +252,7 @@ public class Navigate extends Activity {
 		case RES_ERROR:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.result_error_msg)).setCancelable(
-					false).setPositiveButton("OK",
+					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
 						public void onClick(final DialogInterface dialog,
 								final int id) {

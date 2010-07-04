@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.nanosheep.bikeroute.FindPlace;
+import com.nanosheep.bikeroute.Navigate;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.StringAddress;
 
@@ -14,6 +14,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 
@@ -64,6 +65,11 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 	private class GeoFilter extends Filter {
 		private List<Address> addresses;
 		
+		public GeoFilter() {
+			super();
+			addresses = new ArrayList<Address>();
+		}
+		
 		/**
 		 * Perform filtering by using the character sequence
 		 * as a search string for a geocoder and the existing sql store
@@ -85,18 +91,16 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				//Search using geocoder
 				try {
 					addresses = geocoder.getFromLocationName(addressInput, 5);
+					for (Address address : addresses) {
+						results.add(StringAddress.asString(address));
+					}
+					
+					res.count = results.size();
+					res.values = results;
 				} catch (IOException e) {
-					act.showDialog(FindPlace.IOERROR);
-				} catch (IllegalArgumentException e) {
-					act.showDialog(FindPlace.ARGERROR);
+					res.count = -1; //pass result back to ui thread to show message
 				}
 				
-				for (Address address : addresses) {
-					results.add(StringAddress.asString(address));
-				}
-				
-				res.count = results.size();
-				res.values = results;
 			}
 			return res;
 		}
@@ -115,6 +119,10 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 					add(address);
 				}
 				FindPlaceAdapter.this.notifyDataSetChanged();
+			} else if (results.count == -1) {
+				//Show an io error message if an exception was thrown
+				((Activity) getContext()).showDialog(Navigate.IOERROR);
+				FindPlaceAdapter.this.notifyDataSetInvalidated();
 			} else {
 				FindPlaceAdapter.this.notifyDataSetInvalidated();
 			}
