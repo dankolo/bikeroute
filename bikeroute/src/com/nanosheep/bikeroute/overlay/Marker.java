@@ -1,7 +1,7 @@
 package com.nanosheep.bikeroute.overlay;
 
 import com.google.android.maps.GeoPoint;
-import com.nanosheep.bikeroute.utility.Degrees;
+import com.nanosheep.bikeroute.utility.Convert;
 
 /**
  * Represents a cycle stand on a map.
@@ -36,7 +36,7 @@ public class Marker {
 	 */
 
 	public final void setLat(final String p) {
-		lat = Degrees.asMicroDegrees(Double.parseDouble(p));
+		lat = Convert.asMicroDegrees(Double.parseDouble(p));
 	}
 
 	/**
@@ -46,7 +46,7 @@ public class Marker {
 	 */
 
 	public final void setLng(final String p) {
-		lng = Degrees.asMicroDegrees(Double.parseDouble(p));
+		lng = Convert.asMicroDegrees(Double.parseDouble(p));
 	}
 
 	/**

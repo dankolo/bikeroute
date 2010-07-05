@@ -4,9 +4,14 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
+import com.nanosheep.bikeroute.utility.Convert;
+
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,33 +29,34 @@ import android.widget.TextView;
 public class DirectionsView extends ListActivity {
 	/** Route object. **/
 	private Route route;
-	/** Segment id. **/
-	//private int segId;
 	
 	@Override
 	public void onCreate(final Bundle in) {
 		requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 		super.onCreate(in);
+		
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		String unit = settings.getString("unitsPref", "km");
 
 		route = ((BikeRouteApp)getApplication()).getRoute();
-		//segId = ((BikeRouteApp)getApplication()).getSegId();
 		
-		
-		//Get bundled route.
-		/**final Bundle bundle = getIntent().getExtras();
-	  
-		route = bundle.getParcelable(Route.ROUTE);
-		segId = bundle.getInt("segment", -1);**/
 		setTitle(route.getName());
 		setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
 	  
 		//Create a header for the list.
 		TextView header = new TextView(this);
 		StringBuffer sBuf = new StringBuffer("Total distance: ");
-		sBuf.append(route.getLength());
-		sBuf.append("m (");
-		sBuf.append(route.getLength() / 1000);
-		sBuf.append("km)");
+		if ("km".equals(unit)) {
+			sBuf.append(Convert.asMeterString(route.getLength()));
+			sBuf.append(" (");
+			sBuf.append(Convert.asKilometerString(route.getLength()));
+			sBuf.append(')');
+		} else {
+			sBuf.append(Convert.asFeetString(route.getLength()));
+			sBuf.append(" (");
+			sBuf.append(Convert.asMilesString(route.getLength()));
+			sBuf.append(')');
+		}
 		header.setText(sBuf.toString());
 		getListView().addHeaderView(header, "", false);
 	  
@@ -81,8 +87,7 @@ public class DirectionsView extends ListActivity {
 			final int position, final long id) {
 		((BikeRouteApp)getApplication()).setSegId(position - 1);
 		Intent intent = new Intent(this, RouteMap.class);
-		/*intent.putExtra(Route.ROUTE, route);
-		intent.putExtra("segment", position - 1);*/
+
 		intent.putExtra("jump", true);
 		startActivity(intent);
 		
@@ -106,16 +111,17 @@ public class DirectionsView extends ListActivity {
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
-		final Intent intentDir;
-		if (item.getItemId() ==  R.id.navigate) {
+		Intent intentDir = null;
+		switch (item.getItemId()) {
+		case R.id.navigate:
 			intentDir = new Intent(this, Navigate.class);
-			//intentDir.putExtra(Route.ROUTE, route);
-			//intentDir.putExtra("segment", segId);
-			startActivity(intentDir);
-		} else {
+			break;
+		case R.id.map:
 			intentDir = new Intent(this, RouteMap.class);
-			//intentDir.putExtra(Route.ROUTE, route);
-			//intentDir.putExtra("segment", segId);
+			break;
+		case R.id.prefs:
+			intentDir = new Intent(this, Preferences.class);
+			break;
 		}
 		startActivity(intentDir);
 		

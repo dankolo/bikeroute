@@ -9,7 +9,7 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 
 import com.google.android.maps.GeoPoint;
-import com.nanosheep.bikeroute.utility.Degrees;
+import com.nanosheep.bikeroute.utility.Convert;
 
 /**
  * Display an alert on return to the location the bike was parked at.
@@ -56,8 +56,8 @@ public final class BikeAlert extends BroadcastReceiver {
 
 	public void setBikeAlert(final GeoPoint bikeLoc) {
 		final LocationManager lm = (LocationManager) act.getSystemService(Context.LOCATION_SERVICE);
-		lm.addProximityAlert(Degrees.asDegrees(bikeLoc.getLatitudeE6()),
-				Degrees.asDegrees(bikeLoc.getLongitudeE6()), 5f, -1, pi);
+		lm.addProximityAlert(Convert.asDegrees(bikeLoc.getLatitudeE6()),
+				Convert.asDegrees(bikeLoc.getLongitudeE6()), 5f, -1, pi);
 		act.registerReceiver(this, filter);
 	}
 

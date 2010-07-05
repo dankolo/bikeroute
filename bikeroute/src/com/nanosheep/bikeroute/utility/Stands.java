@@ -54,8 +54,8 @@ public final class Stands {
 	}
 	
 	public static GeoPoint getNearest(final Address address) {
-		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
-				Degrees.asMicroDegrees(address.getLongitude()));
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
+				Convert.asMicroDegrees(address.getLongitude()));
 		return getNearest(p);
 	}
 
@@ -92,9 +92,9 @@ public final class Stands {
 	 */
 	private static List<GeoPoint> getBounds(final GeoPoint p, final double distance) {
 		final List<GeoPoint> points = new ArrayList<GeoPoint>(4);
-		final int degrees = Degrees.asMicroDegrees(((distance / EARTH_RADIUS) * (1/PI_180)));
+		final int degrees = Convert.asMicroDegrees(((distance / EARTH_RADIUS) * (1/PI_180)));
 		final double latRadius = EARTH_RADIUS * Math.cos(degrees * PI_180);
-		final int degreesLng = Degrees.asMicroDegrees( (distance / latRadius) * (1/PI_180));
+		final int degreesLng = Convert.asMicroDegrees( (distance / latRadius) * (1/PI_180));
 
 		final int maxLng = degreesLng + p.getLongitudeE6();
 		final int maxLat = degrees + p.getLatitudeE6();
@@ -119,13 +119,13 @@ public final class Stands {
 	
 	private static String getOSMBounds(final List<GeoPoint> points) {
 		final StringBuffer sBuf = new StringBuffer("[bbox=");
-		sBuf.append(Degrees.asDegrees(points.get(2).getLongitudeE6()));
+		sBuf.append(Convert.asDegrees(points.get(2).getLongitudeE6()));
 		sBuf.append(',');
-		sBuf.append(Degrees.asDegrees(points.get(2).getLatitudeE6()));
+		sBuf.append(Convert.asDegrees(points.get(2).getLatitudeE6()));
 		sBuf.append(',');
-		sBuf.append(Degrees.asDegrees(points.get(0).getLongitudeE6()));
+		sBuf.append(Convert.asDegrees(points.get(0).getLongitudeE6()));
 		sBuf.append(',');
-		sBuf.append(Degrees.asDegrees(points.get(0).getLatitudeE6()));
+		sBuf.append(Convert.asDegrees(points.get(0).getLatitudeE6()));
 		sBuf.append(']');
 
 		return sBuf.toString();

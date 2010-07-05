@@ -4,11 +4,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -27,6 +29,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.nanosheep.bikeroute.overlay.LiveMarkers;
 import com.nanosheep.bikeroute.overlay.RouteOverlay;
+import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
 
 /**
@@ -82,10 +85,17 @@ public class RouteMap extends MapActivity {
 	/** Gesture detection for the onscreen directions. **/
     private GestureDetector gestureDetector;
 	private OnTouchListener gestureListener;
+	
+	/** Units for directions. **/
+	private String unit;
+	
 
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
+		
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		unit = settings.getString("unitsPref", "km");
 		
 		//Detect swipes (left & right, taps.)
         gestureDetector = new GestureDetector(this, new TurnByTurnGestureListener(this));
@@ -113,9 +123,6 @@ public class RouteMap extends MapActivity {
 		//Directions overlay
 		View overlay = (View) findViewById(R.id.directions_overlay);
 		overlay.setVisibility(View.INVISIBLE);
-		
-		//Route and route overlay
-		Bundle routeBundle = getIntent().getExtras();
 		
 		
 		//Route and segment
@@ -275,9 +282,13 @@ public class RouteMap extends MapActivity {
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		Intent intent;
 		switch (item.getItemId()) {
+		case R.id.prefs:
+			intent = new Intent(this, Preferences.class);
+			startActivity(intent);
+			break;
 		case R.id.unpark:
 			prk.unPark();
-			return true;
+			break;
 		case R.id.center:
 			showDialog(AWAITING_FIX);
 			RouteMap.this.locOverlay.runOnFirstFix(new Runnable() {
@@ -289,7 +300,7 @@ public class RouteMap extends MapActivity {
 					}
 				}
 			});
-			return true;
+			break;
 		case R.id.showstands:
 			Toast.makeText(this, "Getting stands from OpenStreetMap..",
 					Toast.LENGTH_LONG).show();
@@ -306,20 +317,20 @@ public class RouteMap extends MapActivity {
 					}
 				}
 			});
-			return true;
+			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
 			intent.putExtra(Route.ROUTE, route);
 			intent.putExtra("segment", segId);
 			startActivity(intent);
 			
-			return true;
+			break;
 		case R.id.turnbyturn:
 			showStep();
-			return true;
+			break;
 		case R.id.map:
 			hideStep();
-			return true;
+			break;
 		case R.id.navigate:
 			intent = new Intent(this, Navigate.class);
 			if (route != null) {
@@ -328,11 +339,12 @@ public class RouteMap extends MapActivity {
 			} 
 			startActivity(intent);
 			
-			return true;
+			break;
 		default:
 			return false;
 
 		}
+		return true;
 	}
 
 	@Override
@@ -444,7 +456,13 @@ public class RouteMap extends MapActivity {
 		TextView distance = (TextView) overlay.findViewById(R.id.distance);
 		TextView num = (TextView) overlay.findViewById(R.id.step_no);
 		turn.setText(currSegment.getInstruction());
-		distance.setText(currSegment.getLength() + "m (" + currSegment.getDistance() + "km)");
+		
+		String distanceString = "km".equals(unit) ? Convert.asMeterString(currSegment.getLength()) + " ("
+				+ Convert.asKilometerString(currSegment.getDistance()) + ")" : 
+					Convert.asFeetString(currSegment.getLength()) + " ("
+					+ Convert.asMilesString(currSegment.getDistance()) + ")";
+		
+		distance.setText(distanceString);
 		num.setText(segId + 1 + "/" + route.getSegments().size());
 		overlay.setVisibility(View.VISIBLE);
 	}

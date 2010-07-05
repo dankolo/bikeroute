@@ -3,10 +3,12 @@ package com.nanosheep.bikeroute;
 import java.io.IOException;
 
 import android.app.Activity;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.preference.PreferenceManager;
 
 import android.util.Log;
 
@@ -15,7 +17,7 @@ import com.nanosheep.bikeroute.overlay.RouteOverlay;
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
 import com.nanosheep.bikeroute.parser.GoogleParser;
 import com.nanosheep.bikeroute.parser.Parser;
-import com.nanosheep.bikeroute.utility.Degrees;
+import com.nanosheep.bikeroute.utility.Convert;
 
 /**
  * Plans routes and displays them as overlays on the provided mapview.
@@ -65,8 +67,8 @@ public class RouteManager {
 		clearRoute();
 		try {
 			country = geocoder
-					.getFromLocation(Degrees.asDegrees(dest.getLatitudeE6()),
-							Degrees.asDegrees(dest.getLongitudeE6()), 1)
+					.getFromLocation(Convert.asDegrees(dest.getLatitudeE6()),
+							Convert.asDegrees(dest.getLongitudeE6()), 1)
 					.get(0).getCountryCode();
 			route = plan(start, dest);
 			route.setCountry(country);
@@ -91,28 +93,32 @@ public class RouteManager {
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
 		Parser parser;
 		if ("GB".equals(country)) {
-		final StringBuffer sBuf = new StringBuffer(API);
-		sBuf.append("start_lat=");
-		sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
-		sBuf.append("&start_lng=");
-		sBuf.append(Degrees.asDegrees(start.getLongitudeE6()));
-		sBuf.append("&dest_lat=");
-		sBuf.append(Degrees.asDegrees(dest.getLatitudeE6()));
-		sBuf.append("&dest_lng=");
-		sBuf.append(Degrees.asDegrees(dest.getLongitudeE6()));
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(act);
+			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
+			final StringBuffer sBuf = new StringBuffer(API);
+			sBuf.append("start_lat=");
+			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
+			sBuf.append("&start_lng=");
+			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
+			sBuf.append("&dest_lat=");
+			sBuf.append(Convert.asDegrees(dest.getLatitudeE6()));
+			sBuf.append("&dest_lng=");
+			sBuf.append(Convert.asDegrees(dest.getLongitudeE6()));
+			sBuf.append("&plan=");
+			sBuf.append(routeType);
 
-		parser = new CycleStreetsParser(sBuf
+			parser = new CycleStreetsParser(sBuf
 				.toString());
 		} else {
 			final StringBuffer sBuf = new StringBuffer(US_API);
 			sBuf.append("origin=");
-			sBuf.append(Degrees.asDegrees(start.getLatitudeE6()));
+			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
 			sBuf.append(',');
-			sBuf.append(Degrees.asDegrees(start.getLongitudeE6()));
+			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
 			sBuf.append("&destination=");
-			sBuf.append(Degrees.asDegrees(dest.getLatitudeE6()));
+			sBuf.append(Convert.asDegrees(dest.getLatitudeE6()));
 			sBuf.append(',');
-			sBuf.append(Degrees.asDegrees(dest.getLongitudeE6()));
+			sBuf.append(Convert.asDegrees(dest.getLongitudeE6()));
 			if ("US".equals(country)) {
 				sBuf.append("&sensor=true&mode=bicycling");
 			} else {
@@ -194,8 +200,8 @@ public class RouteManager {
 	 */
 	
 	public void setStart(final Address address) {
-		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
-				Degrees.asMicroDegrees(address.getLongitude()));
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
+				Convert.asMicroDegrees(address.getLongitude()));
 		setStart(p);
 	}
 	
@@ -205,8 +211,8 @@ public class RouteManager {
 	 */
 	
 	public void setDest(final Address address) {
-		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(address.getLatitude()),
-				Degrees.asMicroDegrees(address.getLongitude()));
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
+				Convert.asMicroDegrees(address.getLongitude()));
 		setDest(p);
 	}
 	
@@ -216,8 +222,8 @@ public class RouteManager {
 	 */
 	
 	public void setStart(final Location location) {
-		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(location.getLatitude()),
-				Degrees.asMicroDegrees(location.getLongitude()));
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(location.getLatitude()),
+				Convert.asMicroDegrees(location.getLongitude()));
 		setStart(p);
 	}
 	
@@ -227,8 +233,8 @@ public class RouteManager {
 	 */
 	
 	public void setDest(final Location location) {
-		GeoPoint p = new GeoPoint(Degrees.asMicroDegrees(location.getLatitude()),
-				Degrees.asMicroDegrees(location.getLongitude()));
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(location.getLatitude()),
+				Convert.asMicroDegrees(location.getLongitude()));
 		setDest(p);
 	}
 	
