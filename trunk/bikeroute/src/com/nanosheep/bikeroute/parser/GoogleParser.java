@@ -16,7 +16,7 @@ import android.util.Log;
 import com.google.android.maps.GeoPoint;
 import com.nanosheep.bikeroute.Route;
 import com.nanosheep.bikeroute.Segment;
-import com.nanosheep.bikeroute.utility.Degrees;
+import com.nanosheep.bikeroute.utility.Convert;
 
 /**
  * Parse a google directions json object to a route.
@@ -74,8 +74,8 @@ public class GoogleParser extends XMLParser implements Parser {
 				final JSONObject step = steps.getJSONObject(i);
 				//Get the start position for this step and set it on the segment
 				final JSONObject start = step.getJSONObject("start_location");
-				final GeoPoint position = new GeoPoint(Degrees.asMicroDegrees(start.getDouble("lat")), 
-						Degrees.asMicroDegrees(start.getDouble("lng")));
+				final GeoPoint position = new GeoPoint(Convert.asMicroDegrees(start.getDouble("lat")), 
+						Convert.asMicroDegrees(start.getDouble("lng")));
 				segment.setPoint(position);
 				//Set the length of this segment in metres
 				final int length = step.getJSONObject("distance").getInt("value");
@@ -158,7 +158,7 @@ public class GoogleParser extends XMLParser implements Parser {
 			lng += dlng;
 
 		decoded.add(new GeoPoint(
-				Degrees.asMicroDegrees(lat / 1E5), Degrees.asMicroDegrees(lng / 1E5)));
+				Convert.asMicroDegrees(lat / 1E5), Convert.asMicroDegrees(lng / 1E5)));
 		}
 
 		return decoded;

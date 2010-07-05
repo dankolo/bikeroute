@@ -4,7 +4,7 @@ import org.xml.sax.Attributes;
 import com.google.android.maps.GeoPoint;
 import com.nanosheep.bikeroute.Route;
 import com.nanosheep.bikeroute.Segment;
-import com.nanosheep.bikeroute.utility.Degrees;
+import com.nanosheep.bikeroute.utility.Convert;
 
 import android.sax.Element;
 import android.sax.EndElementListener;
@@ -74,8 +74,8 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					//Split points string to geopoints list.
 					final String[] point = pointsArray[0].split(",", -1);
 
-					p = new GeoPoint(Degrees.asMicroDegrees(Double.parseDouble(point[1])), 
-							Degrees.asMicroDegrees(Double.parseDouble(point[0])));
+					p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
+							Convert.asMicroDegrees(Double.parseDouble(point[0])));
 				
 					segment.setPoint(p);
 					int len = Integer.parseInt(length);
@@ -92,8 +92,8 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					final int len = pointsArray.length;
 					for (int i = 0; i < len; i++) {
 						final String[] point = pointsArray[i].split(",", -1);
-						p = new GeoPoint(Degrees.asMicroDegrees(Double.parseDouble(point[1])), 
-								Degrees.asMicroDegrees(Double.parseDouble(point[0])));
+						p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
+								Convert.asMicroDegrees(Double.parseDouble(point[0])));
 						route.addPoint(p);
 					}
 				}

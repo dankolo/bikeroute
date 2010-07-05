@@ -70,12 +70,6 @@ public class Navigate extends Activity {
 	/** Parking manager. */
 	private Parking prk;
 	
-	/** Route parcel. **/
-	private Parcelable route;
-
-	/** Segment id. **/
-	private int segId;
-	
 	/** Current gps location. **/
 	private Location self;
 	
@@ -95,14 +89,6 @@ public class Navigate extends Activity {
 	
 	//Parking manager
 	prk = new Parking(this);
-	
-	//Route and route overlay
-	Bundle routeBundle = getIntent().getExtras();
-	
-	if (routeBundle != null) {
-		route = routeBundle.getParcelable(Route.ROUTE);
-		segId = routeBundle.getInt("segment", -1);
-	}
 	
 	//Initialise route planner
 	planner = new RouteManager(this);
@@ -284,7 +270,7 @@ public class Navigate extends Activity {
 		final MenuItem steps = menu.findItem(R.id.directions);
 		final MenuItem back = menu.findItem(R.id.bike);
 		final MenuItem stand  = menu.findItem(R.id.stand);
-		if (route != null) {
+		if (((BikeRouteApp)getApplication()).getRoute() != null) {
 			steps.setVisible(true);
 		} else {
 			steps.setVisible(false);
@@ -309,20 +295,16 @@ public class Navigate extends Activity {
 		Intent intent;
 		Thread thread;
 		switch(item.getItemId()) {
+		case R.id.prefs:
+			intent = new Intent(this, Preferences.class);
+			startActivity(intent);
+			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
-			if (route != null) {
-				intent.putExtra(Route.ROUTE, route);
-				intent.putExtra("segment", segId);
-			}
 			startActivity(intent);
 			break;
 		case R.id.map:
 			intent = new Intent(this, RouteMap.class);
-			if (route != null) {
-				intent.putExtra(Route.ROUTE, route);
-				intent.putExtra("segment", segId);
-			}
 			startActivity(intent);
 			break;
 		case R.id.bike:

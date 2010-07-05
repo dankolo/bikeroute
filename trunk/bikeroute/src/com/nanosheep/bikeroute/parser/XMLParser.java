@@ -12,14 +12,13 @@ public class XMLParser {
 	protected static final String MARKERS = "markers";
 	protected static final String MARKER = "marker";
 
-	protected final URL feedUrl;
+	protected URL feedUrl;
 
 	protected XMLParser(final String feedUrl) {
 		try {
 			this.feedUrl = new URL(feedUrl);
 		} catch (MalformedURLException e) {
 			Log.e(e.getMessage(), "XML parser - " + feedUrl);
-			throw new RuntimeException(e.getMessage());
 		}
 	}
 
