@@ -7,8 +7,11 @@ import java.util.List;
 
 import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.Segment;
+import com.nanosheep.bikeroute.utility.Convert;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +27,8 @@ import android.widget.TextView;
 public class DirectionListAdapter extends ArrayAdapter<Segment> {
 	/** Layout inflater . **/
 	private final transient LayoutInflater inflater;
+	/** Units. **/
+	private String unit;
 
 	/**
 	 * @param context
@@ -34,6 +39,8 @@ public class DirectionListAdapter extends ArrayAdapter<Segment> {
 			final List<Segment> objects) {
 		super(context, textView, objects);
 		inflater = LayoutInflater.from(context);
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+		unit = settings.getString("unitsPref", "km");
 	}
 	
 	/**
@@ -51,8 +58,14 @@ public class DirectionListAdapter extends ArrayAdapter<Segment> {
 		final TextView length = (TextView) view.findViewById(R.id.length);
 		
 		turn.setText(segment.getInstruction());
-		length.setText(segment.getLength() + "m");
-		distance.setText("(" + segment.getDistance() + "km)");
+		if ("km".equals(unit)) {
+			length.setText(Convert.asMeterString(segment.getLength()));
+			distance.setText("(" + Convert.asKilometerString(segment.getLength()) + ")");
+			
+		} else {
+			length.setText(Convert.asFeetString(segment.getLength()));
+			distance.setText("(" + Convert.asMilesString(segment.getLength()) + ")");
+		}
 		
 		return view;
 	}
