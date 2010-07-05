@@ -1,0 +1,21 @@
+<resources><string-array name="unitsArray">
+<item>Imperial</item>
+<item>Metric</item>
+</string-array>
+<string-array name="unitsValues">
+<item>m</item>
+<item>km</item>
+</string-array>
+<string-array name="journeyTypeValues">
+<item>balanced</item>
+<item>fastest</item>
+<item>quietest</item>
+<item>shortest</item>
+</string-array>
+<string-array name="journeyTypeArray">
+<item>Balanced</item>
+<item>Fastest</item>
+<item>Quietest</item>
+<item>Shortest</item>
+</string-array>
+</resources>

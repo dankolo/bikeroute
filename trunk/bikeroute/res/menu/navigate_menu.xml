@@ -12,7 +12,10 @@
     android:title="@string/back_title"
     android:icon="@drawable/ic_menu_bike"></item>
     <item android:id="@+id/stand"
-          android:title="@string/nearstands_title" android:checkable="true" 
+          android:title="@string/nearstands_title"
           android:icon="@drawable/ic_menu_stand">
     </item>
+    <item android:id="@+id/prefs"
+    android:title="@string/prefs_title"
+    android:icon="@drawable/ic_menu_preferences"></item>
 </menu>
