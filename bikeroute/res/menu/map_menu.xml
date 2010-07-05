@@ -29,7 +29,7 @@
     	android:icon="@drawable/ic_menu_turnbyturn">
     	</item>
     <item android:id="@+id/showstands"
-          android:title="@string/showstands_title" android:checkable="true"
+          android:title="@string/showstands_title"
           android:icon="@drawable/ic_menu_stand" >
     </item>
     <item android:id="@+id/prefs"
