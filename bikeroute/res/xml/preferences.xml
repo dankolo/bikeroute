@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+        <PreferenceCategory
+                android:title="Distance Units">
+                <ListPreference
+                        android:title="Units"
+                        android:summary="Select unit of distance"
+                        android:key="unitsPref"
+                        android:defaultValue="Metric"
+                        android:entries="@array/unitsArray"
+                        android:entryValues="@array/unitsValues" />
+        </PreferenceCategory>
+        <PreferenceCategory
+                android:title="CycleStreets Options">
+        <ListPreference
+                        android:title="Journey Type"
+                        android:summary="Fast, quiet or balanced route"
+                        android:key="cyclestreetsJourneyPref"
+                        android:defaultValue="balanced"
+                        android:entries="@array/journeyTypeArray"
+                        android:entryValues="@array/journeyTypeValues" />
+        </PreferenceCategory>
+</PreferenceScreen>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="minVersion">3</string>
     <string name="version">Alpha</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
@@ -11,6 +12,7 @@
 <string name="directions_title">Directions</string>
 <string name="turnbyturn">Show turn by turn</string>
 <string name="map_title">Route map</string>
+<string name="prefs_title">Preferences</string>
 <string name="plan_msg">Planning route...</string>
 <string name="load_stands_msg">Loading stands from OpenStreetMap...</string>
 <string name="planfail_msg">Route planning failed.</string>

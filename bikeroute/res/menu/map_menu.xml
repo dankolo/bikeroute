@@ -32,4 +32,7 @@
           android:title="@string/showstands_title" android:checkable="true"
           android:icon="@drawable/ic_menu_stand" >
     </item>
+    <item android:id="@+id/prefs"
+    android:title="@string/prefs_title"
+    android:icon="@drawable/ic_menu_preferences"></item>
 </menu>
