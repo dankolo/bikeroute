@@ -3,8 +3,13 @@ package com.nanosheep.bikeroute;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
+
+import android.graphics.Color;
 
 import com.google.android.maps.GeoPoint;
 
@@ -12,9 +17,7 @@ import com.google.android.maps.GeoPoint;
  * @author jono@nanosheep.net
  * @version Jun 22, 2010
  */
-public class Route implements Parcelable{
-	/** Route parcel id. **/
-	public static final String ROUTE = "com.nanosheep.bikeroute.Route";
+public class Route {
 	private String name;
 	private final List<GeoPoint> points;
 	private List<Segment> segments;
@@ -22,15 +25,13 @@ public class Route implements Parcelable{
 	private String warning;
 	private String country;
 	private int length;
+	private XYSeries elevations;
+	private String polyline;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
 		segments = new ArrayList<Segment>();
-	}
-	
-	public Route(final Parcel in) {
-		points = new ArrayList<GeoPoint>();
-		readFromParcel(in);
+		elevations = new XYSeries("Elevation");
 	}
 	
 	public void addPoint(final GeoPoint p) {
@@ -65,48 +66,6 @@ public class Route implements Parcelable{
 	 */
 	public String getName() {
 		return name;
-	}
-
-	/* (non-Javadoc)
-	 * @see android.os.Parcelable#describeContents()
-	 */
-	@Override
-	public int describeContents() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
-	 */
-	@Override
-	public void writeToParcel(final Parcel dest, final int flags) {
-		dest.writeString(name);
-		dest.writeTypedList(segments);
-		dest.writeString(copyright);
-		dest.writeString(warning);
-		dest.writeString(country);
-		dest.writeInt(length);
-		int pointSize = points.size();
-		dest.writeInt(pointSize);
-		for (int i = 0; i < pointSize; i++) {
-			dest.writeInt(points.get(i).getLatitudeE6());
-			dest.writeInt(points.get(i).getLongitudeE6());
-		}
-	}
-	
-	public void readFromParcel(final Parcel in) {
-		name = in.readString();
-		segments = new ArrayList<Segment>();
-		in.readTypedList(segments, Segment.CREATOR);
-		copyright = in.readString();
-		warning = in.readString();
-		country = in.readString();
-		length = in.readInt();
-		int pointSize = in.readInt();
-		for (int i = 0; i < pointSize; i++) {
-			points.add(new GeoPoint(in.readInt(), in.readInt()));
-		}
 	}
 	
 	/**
@@ -164,17 +123,63 @@ public class Route implements Parcelable{
 	public int getLength() {
 		return length;
 	}
+	
+	/**
+	 * Get the elevations as a set of series' that can be displayed by the
+	 * achart lib.
+	 * @return an XYMultipleSeriesDataset that contains the elevation/distance series.
+	 */
+	
+	public XYMultipleSeriesDataset getElevations() {
+		XYMultipleSeriesDataset elevationSet = new XYMultipleSeriesDataset();
+		elevationSet.addSeries(elevations);
+	    return elevationSet;
+	}
+	
+	/**
+	 * An an elevation and distance (in metres) to the elevation series for
+	 * this route.
+	 * @param elevation in metres.
+	 * @param dist in metres.
+	 */
+	
+	public void addElevation(final double elevation, final double dist) {
+		elevations.add(dist / 1000, elevation);
+	}
+	
+	/**
+	 * Get a renderer for drawing the elevation chart.
+	 * @return an XYMultipleSeriesRenderer configured for metric.
+	 */
+	
+	public XYMultipleSeriesRenderer getChartRenderer() {
+	    XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
+	    XYSeriesRenderer r = new XYSeriesRenderer();
+	    r.setColor(Color.BLUE);
+	    r.setPointStyle(PointStyle.POINT);
+	    r.setFillBelowLine(true);
+	    r.setFillBelowLineColor(Color.GREEN);
+	    r.setFillPoints(true);
+	    renderer.addSeriesRenderer(r);
+	    renderer.setAxesColor(Color.DKGRAY);
+	    renderer.setLabelsColor(Color.LTGRAY);
+	    renderer.setYTitle("m");
+	    renderer.setXTitle("km");
+	    return renderer;
+	  }
 
-	public static final Parcelable.Creator CREATOR =
-    	new Parcelable.Creator() {
-            public Route createFromParcel(final Parcel in) {
-                return new Route(in);
-            }
+	/**
+	 * @param polyline the polyline to set
+	 */
+	public void setPolyline(String polyline) {
+		this.polyline = polyline;
+	}
 
-			@Override
-			public Route[] newArray(final int size) {
-				return new Route[size];
-			}
-        };
+	/**
+	 * @return the polyline
+	 */
+	public String getPolyline() {
+		return polyline;
+	}
 
 }

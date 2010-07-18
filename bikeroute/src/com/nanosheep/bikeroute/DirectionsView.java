@@ -3,6 +3,12 @@
  */
 package com.nanosheep.bikeroute;
 
+import org.achartengine.ChartFactory;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
+
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
 import com.nanosheep.bikeroute.utility.Convert;
 
@@ -10,6 +16,7 @@ import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -29,6 +36,8 @@ import android.widget.TextView;
 public class DirectionsView extends ListActivity {
 	/** Route object. **/
 	private Route route;
+	/** Units. **/
+	private String unit;
 	
 	@Override
 	public void onCreate(final Bundle in) {
@@ -36,7 +45,7 @@ public class DirectionsView extends ListActivity {
 		super.onCreate(in);
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		String unit = settings.getString("unitsPref", "km");
+		unit = settings.getString("unitsPref", "km");
 
 		route = ((BikeRouteApp)getApplication()).getRoute();
 		
@@ -122,10 +131,20 @@ public class DirectionsView extends ListActivity {
 		case R.id.prefs:
 			intentDir = new Intent(this, Preferences.class);
 			break;
+		case R.id.elevation:
+			XYMultipleSeriesDataset elevation = route.getElevations();
+			XYMultipleSeriesRenderer renderer = route.getChartRenderer();
+			if (!"km".equals(unit)) {
+				elevation = Convert.asImperial(elevation);
+				renderer.setYTitle("ft");
+			    renderer.setXTitle("m");
+			}
+			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
+			intentDir = ChartFactory.getLineChartIntent(this, elevation, renderer);
 		}
 		startActivity(intentDir);
 		
 		return true;
 	}
-	
+
 }

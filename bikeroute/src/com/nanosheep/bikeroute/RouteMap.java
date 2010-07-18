@@ -1,5 +1,9 @@
 package com.nanosheep.bikeroute;
 
+import org.achartengine.ChartFactory;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -250,6 +254,7 @@ public class RouteMap extends MapActivity {
 		final MenuItem steps = menu.findItem(R.id.directions);
 		final MenuItem turnByTurn = menu.findItem(R.id.turnbyturn);
 		final MenuItem map = menu.findItem(R.id.map);
+		final MenuItem elev = menu.findItem(R.id.elevation);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -259,6 +264,7 @@ public class RouteMap extends MapActivity {
 		}
 		if (route != null) {
 			steps.setVisible(true);
+			elev.setVisible(true);
 			if (directionsVisible) {
 				turnByTurn.setVisible(false);
 				map.setVisible(true);
@@ -270,6 +276,7 @@ public class RouteMap extends MapActivity {
 			map.setVisible(false);
 			steps.setVisible(false);
 			turnByTurn.setVisible(false);
+			elev.setVisible(false);
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -320,7 +327,6 @@ public class RouteMap extends MapActivity {
 			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
-			intent.putExtra(Route.ROUTE, route);
 			intent.putExtra("segment", segId);
 			startActivity(intent);
 			
@@ -334,12 +340,22 @@ public class RouteMap extends MapActivity {
 		case R.id.navigate:
 			intent = new Intent(this, Navigate.class);
 			if (route != null) {
-				intent.putExtra(Route.ROUTE, route);
 				intent.putExtra("segment", segId);
 			} 
 			startActivity(intent);
 			
 			break;
+		case R.id.elevation:
+			XYMultipleSeriesDataset elevation = route.getElevations();
+			XYMultipleSeriesRenderer renderer = route.getChartRenderer();
+			if (!"km".equals(unit)) {
+				elevation = Convert.asImperial(elevation);
+				renderer.setYTitle("ft");
+			    renderer.setXTitle("m");
+			}
+			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
+			intent = ChartFactory.getLineChartIntent(this, elevation, renderer);
+			startActivity(intent);
 		default:
 			return false;
 
