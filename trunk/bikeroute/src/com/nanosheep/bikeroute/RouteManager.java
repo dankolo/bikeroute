@@ -15,7 +15,8 @@ import android.util.Log;
 import com.google.android.maps.GeoPoint;
 import com.nanosheep.bikeroute.overlay.RouteOverlay;
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
-import com.nanosheep.bikeroute.parser.GoogleParser;
+import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
+import com.nanosheep.bikeroute.parser.GoogleElevationParser;
 import com.nanosheep.bikeroute.parser.Parser;
 import com.nanosheep.bikeroute.utility.Convert;
 
@@ -34,6 +35,8 @@ public class RouteManager {
 	/** US API. **/
 	private static final String US_API =
 		"http://maps.google.com/maps/api/directions/json?";
+	/** Google elevation api. **/
+	private static final String ELEV_API = "http://maps.google.com/maps/api/elevation/json?sensor=true&locations=enc:";
 	/** Route overlay. **/
 	private RouteOverlay routeOverlay;
 	/** Route planned switch. **/
@@ -47,7 +50,7 @@ public class RouteManager {
 	/** Country the route is in. **/
 	private String country;
 	/** Geocoder. **/
-	private Geocoder geocoder;
+	private final Geocoder geocoder;
 	
 	public RouteManager(final Activity activity) {
 		super();
@@ -124,9 +127,18 @@ public class RouteManager {
 			} else {
 				sBuf.append("&sensor=true&mode=driving");
 			}
-		parser = new GoogleParser(sBuf.toString());
+		parser = new GoogleDirectionsParser(sBuf.toString());
 		} 
 		Route r =  parser.parse();
+		//Untidy.
+		//If a polyline is set, need to query elevations api for
+		//this route.
+		if (r.getPolyline() != null) {
+			final StringBuffer elev = new StringBuffer(ELEV_API);
+			elev.append(r.getPolyline());
+			parser = new GoogleElevationParser(elev.toString(), r);
+			r = parser.parse();
+		}
 		return r;
 	}
 	

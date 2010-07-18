@@ -35,4 +35,7 @@
     <item android:id="@+id/prefs"
     android:title="@string/prefs_title"
     android:icon="@drawable/ic_menu_preferences"></item>
+    <item android:id="@+id/elevation"
+    android:title="Elevation"
+    android:icon="@drawable/ic_menu_elevation"></item>
 </menu>
