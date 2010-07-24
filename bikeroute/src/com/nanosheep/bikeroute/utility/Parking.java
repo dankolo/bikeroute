@@ -26,7 +26,7 @@ public class Parking {
 	private final SharedPreferences.Editor editor;
 
 	public Parking(final Activity activity) {
-		settings = activity.getPreferences(0);
+		settings = activity.getSharedPreferences(PREFS_NAME, 0);
 		editor = settings.edit();
 	}
 
