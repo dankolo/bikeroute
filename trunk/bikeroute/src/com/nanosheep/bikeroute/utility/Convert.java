@@ -5,6 +5,9 @@ package com.nanosheep.bikeroute.utility;
 
 import java.text.DecimalFormat;
 
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
+
 /**
  * Utility class for converting units.
  * Converts meters to feet, km to miles, distances to distance strings
@@ -72,6 +75,17 @@ public final class Convert {
 	
 	public static String asMeterString(final int meters) {
 		return meters + "m";
+	}
+	
+	public static XYMultipleSeriesDataset asImperial(final XYMultipleSeriesDataset input) {
+		final XYMultipleSeriesDataset output = new XYMultipleSeriesDataset();
+		final XYSeries metric = input.getSeriesAt(0);
+		final XYSeries imperial = new XYSeries(metric.getTitle());
+		for (int i = 0; i < metric.getItemCount(); i++) {
+			imperial.add(asMiles(metric.getX(i)), asFeet(metric.getY(i)));
+		}
+		output.addSeries(imperial);
+		return output;
 	}
 	
 	/**
