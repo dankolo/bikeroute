@@ -19,7 +19,7 @@ import com.nanosheep.bikeroute.parser.OSMParser;
 public final class Stands {
 	/** API url. OpenStreetMap xapi interface. **/
 	private static final String OSM_API =
-		"http://www.informationfreeway.org/api/0.6/node[amenity=bicycle_parking]";
+		"http://xapi.openstreetmap.org/api/0.6/node[amenity=bicycle_parking]";
 	/** Pi/180 for converting degrees - radians. **/
 	private static final double PI_180 = Math.PI / 180;
 	/** Radius of the earth for degrees - miles calculations. **/
