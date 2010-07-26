@@ -52,6 +52,8 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				final String walk = attributes.getValue("walk");
 				final String length = attributes.getValue("distance");
 				final String totalDistance = attributes.getValue("length");
+				final String elev = attributes.getValue("elevations");
+				final String distances = attributes.getValue("distances");
 				
 				/** Parse segment. **/
 				if ("segment".equals(type)) {
@@ -70,6 +72,8 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					  segment.setInstruction(sBuf.toString());
 									
 					final String[] pointsArray = pointString.split(" ", -1);
+					final String[] elevations = elev.split(",", -1);
+					final String[] dists = distances.split(",", -1);
 					
 					//Split points string to geopoints list.
 					final String[] point = pointsArray[0].split(",", -1);
@@ -78,10 +82,16 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 							Convert.asMicroDegrees(Double.parseDouble(point[0])));
 				
 					segment.setPoint(p);
-					int len = Integer.parseInt(length);
-					distance += len;
+					
+					//Add elevations to the elevation/distance series
+					for (int i = 0; i < dists.length; i++) {
+						int len = Integer.parseInt(dists[i]);
+						int elevation = Integer.parseInt(elevations[i]);
+						distance += len;
+						route.addElevation(elevation, distance);
+					}
 					segment.setDistance(distance/1000);
-					segment.setLength(len);
+					segment.setLength(Integer.parseInt(length));
 					
 					
 				} else {
@@ -111,6 +121,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					.getContentHandler());
 		} catch (Exception e) {
 			Log.e(e.getMessage(), "CycleStreets parser - " + feedUrl);
+			return null;
 		}
 		return route;
 	}
