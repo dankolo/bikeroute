@@ -12,16 +12,15 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,11 +41,6 @@ public class Navigate extends Activity {
 	/** Geocoder. **/
 	private transient Geocoder geocoder;
 	
-	/** Start address **/
-	private transient Address start;
-	/** Destination address. **/
-	private transient Address end;
-	
 	/** Start Address box. **/
 	private transient AutoCompleteTextView startAddressField;
 	/** End address box. **/
@@ -63,9 +57,6 @@ public class Navigate extends Activity {
 	public static final int PLAN = 4;
 	/** Planning failed dialog id. **/
 	public static final int PLAN_FAIL_DIALOG = 5;
-	
-	/** Route planner. **/
-	private RouteManager planner;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -76,22 +67,34 @@ public class Navigate extends Activity {
 	/** Address db. **/
 	private AddressDatabase db;
 	
+	/** Planning thread. **/
+	private SearchTask search;
+
+	/** Is a search running. **/
+	public boolean isSearching;
+
+	/**Is planning dialog showing. **/
+	private static boolean mShownDialog;
+	/** Activity ref. **/
+	private static Navigate mAct;
+	
 	
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
+	mAct = this;
 	requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 	setContentView(R.layout.findplace);
 	setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
+	
+	isSearching = false;
+	mShownDialog = false;
 	
 	//DB
 	db = ((BikeRouteApp) getApplication()).getDb();
 	
 	//Parking manager
 	prk = new Parking(this);
-	
-	//Initialise route planner
-	planner = new RouteManager(this);
 	
 	//Initialise geocoder
 	geocoder = new Geocoder(this);
@@ -111,7 +114,11 @@ public class Navigate extends Activity {
 	
 	/* Get current lat & lng if available. */
 	LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+	
 	self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+	if (self == null) {
+		self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+	}
 	
 	/* Autofill starting location by reverse geocoding current
 	 * lat & lng
@@ -129,6 +136,16 @@ public class Navigate extends Activity {
 	
 	//Initialise search button
 	searchButton.setOnClickListener(new SearchClickListener());
+	
+	//Handle rotations
+	final Object[] data = (Object[]) getLastNonConfigurationInstance();
+	if (data != null) {
+		search = (SearchTask) data[0];
+		isSearching = (Boolean) data[2];
+		mShownDialog = (Boolean) data[1];
+		startAddressField.setText((String) data[3]);
+		endAddressField.setText((String) data[4]);
+	}
 	}
 	
 	/**
@@ -142,36 +159,24 @@ public class Navigate extends Activity {
 	
 	private class SearchClickListener implements OnClickListener {
 		public void onClick(final View view) {
-			Navigate.this.showDialog(Navigate.PLAN);
 			/* Spawn a new thread to geocode the input addresses
 			 * return the 1st found to the handler.
 			 */
-			final Thread search = new Thread() {
-				@Override
-				public void run() {
-					String startAddressInput = startAddressField.getText().toString();
-					String endAddressInput = endAddressField.getText().toString();
-					int msg;
-					if ("".equals(startAddressInput) || "".equals(endAddressInput)) {
-						msg = ARGERROR;
-					} else {
-						msg = RESULT_OK;
-						try {
-							planner.setStart(startAddressInput);
-							planner.setDest(endAddressInput);		
-							if (!planner.showRoute()) {
-								msg = PLAN_FAIL_DIALOG;
-							}
-						} catch (Exception e) {
-							msg = IOERROR;
-							Log.e(e.getMessage(), "Navigate: " + startAddressInput +
-								" - " + endAddressInput);
-						}
-					}
-					Navigate.this.results.sendEmptyMessage(msg);
-				}
-			};
-			search.start();
+			search = new SearchTask();
+			search.execute();
+		}
+	}
+	
+	/**
+	 * Overridden to deal with rotations which require tracking
+	 * displayed dialog to ensure it is not duplicated.
+	 */
+	
+	@Override
+	protected void onPrepareDialog(final int id, final Dialog dialog) {
+		super.onPrepareDialog(id, dialog);
+		if (id == PLAN) {
+			mShownDialog = true;
 		}
 	}
 	
@@ -189,14 +194,28 @@ public class Navigate extends Activity {
 		switch(id) {
 		case PLAN:
 			pDialog = new ProgressDialog(this);
-			pDialog.setCancelable(false);
+			pDialog.setCancelable(true);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			pDialog.setMessage(getText(R.string.plan_msg));
 			pDialog.setOnDismissListener(new OnDismissListener() {
 				@Override
 				public void onDismiss(DialogInterface arg0) {
-					Navigate.this.removeDialog(PLAN);
+					removeDialog(PLAN);
+					if (!Navigate.mAct.isSearching) {
+						mShownDialog = false;
+					}
 				}
+			});
+			pDialog.setOnCancelListener(new OnCancelListener() {
+
+				@Override
+				public void onCancel(DialogInterface arg0) {
+					if (isSearching) {
+						mAct.search.cancel(true);
+						isSearching = false;
+					}
+				}
+				
 			});
 			dialog = pDialog;
 			break;
@@ -293,7 +312,6 @@ public class Navigate extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		Intent intent;
-		Thread thread;
 		switch(item.getItemId()) {
 		case R.id.prefs:
 			intent = new Intent(this, Preferences.class);
@@ -308,84 +326,202 @@ public class Navigate extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.bike:
-			Navigate.this.showDialog(Navigate.PLAN);
-			thread = new Thread() {
-				@Override
-				public void run() {
-					int msg;
-					String startAddressInput = startAddressField.getText().toString();
-					if ("".equals(startAddressInput)) {
-						msg = ARGERROR;
-					} else {
-						try {
-							msg = RESULT_OK;
-							planner.setStart(startAddressInput);
-							planner.setDest(prk.getLocation());	
-							if (!planner.showRoute()) {
-								msg = PLAN_FAIL_DIALOG;
-							}
-						} catch (Exception e) {
-							msg = IOERROR;
-							Log.e(e.getMessage(), "Navigate bike: " + startAddressInput);
-						}
-					}
-					Navigate.this.results.sendEmptyMessage(msg);
-				}
-			};
-			thread.start();
+			search = new BikeTask();
+			search.execute();
 			break;
 		case R.id.stand:
-			Navigate.this.showDialog(Navigate.PLAN);
-			thread = new Thread() {
-				@Override
-				public void run() {
-					int msg;
-					String startAddressInput = startAddressField.getText().toString();
-					if ("".equals(startAddressInput)) {
-						msg = ARGERROR;
-					} else {
-						try {
-							msg = RESULT_OK;
-							planner.setStart(startAddressInput);
-							planner.setDest(Stands.getNearest(planner.getStart()));	
-							if (!planner.showRoute()) {
-								msg = PLAN_FAIL_DIALOG;
-							}
-						} catch (Exception e) {
-							msg = IOERROR;
-							Log.e(e.getMessage(), "Navigate stands: " + startAddressInput);
-						}
-					}
-					Navigate.this.results.sendEmptyMessage(msg);
-				}
-			};
-			thread.start();
+			search = new StandsTask();
+			search.execute();
 			break;
 		}
 		return true;
 	}
 	
 	/**
-	 * Handler for planning threads.
+	 * Handles callbacks from searchtasks.
+	 * Dismisses any shown planning dialog, loads the routemap
+	 * if the search was successful, displays an error if not.
+	 * @param msg Result status message from search task.
+	 * @param route Route returned by the planner, or null.
 	 */
 	
-	private final Handler results = new Handler() {
-		@Override
-		public void handleMessage(final Message msg) {
-			if (msg.what == RESULT_OK) {
-				Navigate.this.dismissDialog(Navigate.PLAN);
+	private void searchComplete(Integer msg, Route route) {
+		if (msg != null) {
+			if (mShownDialog) {
+				dismissDialog(Navigate.PLAN);
+			}
+			if (msg == RESULT_OK) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
 					db.insert(endAddressField.getText().toString());
 				}
-				((BikeRouteApp)getApplication()).setRoute(planner.getRoute());
-				Intent map = new Intent(Navigate.this, RouteMap.class);
+				BikeRouteApp app = (BikeRouteApp) getApplication();
+				app.setRoute(route);
+				Intent map = new Intent(this, RouteMap.class);
 				startActivity(map);
 			} else {
-				Navigate.this.dismissDialog(Navigate.PLAN);
-				showDialog(msg.what);
+				showDialog(msg);
 			}
 		}
-	};
+	}
+
+	
+	/**
+	 * Search task, extend to override doInBackGround method to perform
+	 * searches.
+	 * Displays a planning dialog, searches, then transitions to a map displaying the
+	 * located route if one is found and adds start & destination to a db of recently used
+	 * addresses, displays an error if planning failed.
+	 * @author jono@nanosheep.net
+	 * @version Jul 25, 2010
+	 */
+	
+	private static class SearchTask extends AsyncTask<Void, Void, Integer> {
+		protected RouteManager planner;
+		protected String startAddressInput;
+		protected String endAddressInput;
+		
+		
+		public SearchTask() {
+			super();
+			planner = new RouteManager(mAct);
+			startAddressInput = mAct.startAddressField.getText().toString();
+			endAddressInput = mAct.endAddressField.getText().toString();
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			mAct.showDialog(Navigate.PLAN);
+			mAct.isSearching = true;
+		}
+		@Override
+		protected Integer doInBackground(Void... arg0) {
+			int msg;
+			if ("".equals(startAddressInput) || "".equals(endAddressInput)) {
+				msg = ARGERROR;
+			} else {
+				msg = RESULT_OK;
+				try {
+					planner.setStart(startAddressInput);
+					planner.setDest(endAddressInput);		
+					if (isCancelled()) {
+						return null;
+					}
+					if (!planner.showRoute()) {
+						msg = PLAN_FAIL_DIALOG;
+					}
+				} catch (Exception e) {
+					msg = IOERROR;
+					Log.e(e.getMessage(), "Navigate: " + startAddressInput +
+								" - " + endAddressInput);
+				}
+			}
+			if (isCancelled()) {
+				return null;
+			}
+			return msg;
+		}
+		@Override
+		protected void onPostExecute(final Integer msg) {
+			Navigate.mAct.searchComplete(msg, planner.getRoute());
+			Navigate.mAct.isSearching = false;
+		}
+		
+		@Override
+		protected void onCancelled() {
+			Navigate.mAct.search = null;
+			Navigate.mAct.isSearching = false;
+			super.onCancelled();
+		}
+	}
+	
+	/**
+	 * Extends SearchTask to specific case of searching for a cyclestand near
+	 * whatever was entered in the start destination.
+	 * @author jono@nanosheep.net
+	 * @version Jul 26, 2010
+	 */
+	
+	private static class StandsTask extends SearchTask {
+		@Override
+		protected Integer doInBackground(final Void... unused) {
+			int msg;
+			if ("".equals(startAddressInput)) {
+				msg = ARGERROR;
+			} else {
+				try {
+					msg = RESULT_OK;
+					planner.setStart(startAddressInput);
+					planner.setDest(Stands.getNearest(planner.getStart()));	
+					if (isCancelled()) {
+						return null;
+					}
+					if (!planner.showRoute()) {
+						msg = PLAN_FAIL_DIALOG;
+					}
+				} catch (Exception e) {
+					msg = IOERROR;
+					Log.e(e.getMessage(), "Navigate stands: " + startAddressInput);
+					}
+				}
+			if (isCancelled()) {
+				return null;
+			}
+			return msg;
+		}
+	}
+	
+	/**
+	 * Extends SearchTask to the specific case of planning a route back to
+	 * the stored location of the bicycle.
+	 * @author jono@nanosheep.net
+	 * @version Jul 26, 2010
+	 */
+	
+	private static class BikeTask extends SearchTask {
+		@Override
+		protected Integer doInBackground(Void... arg0) {
+			int msg; 
+			if ("".equals(startAddressInput)) {
+				msg = ARGERROR;
+			} else {
+				try {
+					msg = RESULT_OK;
+					planner.setStart(startAddressInput);
+					planner.setDest(mAct.prk.getLocation());	
+					
+					if (isCancelled()) {
+						return null;
+					}
+		
+					if (!planner.showRoute()) {
+						msg = PLAN_FAIL_DIALOG;
+					}
+				} catch (Exception e) {
+					msg = IOERROR;
+					Log.e(e.getMessage(), "Navigate bike: " + startAddressInput);
+				}
+			}
+			if (isCancelled()) {
+				return null;
+			}
+			return msg;
+		}
+	}
+	
+	/**
+	 * Overridden to preserve searchtask, dialog & textfields on rotation.
+	 */
+	
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+		Object[] objs = new Object[5];
+		objs[0] = search;
+		objs[1] = mShownDialog;
+		objs[2] = isSearching;
+		objs[3] = startAddressField.getText().toString();
+		objs[4] = endAddressField.getText().toString();
+	    return objs;
+	}
 
 }
