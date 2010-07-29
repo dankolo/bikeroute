@@ -27,4 +27,5 @@
 <string name="result_error_msg">Address not found.</string>
 <string name="fix_msg">Waiting for GPS fix...</string>
 <string name="nearstands_title">Nearest stand</string>
+<string name="contacts_title">Navigate to Contact</string>
 </resources>
