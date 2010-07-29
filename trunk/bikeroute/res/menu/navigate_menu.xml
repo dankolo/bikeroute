@@ -18,4 +18,7 @@
     <item android:id="@+id/prefs"
     android:title="@string/prefs_title"
     android:icon="@drawable/ic_menu_preferences"></item>
+    <item android:id="@+id/contacts"
+    android:title="@string/contacts_title"
+    android:icon="@drawable/ic_menu_contacts"></item>
 </menu>
