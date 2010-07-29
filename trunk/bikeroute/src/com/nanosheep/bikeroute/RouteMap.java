@@ -417,6 +417,7 @@ public class RouteMap extends MapActivity {
 		overlay.setVisibility(View.INVISIBLE);
 		mapView.setClickable(true);
 		directionsVisible = false;
+		((BikeRouteApp) getApplication()).setSegId(0);
 	}
 	
 	/**
@@ -425,6 +426,7 @@ public class RouteMap extends MapActivity {
 	 */
 	
 	public void showStep() {
+		((BikeRouteApp) getApplication()).setSegId(segId);
 		directionsVisible = true;
 		currSegment = route.getSegments().get(segId);
 		mc.setZoom(16);

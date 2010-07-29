@@ -2,6 +2,7 @@ package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
+import com.nanosheep.bikeroute.utility.ContactAccessor;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
 import com.nanosheep.bikeroute.utility.StringAddress;
@@ -19,6 +20,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -73,6 +75,9 @@ public class Navigate extends Activity {
 	/** Is a search running. **/
 	public boolean isSearching;
 
+	/** Contact accessor to navigate to contact. **/
+	protected ContactAccessor mContactAccessor;
+
 	/**Is planning dialog showing. **/
 	private static boolean mShownDialog;
 	/** Activity ref. **/
@@ -82,6 +87,7 @@ public class Navigate extends Activity {
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
+	mContactAccessor = ContactAccessor.getInstance();
 	mAct = this;
 	requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 	setContentView(R.layout.findplace);
@@ -333,6 +339,8 @@ public class Navigate extends Activity {
 			search = new StandsTask();
 			search.execute();
 			break;
+		case R.id.contacts:
+			startActivityForResult(mContactAccessor.getPickContactIntent(), 0);
 		}
 		return true;
 	}
@@ -508,6 +516,37 @@ public class Navigate extends Activity {
 			return msg;
 		}
 	}
+	
+	/**
+   	 * Callback for contact picker activity - requests a string address for the contact
+   	 * chosen.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            loadContactAddress(data.getData());
+        }
+    }
+    
+    /**
+     * Load contact address on a background thread and set as destination.
+     */
+    private void loadContactAddress(Uri contactUri) {
+        AsyncTask<Uri, Void, String> task = new AsyncTask<Uri, Void, String>() {
+
+            @Override
+            protected String doInBackground(Uri... uris) {
+                return mContactAccessor.loadAddress(getContentResolver(), uris[0]);
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+            	endAddressField.setText(result);
+            }
+        };
+
+        task.execute(contactUri);
+    }
 	
 	/**
 	 * Overridden to preserve searchtask, dialog & textfields on rotation.
