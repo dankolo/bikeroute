@@ -15,6 +15,8 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -44,7 +46,7 @@ import com.nanosheep.bikeroute.utility.Parking;
  * 
  */
 
-public class RouteMap extends MapActivity {
+public class RouteMap extends MapActivity implements OnInitListener {
 
 	/** The map view. */
 	private MapView mapView;
@@ -92,6 +94,10 @@ public class RouteMap extends MapActivity {
 	
 	/** Units for directions. **/
 	private String unit;
+	/** TTS enabled. **/
+	private boolean tts;
+	/** TTS. **/
+	private TextToSpeech directionsTts;
 	
 
 	@Override
@@ -100,6 +106,7 @@ public class RouteMap extends MapActivity {
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
+		tts = settings.getBoolean("tts", false);
 		
 		//Detect swipes (left & right, taps.)
         gestureDetector = new GestureDetector(this, new TurnByTurnGestureListener(this));
@@ -111,6 +118,11 @@ public class RouteMap extends MapActivity {
                 return false;
             }
         };
+        
+        //Initialize tts if in use.
+        if (tts) {
+        	directionsTts = new TextToSpeech(this, this);
+        }
 		
 		//Set OSD invisible
 		directionsVisible = false;
@@ -418,6 +430,9 @@ public class RouteMap extends MapActivity {
 		mapView.setClickable(true);
 		directionsVisible = false;
 		((BikeRouteApp) getApplication()).setSegId(0);
+		if (tts) {
+			directionsTts.stop();
+		}
 	}
 	
 	/**
@@ -483,6 +498,10 @@ public class RouteMap extends MapActivity {
 		distance.setText(distanceString);
 		num.setText(segId + 1 + "/" + route.getSegments().size());
 		overlay.setVisibility(View.VISIBLE);
+		
+		if (tts) {
+			directionsTts.speak(currSegment.getInstruction(), TextToSpeech.QUEUE_FLUSH, null);
+		}
 	}
 	
 	/**
@@ -515,6 +534,15 @@ public class RouteMap extends MapActivity {
 			}
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	/* (non-Javadoc)
+	 * @see android.speech.tts.TextToSpeech.OnInitListener#onInit(int)
+	 */
+	@Override
+	public void onInit(int arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
