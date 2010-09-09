@@ -3,12 +3,11 @@
  */
 package com.nanosheep.bikeroute;
 
-import com.nanosheep.bikeroute.utility.Stands;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.util.Log;
+import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,10 +18,20 @@ import android.view.MenuItem;
  */
 public class Preferences extends PreferenceActivity {
 
-        @Override
+        protected static final int TTS_CHECK = 0;
+        private Preference tts;
+
+		@Override
         protected void onCreate(Bundle savedState) {
                 super.onCreate(savedState);
+                
+                //Check for TTS
+                Intent checkIntent = new Intent();
+				checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+				startActivityForResult(checkIntent, TTS_CHECK);
+				
                 addPreferencesFromResource(R.xml.preferences);
+                tts = (Preference) findPreference("tts");
         }
         
         @Override
@@ -72,4 +81,18 @@ public class Preferences extends PreferenceActivity {
     		}
     		return true;
     	}
+    	
+    	protected void onActivityResult(
+		        int requestCode, int resultCode, Intent data) {
+		    if (requestCode == TTS_CHECK) {
+		        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
+		        	tts.setEnabled(true);
+		        } else {
+		            Intent installIntent = new Intent();
+		            installIntent.setAction(
+		                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+		            startActivity(installIntent);
+		        }
+		    }
+		}
 }
