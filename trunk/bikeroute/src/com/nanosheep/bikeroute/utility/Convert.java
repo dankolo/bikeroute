@@ -70,7 +70,7 @@ public final class Convert {
 	}
 	
 	public static String asKilometerString(final int meters) {
-		return meters/1000 + "km";
+		return meters/1000.00 + "km";
 	}
 	
 	public static String asMeterString(final int meters) {
