@@ -34,6 +34,7 @@ public class BikeRouteApp extends Application {
 	 */
 	public void setRoute(Route route) {
 		this.route = route;
+		this.segId = 0;
 	}
 
 	/**
