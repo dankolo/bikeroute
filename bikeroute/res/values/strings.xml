@@ -28,4 +28,14 @@
 <string name="fix_msg">Waiting for GPS fix...</string>
 <string name="nearstands_title">Nearest stand</string>
 <string name="contacts_title">Navigate to Contact</string>
+<string name="hello">Hello World, OpenStreetMapViewer</string>
+    <string name="app_name_itemizedoverlay">OSMViewer ItemizedOverlay</string>
+    
+    <string name="unknown">Unknown</string>
+<string name="map_mode">Map mode</string>
+<string name="my_location">My location</string>
+<string name="samples">Samples</string>
+<string name="about">About</string>
+<string name="about_message">This software uses map data provided by &lt;b&gt;OpenStreetMap.org&lt;/b&gt;</string>
+
 </resources>

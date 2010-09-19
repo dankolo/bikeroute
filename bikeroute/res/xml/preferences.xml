@@ -20,4 +20,12 @@
                         android:entries="@array/journeyTypeArray"
                         android:entryValues="@array/journeyTypeValues" />
         </PreferenceCategory>
+        <PreferenceCategory
+        	android:title="Text to Speech">
+        	<CheckboxPreference
+        		android:title="Speak directions"
+        		android:defaultValue="false"
+        		android:key="tts"
+        		/>
+        	</PreferenceCategory>
 </PreferenceScreen>
