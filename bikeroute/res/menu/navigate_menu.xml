@@ -21,4 +21,5 @@
     <item android:id="@+id/contacts"
     android:title="@string/contacts_title"
     android:icon="@drawable/ic_menu_contacts"></item>
+<item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
 </menu>

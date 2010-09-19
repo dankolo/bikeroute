@@ -38,4 +38,6 @@
     <item android:id="@+id/elevation"
     android:title="Elevation"
     android:icon="@drawable/ic_menu_elevation"></item>
+    <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
+    
 </menu>
