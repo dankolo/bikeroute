@@ -36,6 +36,7 @@
 <string name="my_location">My location</string>
 <string name="samples">Samples</string>
 <string name="about">About</string>
-<string name="about_message">This software uses map data provided by &lt;b&gt;OpenStreetMap.org&lt;/b&gt;</string>
+<string name="about_message">BikeRoute uses map and parking data provided by OpenStreetMap.org; routing by Google &amp; CycleStreets.net and the OSMDroid &amp; achartengine libraries.</string>
 
+<string name="about_menu">About</string>
 </resources>
