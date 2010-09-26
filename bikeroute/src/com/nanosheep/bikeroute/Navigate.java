@@ -4,6 +4,8 @@ import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.ContactAccessor;
 import com.nanosheep.bikeroute.utility.Parking;
+import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.RouteManager;
 import com.nanosheep.bikeroute.utility.Stands;
 import com.nanosheep.bikeroute.utility.StringAddress;
 
@@ -59,6 +61,8 @@ public class Navigate extends Activity {
 	public static final int PLAN = 4;
 	/** Planning failed dialog id. **/
 	public static final int PLAN_FAIL_DIALOG = 5;
+
+	private static final int ABOUT = 0;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -272,6 +276,18 @@ public class Navigate extends Activity {
 					});
 			dialog = builder.create();
 			break;
+		case ABOUT:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.about_message)).setCancelable(
+					true).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+							dialog.dismiss();
+						}
+					});
+			dialog = builder.create();
+			break;
 		default:
 			dialog = null;
 		}
@@ -338,6 +354,9 @@ public class Navigate extends Activity {
 		case R.id.stand:
 			search = new StandsTask();
 			search.execute();
+			break;
+		case R.id.about:
+			showDialog(Navigate.ABOUT);
 			break;
 		case R.id.contacts:
 			startActivityForResult(mContactAccessor.getPickContactIntent(), 0);

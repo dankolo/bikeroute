@@ -13,10 +13,12 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.google.android.maps.GeoPoint;
-import com.nanosheep.bikeroute.Route;
-import com.nanosheep.bikeroute.Segment;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
+
 import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.Segment;
 
 /**
  * Parse a google directions json object to a route.

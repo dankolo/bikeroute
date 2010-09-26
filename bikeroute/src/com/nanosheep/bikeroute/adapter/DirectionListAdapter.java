@@ -6,8 +6,8 @@ package com.nanosheep.bikeroute.adapter;
 import java.util.List;
 
 import com.nanosheep.bikeroute.R;
-import com.nanosheep.bikeroute.Segment;
 import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.Segment;
 
 import android.content.Context;
 import android.content.SharedPreferences;

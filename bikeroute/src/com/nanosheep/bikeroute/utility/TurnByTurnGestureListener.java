@@ -1,7 +1,9 @@
 /**
  * 
  */
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
+
+import com.nanosheep.bikeroute.RouteMap;
 
 import android.view.GestureDetector.OnGestureListener;
 import android.view.GestureDetector.SimpleOnGestureListener;

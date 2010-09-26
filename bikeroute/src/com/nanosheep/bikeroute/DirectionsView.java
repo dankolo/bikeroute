@@ -4,19 +4,18 @@
 package com.nanosheep.bikeroute;
 
 import org.achartengine.ChartFactory;
-import org.achartengine.chart.PointStyle;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
-import org.achartengine.renderer.XYSeriesRenderer;
-
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
 import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.Route;
 
-import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -34,6 +33,7 @@ import android.widget.TextView;
  * @version Jun 24, 2010
  */
 public class DirectionsView extends ListActivity {
+	private static final int ABOUT = 0;
 	/** Route object. **/
 	private Route route;
 	/** Units. **/
@@ -131,6 +131,9 @@ public class DirectionsView extends ListActivity {
 		case R.id.prefs:
 			intentDir = new Intent(this, Preferences.class);
 			break;
+		case R.id.about:
+			showDialog(ABOUT);
+			return true;
 		case R.id.elevation:
 			XYMultipleSeriesDataset elevation = route.getElevations();
 			XYMultipleSeriesRenderer renderer = route.getChartRenderer();
@@ -145,6 +148,26 @@ public class DirectionsView extends ListActivity {
 		startActivity(intentDir);
 		
 		return true;
+	}
+	
+	/**
+	 * Creates dialogs for loading, on errors, alerts.
+	 * Available dialogs:
+	 * Planning progress, planning error.
+	 * @return the approriate Dialog object
+	 */
+	
+	public Dialog onCreateDialog(final int id) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(getText(R.string.about_message)).setCancelable(
+				true).setPositiveButton("OK",
+				new DialogInterface.OnClickListener() {
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+						dialog.dismiss();
+					}
+				});
+		return builder.create();
 	}
 
 }

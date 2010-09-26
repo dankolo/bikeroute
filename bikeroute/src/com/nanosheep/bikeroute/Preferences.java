@@ -3,6 +3,9 @@
  */
 package com.nanosheep.bikeroute;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -19,6 +22,7 @@ import android.view.MenuItem;
 public class Preferences extends PreferenceActivity {
 
         protected static final int TTS_CHECK = 0;
+		private static final int ABOUT = 0;
         private Preference tts;
 
 		@Override
@@ -78,6 +82,9 @@ public class Preferences extends PreferenceActivity {
     			intent = new Intent(this, RouteMap.class);
     			startActivity(intent);
     			break;
+    		case R.id.about:
+    			showDialog(ABOUT);
+    			break;
     		}
     		return true;
     	}
@@ -95,4 +102,24 @@ public class Preferences extends PreferenceActivity {
 		        }
 		    }
 		}
+    	
+    	/**
+    	 * Creates dialogs for loading, on errors, alerts.
+    	 * Available dialogs:
+    	 * Planning progress, planning error.
+    	 * @return the approriate Dialog object
+    	 */
+    	
+    	public Dialog onCreateDialog(final int id) {
+    		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.about_message)).setCancelable(
+					true).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+							dialog.dismiss();
+						}
+					});
+			return builder.create();
+    	}
 }

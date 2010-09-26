@@ -2,7 +2,9 @@ package com.nanosheep.bikeroute.utility;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
+
 
 /**
  * A class to handle parking a bike.

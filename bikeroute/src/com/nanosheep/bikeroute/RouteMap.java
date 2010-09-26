@@ -3,16 +3,26 @@ package com.nanosheep.bikeroute;
 import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.andnav.osm.util.GeoPoint;
+import org.andnav.osm.views.OpenStreetMapView;
+import org.andnav.osm.views.OpenStreetMapViewController;
+import org.andnav.osm.views.overlay.MyLocationOverlay;
+import org.andnav.osm.views.overlay.OpenStreetMapViewOverlay;
+import org.andnav.osm.views.overlay.OpenStreetMapViewPathOverlay;
+import org.andnav.osm.views.util.OpenStreetMapRendererFactory;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
@@ -29,14 +39,13 @@ import android.view.View.OnTouchListener;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.maps.MapActivity;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
 import com.nanosheep.bikeroute.overlay.LiveMarkers;
-import com.nanosheep.bikeroute.overlay.RouteOverlay;
+import com.nanosheep.bikeroute.utility.BikeAlert;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
+import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
 
 /**
  * A class for displaying a route map with overlays for directions and
@@ -46,18 +55,16 @@ import com.nanosheep.bikeroute.utility.Parking;
  * 
  */
 
-public class RouteMap extends MapActivity implements OnInitListener {
+public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 
-	/** The map view. */
-	private MapView mapView;
 	/** The controller for the view. */
-	private MapController mc;
+	private OpenStreetMapViewController mc;
 	/** Stand markers overlay. */
 	private LiveMarkers stands;
-	/** User location overlay. **/
-	private UserLocation locOverlay;
 	/** Route overlay. **/
-	private RouteOverlay routeOverlay;
+	private OpenStreetMapViewPathOverlay routeOverlay;
+	/** Location manager. **/
+	private LocationManager mLocationManager;
 	
 	/** Route. **/
 	private Route route;
@@ -70,6 +77,7 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	public static final int AWAITING_FIX = 4;
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
+	private static final int ABOUT = 0;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -104,6 +112,9 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
 		
+		/* Get location manager. */
+		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
 		tts = settings.getBoolean("tts", false);
@@ -129,11 +140,22 @@ public class RouteMap extends MapActivity implements OnInitListener {
 		
 		// Initialize map, view & controller
 		setContentView(R.layout.main);
-		mapView = (MapView) findViewById(R.id.bikeview);
-		mapView.displayZoomControls(true);
-		mapView.setReticleDrawMode(MapView.ReticleDrawMode.DRAW_RETICLE_UNDER);
+		this.mOsmv = (OpenStreetMapView) findViewById(R.id.mapview);
+        this.mOsmv.setResourceProxy(mResourceProxy);
+        mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
+        this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
+        this.mLocationOverlay.enableMyLocation();
+        this.mOsmv.setBuiltInZoomControls(true);
+        this.mOsmv.setMultiTouchControls(true);
+        this.mOsmv.getOverlays().add(this.mLocationOverlay);
+        this.mOsmv.getOverlays().add(new OSDOverlay(this));
+        
+
+        mOsmv.getController().setZoom(mPrefs.getInt(PREFS_ZOOM_LEVEL, 1));
+        mOsmv.scrollTo(mPrefs.getInt(PREFS_SCROLL_X, 0), mPrefs.getInt(PREFS_SCROLL_Y, 0));
+		mOsmv.setBuiltInZoomControls(true);
 		
-		mc = mapView.getController();
+		mc = mOsmv.getController();
 		mc.setZoom(ZOOM);
 		
 		//Directions overlay
@@ -146,8 +168,11 @@ public class RouteMap extends MapActivity implements OnInitListener {
 		segId = ((BikeRouteApp)getApplication()).getSegId();
 		
 		if (route != null) {
-			routeOverlay = new RouteOverlay(route, Color.BLUE);
-			mapView.getOverlays().add(routeOverlay);
+			routeOverlay = new OpenStreetMapViewPathOverlay(Color.BLUE,this);
+			for(GeoPoint pt : route.getPoints()) {
+				routeOverlay.addPoint(pt);
+			}
+			mOsmv.getOverlays().add(routeOverlay);
 			currSegment = route.getSegments().get(segId);
 			if (getIntent().getBooleanExtra("jump", false)) {
 				showStep();
@@ -157,18 +182,14 @@ public class RouteMap extends MapActivity implements OnInitListener {
 
 
 		// Initialize stands overlay
-		final Drawable drawable = this.getResources().getDrawable(
-				R.drawable.parking);
-		stands = new LiveMarkers(drawable, mapView);
+		stands = new LiveMarkers(mOsmv, this);
 
 		// Initialise parking manager
 		prk = new Parking(this);
 		// Initialize bike alert manager
 		bikeAlert = new BikeAlert(this);
 		// Initialize location service
-		locOverlay = new UserLocation(this, mapView, mc);
-		locOverlay.enableMyLocation();
-		mapView.getOverlays().add(locOverlay);
+		mOsmv.getOverlays().add(mLocationOverlay);
 				
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
@@ -184,7 +205,7 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	 * Creates dialogs for loading, on errors, alerts.
 	 * Available dialogs:
 	 * Planning progress, planning error, unpark.
-	 * @return the approriate Dialog object
+	 * @return the appropriate Dialog object
 	 */
 	
 	public Dialog onCreateDialog(final int id) {
@@ -201,7 +222,7 @@ public class RouteMap extends MapActivity implements OnInitListener {
 										final DialogInterface dialog,
 										final int id) {
 									prk.unPark();
-									RouteMap.this.mapView.getOverlays().remove(routeOverlay);
+									RouteMap.this.mOsmv.getOverlays().remove(routeOverlay);
 									RouteMap.this.hideStep();
 									bikeAlert.unsetAlert();
 									dialog.dismiss();
@@ -230,15 +251,22 @@ public class RouteMap extends MapActivity implements OnInitListener {
 			});
 			dialog = pDialog;
 			break;
+		case ABOUT:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.about_message)).setCancelable(
+					true).setPositiveButton("OK",
+					new DialogInterface.OnClickListener() {
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+							dialog.dismiss();
+						}
+					});
+			dialog = builder.create();
+			break;
 		default:
 			dialog = null;
 		}
 		return dialog;
-	}
-
-	@Override
-	protected boolean isRouteDisplayed() {
-		return (route != null);
 	}
 
 	/**
@@ -310,12 +338,20 @@ public class RouteMap extends MapActivity implements OnInitListener {
 			break;
 		case R.id.center:
 			showDialog(AWAITING_FIX);
-			RouteMap.this.locOverlay.runOnFirstFix(new Runnable() {
+			mLocationOverlay.followLocation(true);
+			RouteMap.this.mLocationOverlay.runOnFirstFix(new Runnable() {
 				@Override
 				public void run() {
 					if (RouteMap.this.dialog.isShowing()) {
-						RouteMap.this.dismissDialog(AWAITING_FIX);
-						RouteMap.this.mc.animateTo(RouteMap.this.locOverlay.getMyLocation());
+							RouteMap.this.dismissDialog(AWAITING_FIX);
+							Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							if (self == null) {
+								self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+							}
+							if (self != null) {
+								RouteMap.this.mc.animateTo(
+									new GeoPoint(self.getLatitude(), self.getLongitude()));
+							}
 					}
 				}
 			});
@@ -323,16 +359,23 @@ public class RouteMap extends MapActivity implements OnInitListener {
 		case R.id.showstands:
 			Toast.makeText(this, "Getting stands from OpenStreetMap..",
 					Toast.LENGTH_LONG).show();
-			stands.refresh(mapView.getMapCenter());
+			stands.refresh(mOsmv.getMapCenter());
 			return true;
 		case R.id.park:
 			showDialog(AWAITING_FIX);
-			RouteMap.this.locOverlay.runOnFirstFix(new Runnable() {
+			RouteMap.this.mLocationOverlay.runOnFirstFix(new Runnable() {
 				@Override
 				public void run() {
 					if (RouteMap.this.dialog.isShowing()) {
-						RouteMap.this.dismissDialog(AWAITING_FIX);
-						prk.park(locOverlay.getMyLocation());
+							RouteMap.this.dismissDialog(AWAITING_FIX);
+							Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							if (self == null) {
+								self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+							}
+							if (self != null) {
+								prk.park(
+									new GeoPoint(self.getLatitude(), self.getLongitude()));
+							}
 					}
 				}
 			});
@@ -368,23 +411,14 @@ public class RouteMap extends MapActivity implements OnInitListener {
 			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
 			intent = ChartFactory.getLineChartIntent(this, elevation, renderer);
 			startActivity(intent);
+		case R.id.about:
+			showDialog(ABOUT);
+			break;
 		default:
 			return false;
 
 		}
 		return true;
-	}
-
-	@Override
-	public void onResume() {
-		locOverlay.enableMyLocation();
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		locOverlay.disableMyLocation();
-		super.onPause();
 	}
 	
 	/**
@@ -427,12 +461,14 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	public void hideStep() {
 		View overlay = (View) findViewById(R.id.directions_overlay);
 		overlay.setVisibility(View.INVISIBLE);
-		mapView.setClickable(true);
+		mOsmv.setClickable(true);
 		directionsVisible = false;
 		((BikeRouteApp) getApplication()).setSegId(0);
 		if (tts) {
 			directionsTts.stop();
 		}
+		this.mOsmv.setBuiltInZoomControls(true);
+        this.mOsmv.setMultiTouchControls(true);
 	}
 	
 	/**
@@ -443,12 +479,14 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	public void showStep() {
 		((BikeRouteApp) getApplication()).setSegId(segId);
 		directionsVisible = true;
+		this.mOsmv.setBuiltInZoomControls(false);
+        this.mOsmv.setMultiTouchControls(false);
 		currSegment = route.getSegments().get(segId);
 		mc.setZoom(16);
 		mc.setCenter(currSegment.startPoint());
+		
 		View overlay = (View) findViewById(R.id.directions_overlay);
-		overlay.requestFocus();
-		mapView.setClickable(false);
+		this.mOsmv.setClickable(false);
 		
 		//Setup buttons
 		Button back = (Button) overlay.findViewById(R.id.back_button);
@@ -511,11 +549,14 @@ public class RouteMap extends MapActivity implements OnInitListener {
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 		if (directionsVisible) {
-			if (gestureDetector.onTouchEvent(event)) {
-				return true;
-			}
+			gestureDetector.onTouchEvent(event);
+			return true;
+		} else {
+			if (event.getAction() == MotionEvent.ACTION_MOVE)
+				this.mLocationOverlay.followLocation(false);
+
+	        return super.onTouchEvent(event);
 		}
-		return super.onTouchEvent(event);
 	}
 	
 	/**
@@ -545,5 +586,47 @@ public class RouteMap extends MapActivity implements OnInitListener {
 		
 	}
 
+	private class OSDOverlay extends OpenStreetMapViewOverlay {
+
+		/**
+		 * @param ctx
+		 */
+		public OSDOverlay(Context ctx) {
+			super(ctx);
+		}
+		
+		/**
+		 * If the onscreen display is enabled, capture motion events to control it.
+		 */
+		
+		@Override
+		public boolean onTouchEvent(final MotionEvent event, final OpenStreetMapView mv) {
+			if (RouteMap.this.directionsVisible) {
+				RouteMap.this.gestureDetector.onTouchEvent(event);
+				return true;
+			} else {
+		        return false;
+			}
+		}
+
+		/* (non-Javadoc)
+		 * @see org.andnav.osm.views.overlay.OpenStreetMapViewOverlay#onDraw(android.graphics.Canvas, org.andnav.osm.views.OpenStreetMapView)
+		 */
+		@Override
+		protected void onDraw(Canvas arg0, OpenStreetMapView arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		/* (non-Javadoc)
+		 * @see org.andnav.osm.views.overlay.OpenStreetMapViewOverlay#onDrawFinished(android.graphics.Canvas, org.andnav.osm.views.OpenStreetMapView)
+		 */
+		@Override
+		protected void onDrawFinished(Canvas arg0, OpenStreetMapView arg1) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+	}
 
 }

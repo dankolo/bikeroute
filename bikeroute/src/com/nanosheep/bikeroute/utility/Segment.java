@@ -1,9 +1,10 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
 
 /**
  * Holds a segment of a route - a road name, the points

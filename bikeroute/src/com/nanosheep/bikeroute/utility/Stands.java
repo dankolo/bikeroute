@@ -5,8 +5,10 @@ import java.util.List;
 
 import android.location.Address;
 
-import com.google.android.maps.OverlayItem;
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.OverlayItem;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
+import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 import com.nanosheep.bikeroute.overlay.Marker;
 import com.nanosheep.bikeroute.parser.OSMParser;
 
@@ -41,13 +43,13 @@ public final class Stands {
 		double yD;
 		double best = 9999999;
 		double dist;
-		for (OverlayItem o : getMarkers(point, 1)) {
-			xD = o.getPoint().getLatitudeE6() - point.getLatitudeE6();
-			yD = o.getPoint().getLongitudeE6() - point.getLongitudeE6();
+		for (OpenStreetMapViewOverlayItem o : getMarkers(point, 1)) {
+			xD = o.mGeoPoint.getLatitudeE6() - point.getLatitudeE6();
+			yD = o.mGeoPoint.getLongitudeE6() - point.getLongitudeE6();
 			dist = Math.sqrt(xD*xD + yD*yD);
 			if (best > dist) {
 				best = dist;
-				closest = o.getPoint();
+				closest = o.mGeoPoint;
 			}	
 		}
 		return closest;
@@ -67,16 +69,16 @@ public final class Stands {
 	 * @return an arraylist of OverlayItems corresponding to markers in range.
 	 */
 
-	public static List<OverlayItem> getMarkers(final GeoPoint p,
+	public static List<OpenStreetMapViewOverlayItem> getMarkers(final GeoPoint p,
 			final double distance) {
 		final String query = OSM_API + getOSMBounds(getBounds(p, distance));
-		final List<OverlayItem> markers = new ArrayList<OverlayItem>();
+		final List<OpenStreetMapViewOverlayItem> markers = new ArrayList<OpenStreetMapViewOverlayItem>();
 		final OSMParser parser = new OSMParser(query);
 
 		// Parse XML to overlayitems (cycle stands)
 		for (Marker m : parser.parse()) {
-			markers.add(new OverlayItem(m.getLocation(), Integer.toString(m
-					.getCapacity()), ""));
+			markers.add(new OpenStreetMapViewOverlayItem(Integer.toString(m
+					.getCapacity()), "", m.getLocation()));
 		}
 
 		return markers;
