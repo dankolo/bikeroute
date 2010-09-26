@@ -1,10 +1,9 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 import java.io.IOException;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -12,13 +11,12 @@ import android.preference.PreferenceManager;
 
 import android.util.Log;
 
-import com.google.android.maps.GeoPoint;
-import com.nanosheep.bikeroute.overlay.RouteOverlay;
+import org.andnav.osm.util.GeoPoint;
+
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
 import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
 import com.nanosheep.bikeroute.parser.GoogleElevationParser;
 import com.nanosheep.bikeroute.parser.Parser;
-import com.nanosheep.bikeroute.utility.Convert;
 
 /**
  * Plans routes and displays them as overlays on the provided mapview.
@@ -31,14 +29,14 @@ public class RouteManager {
 	private final Activity act;
 	/** API feed. */
 	private static final String API =
-		"http://vega.soi.city.ac.uk/~abjy800/bike/cs.php?";
+		"http://bike.nanosheep.net/cs.php?";
 	/** US API. **/
 	private static final String US_API =
 		"http://maps.google.com/maps/api/directions/json?";
 	/** Google elevation api. **/
 	private static final String ELEV_API = "http://maps.google.com/maps/api/elevation/json?sensor=true&locations=enc:";
 	/** Route overlay. **/
-	private RouteOverlay routeOverlay;
+	//private RouteOverlay routeOverlay;
 	/** Route planned switch. **/
 	private boolean planned;
 	/** Route. **/
@@ -147,7 +145,7 @@ public class RouteManager {
 	 */
 
 	public void clearRoute() {
-		routeOverlay = null;
+	//	routeOverlay = null;
 		planned = false;
 	}
 
@@ -156,7 +154,7 @@ public class RouteManager {
 	 */
 	public void setRoute(final Route route) {
 		this.route = route;
-		routeOverlay = new RouteOverlay(route, Color.BLUE);
+		//routeOverlay = new RouteOverlay(route, Color.BLUE);
 		planned = true;
 	}
 

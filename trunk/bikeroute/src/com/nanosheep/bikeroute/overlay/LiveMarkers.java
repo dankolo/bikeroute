@@ -1,13 +1,19 @@
 package com.nanosheep.bikeroute.overlay;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.MapView;
-import com.google.android.maps.OverlayItem;
+import org.andnav.osm.DefaultResourceProxyImpl;
+import org.andnav.osm.util.GeoPoint;
+import org.andnav.osm.views.OpenStreetMapView;
+import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay;
+import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
+
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.Stands;
 
-import android.graphics.drawable.Drawable;
+import android.content.Context;
+import android.graphics.Point;
 import android.os.Handler;
 import android.os.Message;
 
@@ -18,17 +24,26 @@ import android.os.Message;
  * @version Jun 21, 2010
  */
 
-public class LiveMarkers extends Markers {
+public class LiveMarkers {
 	/** Update thread. **/
 	private Thread update;
 	/** Reference to map view to draw markers over. **/
-	private final MapView mv;
+	private final OpenStreetMapView mv;
 	/** Markers list for use by thread. **/
-	private List<OverlayItem> markers;
+	private List<OpenStreetMapViewOverlayItem> markers;
+	private Context context;
+	/** Radius to return markers within. **/
+	protected static final double RADIUS = 0.5;
+	/** List of overlay items. **/
+	private List<OpenStreetMapViewOverlayItem> mOverlays = new ArrayList<OpenStreetMapViewOverlayItem>();
+	/** Itemized Overlay. **/
+	private OpenStreetMapViewItemizedOverlay iOverlay;
 
-	public LiveMarkers(final Drawable defaultMarker, final MapView mapview) {
-		super(defaultMarker);
+	public LiveMarkers(final OpenStreetMapView mapview, final Context ctxt) {
 		mv = mapview;
+		context = ctxt;
+		mOverlays = new ArrayList<OpenStreetMapViewOverlayItem>();
+		iOverlay = new OpenStreetMapViewItemizedOverlay(ctxt, mOverlays, null);
 	}
 
 	/**
@@ -56,15 +71,16 @@ public class LiveMarkers extends Markers {
 	private final Handler messageHandler = new Handler() {
 		@Override
 		public void handleMessage(final Message msg) {
-			if (mv.getOverlays().contains(LiveMarkers.this)) {
-				mv.getOverlays().remove(LiveMarkers.this);
+			if (mv.getOverlays().contains(iOverlay)) {
+				mv.getOverlays().remove(iOverlay);
 			}
 			mOverlays.clear();
 			mOverlays.addAll(markers);
-			LiveMarkers.this.populate();
-			setLastFocusedIndex(-1);
-			mv.getOverlays().add(LiveMarkers.this);
-			mv.invalidate();
+			iOverlay = new OpenStreetMapViewItemizedOverlay(
+					context, mOverlays, context.getResources().getDrawable(R.drawable.marker_default),
+					new Point(0,0), null, new DefaultResourceProxyImpl(context));
+			mv.getOverlays().add(iOverlay);
+			mv.postInvalidate();
 		}
 	};
 

@@ -1,6 +1,8 @@
 package com.nanosheep.bikeroute.overlay;
 
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
+
 import com.nanosheep.bikeroute.utility.Convert;
 
 /**

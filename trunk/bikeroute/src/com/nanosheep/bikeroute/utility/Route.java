@@ -1,4 +1,4 @@
-package com.nanosheep.bikeroute;
+package com.nanosheep.bikeroute.utility;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,8 @@ import org.achartengine.renderer.XYSeriesRenderer;
 
 import android.graphics.Color;
 
-import com.google.android.maps.GeoPoint;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
 
 /**
  * @author jono@nanosheep.net

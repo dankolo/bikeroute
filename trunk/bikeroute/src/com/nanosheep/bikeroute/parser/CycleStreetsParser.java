@@ -1,10 +1,12 @@
 package com.nanosheep.bikeroute.parser;
 
 import org.xml.sax.Attributes;
-import com.google.android.maps.GeoPoint;
-import com.nanosheep.bikeroute.Route;
-import com.nanosheep.bikeroute.Segment;
+//import com.google.android.maps.GeoPoint;
+import org.andnav.osm.util.GeoPoint;
+
 import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.Segment;
 
 import android.sax.Element;
 import android.sax.EndElementListener;

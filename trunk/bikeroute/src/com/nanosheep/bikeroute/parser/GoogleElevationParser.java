@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
-import com.nanosheep.bikeroute.Route;
+import com.nanosheep.bikeroute.utility.Route;
 
 /**
  * Parse a google elevations json object to an xy data series.
