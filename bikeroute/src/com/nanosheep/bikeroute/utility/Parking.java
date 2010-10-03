@@ -1,6 +1,7 @@
 package com.nanosheep.bikeroute.utility;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 //import com.google.android.maps.GeoPoint;
 import org.andnav.osm.util.GeoPoint;
@@ -27,8 +28,8 @@ public class Parking {
 	/** Preferences editor. **/
 	private final SharedPreferences.Editor editor;
 
-	public Parking(final Activity activity) {
-		settings = activity.getSharedPreferences(PREFS_NAME, 0);
+	public Parking(final Context context) {
+		settings = context.getSharedPreferences(PREFS_NAME, 0);
 		editor = settings.edit();
 	}
 

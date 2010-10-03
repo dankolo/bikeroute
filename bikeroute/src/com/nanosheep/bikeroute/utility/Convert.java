@@ -23,6 +23,8 @@ public final class Convert {
 	private static final double FEET_CONVERT = 3.2808399;
 	/** Conversion factor for degrees/mdegrees. **/
 	public static final double CNV = 1E6;
+	/** Decimal formatter. **/
+	private static final DecimalFormat TWO_D_FORM = new DecimalFormat("#.##");
 	
 	private Convert() { }
 	
@@ -33,13 +35,11 @@ public final class Convert {
 	 */
 	
 	public static double asMiles(final double km) {
-		DecimalFormat twoDForm = new DecimalFormat("#.##");
-		return Double.valueOf(twoDForm.format(km * MILES_CONVERT));
+		return Double.valueOf(TWO_D_FORM.format(km * MILES_CONVERT));
 	}
 	
 	public static double asMiles(final int meters) {
-		DecimalFormat twoDForm = new DecimalFormat("#.##");
-		return Double.valueOf(twoDForm.format(asMiles(meters / 1000.0)));
+		return Double.valueOf(TWO_D_FORM.format(asMiles(meters / 1000.0)));
 	}
 	
 	/**
@@ -49,8 +49,7 @@ public final class Convert {
 	 */
 	
 	public static double asFeet(final double meters) {
-		DecimalFormat twoDForm = new DecimalFormat("#.##");
-		return Double.valueOf(twoDForm.format(meters * FEET_CONVERT));
+		return Double.valueOf(TWO_D_FORM.format(meters * FEET_CONVERT));
 	}
 	
 	public static String asFeetString(final double meters) {

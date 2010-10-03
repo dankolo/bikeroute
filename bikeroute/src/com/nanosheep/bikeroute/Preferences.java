@@ -3,6 +3,8 @@
  */
 package com.nanosheep.bikeroute;
 
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -20,19 +22,16 @@ import android.view.MenuItem;
  * @version Jul 5, 2010
  */
 public class Preferences extends PreferenceActivity {
-
-        protected static final int TTS_CHECK = 0;
-		private static final int ABOUT = 0;
         private Preference tts;
 
 		@Override
-        protected void onCreate(Bundle savedState) {
+        protected void onCreate(final Bundle savedState) {
                 super.onCreate(savedState);
                 
                 //Check for TTS
                 Intent checkIntent = new Intent();
 				checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-				startActivityForResult(checkIntent, TTS_CHECK);
+				startActivityForResult(checkIntent, BikeRouteConsts.TTS_CHECK);
 				
                 addPreferencesFromResource(R.xml.preferences);
                 tts = (Preference) findPreference("tts");
@@ -42,10 +41,9 @@ public class Preferences extends PreferenceActivity {
     	public final boolean onPrepareOptionsMenu(final Menu menu) {
     		final MenuItem steps = menu.findItem(R.id.directions);
 
+    		steps.setVisible(false);
     		if (((BikeRouteApp)getApplication()).getRoute() != null) {
     			steps.setVisible(true);
-    		} else {
-    			steps.setVisible(false);
     		}
     		return super.onPrepareOptionsMenu(menu);
     	}
@@ -83,19 +81,19 @@ public class Preferences extends PreferenceActivity {
     			startActivity(intent);
     			break;
     		case R.id.about:
-    			showDialog(ABOUT);
+    			showDialog(BikeRouteConsts.ABOUT);
     			break;
     		}
     		return true;
     	}
     	
     	protected void onActivityResult(
-		        int requestCode, int resultCode, Intent data) {
-		    if (requestCode == TTS_CHECK) {
+		        final int requestCode, final int resultCode, final Intent data) {
+		    if (requestCode == BikeRouteConsts.TTS_CHECK) {
 		        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 		        	tts.setEnabled(true);
 		        } else {
-		            Intent installIntent = new Intent();
+		            final Intent installIntent = new Intent();
 		            installIntent.setAction(
 		                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
 		            startActivity(installIntent);
@@ -111,7 +109,7 @@ public class Preferences extends PreferenceActivity {
     	 */
     	
     	public Dialog onCreateDialog(final int id) {
-    		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.about_message)).setCancelable(
 					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {

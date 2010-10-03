@@ -7,7 +7,7 @@ import java.util.List;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import com.nanosheep.bikeroute.overlay.Marker;
+import com.nanosheep.bikeroute.view.overlay.Marker;
 
 import android.sax.Element;
 import android.sax.EndElementListener;

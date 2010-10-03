@@ -10,7 +10,7 @@ import android.location.LocationManager;
 
 import org.andnav.osm.util.GeoPoint;
 
-import com.nanosheep.bikeroute.RouteMap;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 
 /**
  * Display an alert on return to the location the bike was parked at.
@@ -45,7 +45,7 @@ public final class BikeAlert extends BroadcastReceiver {
 		final boolean enter = intent.getBooleanExtra(
 				LocationManager.KEY_PROXIMITY_ENTERING, false);
 		if (enter) {
-			act.showDialog(RouteMap.UNPARK_DIALOG);
+			act.showDialog(BikeRouteConsts.UNPARK_DIALOG);
 		}
 	}
 

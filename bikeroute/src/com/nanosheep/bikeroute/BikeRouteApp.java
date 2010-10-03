@@ -33,7 +33,7 @@ public class BikeRouteApp extends Application {
 	/**
 	 * @param route the route to set
 	 */
-	public void setRoute(Route route) {
+	public void setRoute(final Route route) {
 		this.route = route;
 		this.segId = 0;
 	}
@@ -48,7 +48,7 @@ public class BikeRouteApp extends Application {
 	/**
 	 * @param segId the segId to set
 	 */
-	public void setSegId(int segId) {
+	public void setSegId(final int segId) {
 		this.segId = segId;
 	}
 

@@ -1,7 +1,6 @@
 package com.nanosheep.bikeroute.parser;
 
 import org.xml.sax.Attributes;
-//import com.google.android.maps.GeoPoint;
 import org.andnav.osm.util.GeoPoint;
 
 import com.nanosheep.bikeroute.utility.Convert;

@@ -5,12 +5,12 @@ import java.util.List;
 
 import android.location.Address;
 
-//import com.google.android.maps.OverlayItem;
-//import com.google.android.maps.GeoPoint;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
-import com.nanosheep.bikeroute.overlay.Marker;
+
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.parser.OSMParser;
+import com.nanosheep.bikeroute.view.overlay.Marker;
 
 /**
  * Utility class for querying cycle stands api based on gis data.
@@ -19,13 +19,6 @@ import com.nanosheep.bikeroute.parser.OSMParser;
  */
 
 public final class Stands {
-	/** API url. OpenStreetMap xapi interface. **/
-	private static final String OSM_API =
-		"http://xapi.openstreetmap.org/api/0.6/node[amenity=bicycle_parking]";
-	/** Pi/180 for converting degrees - radians. **/
-	private static final double PI_180 = Math.PI / 180;
-	/** Radius of the earth for degrees - miles calculations. **/
-	private static final double EARTH_RADIUS = 3960.0;
 
 	private Stands() {
 	}
@@ -56,9 +49,8 @@ public final class Stands {
 	}
 	
 	public static GeoPoint getNearest(final Address address) {
-		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
-				Convert.asMicroDegrees(address.getLongitude()));
-		return getNearest(p);
+		return getNearest(new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
+				Convert.asMicroDegrees(address.getLongitude())));
 	}
 
 	/**
@@ -71,7 +63,7 @@ public final class Stands {
 
 	public static List<OpenStreetMapViewOverlayItem> getMarkers(final GeoPoint p,
 			final double distance) {
-		final String query = OSM_API + getOSMBounds(getBounds(p, distance));
+		final String query = BikeRouteConsts.OSM_API + getOSMBounds(getBounds(p, distance));
 		final List<OpenStreetMapViewOverlayItem> markers = new ArrayList<OpenStreetMapViewOverlayItem>();
 		final OSMParser parser = new OSMParser(query);
 
@@ -94,9 +86,10 @@ public final class Stands {
 	 */
 	private static List<GeoPoint> getBounds(final GeoPoint p, final double distance) {
 		final List<GeoPoint> points = new ArrayList<GeoPoint>(4);
-		final int degrees = Convert.asMicroDegrees(((distance / EARTH_RADIUS) * (1/PI_180)));
-		final double latRadius = EARTH_RADIUS * Math.cos(degrees * PI_180);
-		final int degreesLng = Convert.asMicroDegrees( (distance / latRadius) * (1/PI_180));
+		final int degrees = Convert.asMicroDegrees(((distance / BikeRouteConsts.EARTH_RADIUS) 
+				* (1/BikeRouteConsts.PI_180)));
+		final double latRadius = BikeRouteConsts.EARTH_RADIUS * Math.cos(degrees * BikeRouteConsts.PI_180);
+		final int degreesLng = Convert.asMicroDegrees( (distance / latRadius) * (1/BikeRouteConsts.PI_180));
 
 		final int maxLng = degreesLng + p.getLongitudeE6();
 		final int maxLat = degrees + p.getLatitudeE6();

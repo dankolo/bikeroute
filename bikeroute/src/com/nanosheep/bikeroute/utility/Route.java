@@ -10,6 +10,8 @@ import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
 import android.graphics.Color;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 //import com.google.android.maps.GeoPoint;
 import org.andnav.osm.util.GeoPoint;
@@ -18,7 +20,7 @@ import org.andnav.osm.util.GeoPoint;
  * @author jono@nanosheep.net
  * @version Jun 22, 2010
  */
-public class Route {
+public class Route implements Parcelable{
 	private String name;
 	private final List<GeoPoint> points;
 	private List<Segment> segments;
@@ -35,6 +37,57 @@ public class Route {
 		elevations = new XYSeries("Elevation");
 	}
 	
+	 public Route(final Parcel in) {
+         points = new ArrayList<GeoPoint>();
+         elevations = new XYSeries("Elevation");
+         readFromParcel(in);
+	 }
+	
+	 /* (non-Javadoc)
+      * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
+      */
+     @Override
+     public void writeToParcel(final Parcel dest, final int flags) {
+             dest.writeString(name);
+             dest.writeTypedList(segments);
+             dest.writeString(copyright);
+             dest.writeString(warning);
+             dest.writeString(country);
+             dest.writeString(polyline);
+             dest.writeInt(length);
+             int pointSize = points.size();
+             dest.writeInt(pointSize);
+             for (int i = 0; i < pointSize; i++) {
+                     dest.writeInt(points.get(i).getLatitudeE6());
+                     dest.writeInt(points.get(i).getLongitudeE6());
+             }
+             int elevSize = elevations.getItemCount();
+             dest.writeInt(elevSize);
+             for (int i = 0; i < elevSize; i++) {
+            	 dest.writeDouble(elevations.getX(i));
+            	 dest.writeDouble(elevations.getY(i));
+             }
+     }
+     
+     public void readFromParcel(final Parcel in) {
+             name = in.readString();
+             segments = new ArrayList<Segment>();
+             in.readTypedList(segments, Segment.CREATOR);
+             copyright = in.readString();
+             warning = in.readString();
+             country = in.readString();
+             polyline = in.readString();
+             length = in.readInt();
+             int pointSize = in.readInt();
+             for (int i = 0; i < pointSize; i++) {
+                     points.add(new GeoPoint(in.readInt(), in.readInt()));
+             }
+             int elevSize = in.readInt();
+             for (int i = 0; i < elevSize; i++) {
+            	 elevations.add(in.readDouble(), in.readDouble());
+             }
+     }
+
 	public void addPoint(final GeoPoint p) {
 		points.add(p);
 	}
@@ -70,14 +123,14 @@ public class Route {
 	}
 	
 	/**
-	 * @param copyright the copyright to set
+	 * @param string the copyright to set
 	 */
-	public void setCopyright(String copyright) {
-		this.copyright = copyright;
+	public void setCopyright(String string) {
+		this.copyright = string;
 	}
 
 	/**
-	 * @return the copyright
+	 * @return the copyright string id
 	 */
 	public String getCopyright() {
 		return copyright;
@@ -182,5 +235,26 @@ public class Route {
 	public String getPolyline() {
 		return polyline;
 	}
+
+	/* (non-Javadoc)
+	 * @see android.os.Parcelable#describeContents()
+	 */
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	 public static final Parcelable.Creator CREATOR =
+	        new Parcelable.Creator() {
+	            public Route createFromParcel(final Parcel in) {
+	                return new Route(in);
+	            }
+
+	                        @Override
+	                        public Route[] newArray(final int size) {
+	                                return new Route[size];
+	                        }
+	        };
 
 }

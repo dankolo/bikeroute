@@ -11,12 +11,12 @@ public class StepView extends LinearLayout
 { 
 	private Paint paint;
     
-	public StepView(Context context, AttributeSet attrs) {
+	public StepView(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public StepView(Context context) {
+	public StepView(final Context context) {
 		super(context);
 		init();
 	}
@@ -28,15 +28,15 @@ public class StepView extends LinearLayout
 
 	}
 	
-	public void setInnerPaint(Paint paint) {
+	public void setInnerPaint(final Paint paint) {
 		this.paint = paint;
 	}
 
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    protected void dispatchDraw(final Canvas canvas) {
     	
-    	RectF drawRect = new RectF();
+    	final RectF drawRect = new RectF();
     	drawRect.set(0,0, getMeasuredWidth(), getMeasuredHeight());
     	
     	canvas.drawRoundRect(drawRect, 5, 5, paint);
