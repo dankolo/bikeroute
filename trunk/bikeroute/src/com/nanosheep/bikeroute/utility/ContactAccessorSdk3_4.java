@@ -35,7 +35,7 @@ import android.provider.Contacts.People.Phones;
  * @version Jul 28, 2010
  */
 @SuppressWarnings("deprecation")
-public class ContactAccessorSdk3_4 extends ContactAccessor {
+public class ContactAccessorSdk3_4 extends AbstractContactAccessor {
 
 	/* (non-Javadoc)
 	 * @see com.nanosheep.bikeroute.ContactAccessor#getPickContactIntent()

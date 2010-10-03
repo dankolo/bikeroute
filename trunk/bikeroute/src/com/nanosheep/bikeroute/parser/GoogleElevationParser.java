@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import android.util.Log;
 
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Route;
 
 /**
@@ -23,9 +24,9 @@ public class GoogleElevationParser extends XMLParser implements Parser {
 	/** Distance covered. **/
 	private double distance;
 	/** Route to work on. **/
-	private Route route;
+	private final Route route;
 	
-	public GoogleElevationParser(String feedUrl, Route route) {
+	public GoogleElevationParser(final String feedUrl, final Route route) {
 		super(feedUrl);
 		this.route = route;
 	}
@@ -50,9 +51,9 @@ public class GoogleElevationParser extends XMLParser implements Parser {
 			double lastLng = location.getDouble("lng");
 			for (int i = 0; i < jsonResult.length(); i++) {
 				location = jsonResult.getJSONObject(i).getJSONObject("location");
-				double lat = location.getDouble("lat");
-				double lng = location.getDouble("lng");
-				double elevation = jsonResult.getJSONObject(i).getDouble("elevation");
+				final double lat = location.getDouble("lat");
+				final double lng = location.getDouble("lng");
+				final double elevation = jsonResult.getJSONObject(i).getDouble("elevation");
 				distance += pointDiff(lat, lng, lastLat, lastLng);
 				lastLat = lat;
 				lastLng = lng;
@@ -101,15 +102,13 @@ public class GoogleElevationParser extends XMLParser implements Parser {
 	 * @return The distance between the two points in m.
 	 */
 	
-	private double pointDiff(double lat, double lng, double latA, double lngA) {
-		final int R = 6371; // km
+	private double pointDiff(final double lat, final double lng, final double latA, final double lngA) {
 		final double dLat = Math.toRadians(latA - lat);
 		final double dLon = Math.toRadians(lngA - lng); 
 		final double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
 		        Math.cos(Math.toRadians(lat)) * Math.cos(Math.toRadians(latA)) * 
 		        Math.sin(dLon / 2) * Math.sin(dLon / 2); 
 		final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-		final double d = R * c * 1000;
-		return d;
+		return BikeRouteConsts.EARTH_RADIUS * c * 1000;
 	}
 }

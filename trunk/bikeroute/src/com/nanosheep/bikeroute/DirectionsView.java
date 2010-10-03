@@ -7,6 +7,7 @@ import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Route;
 
@@ -33,7 +34,6 @@ import android.widget.TextView;
  * @version Jun 24, 2010
  */
 public class DirectionsView extends ListActivity {
-	private static final int ABOUT = 0;
 	/** Route object. **/
 	private Route route;
 	/** Units. **/
@@ -44,7 +44,7 @@ public class DirectionsView extends ListActivity {
 		requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 		super.onCreate(in);
 		
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
 
 		route = ((BikeRouteApp)getApplication()).getRoute();
@@ -53,7 +53,7 @@ public class DirectionsView extends ListActivity {
 		setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
 	  
 		//Create a header for the list.
-		TextView header = new TextView(this);
+		final TextView header = new TextView(this);
 		StringBuffer sBuf = new StringBuffer("Total distance: ");
 		if ("km".equals(unit)) {
 			sBuf.append(Convert.asMeterString(route.getLength()));
@@ -70,7 +70,7 @@ public class DirectionsView extends ListActivity {
 		getListView().addHeaderView(header, "", false);
 	  
 		//Create a footer to display warnings & copyrights
-		TextView footer = new TextView(this);
+		final TextView footer = new TextView(this);
 		sBuf = new StringBuffer();
 		if (route.getWarning() != null) {
 			sBuf.append(route.getWarning());
@@ -95,7 +95,7 @@ public class DirectionsView extends ListActivity {
 	protected void onListItemClick(final ListView l, final View v,
 			final int position, final long id) {
 		((BikeRouteApp)getApplication()).setSegId(position - 1);
-		Intent intent = new Intent(this, RouteMap.class);
+		final Intent intent = new Intent(this, RouteMap.class);
 
 		intent.putExtra("jump", true);
 		startActivity(intent);
@@ -132,11 +132,11 @@ public class DirectionsView extends ListActivity {
 			intentDir = new Intent(this, Preferences.class);
 			break;
 		case R.id.about:
-			showDialog(ABOUT);
+			showDialog(BikeRouteConsts.ABOUT);
 			return true;
 		case R.id.elevation:
 			XYMultipleSeriesDataset elevation = route.getElevations();
-			XYMultipleSeriesRenderer renderer = route.getChartRenderer();
+			final XYMultipleSeriesRenderer renderer = route.getChartRenderer();
 			if (!"km".equals(unit)) {
 				elevation = Convert.asImperial(elevation);
 				renderer.setYTitle("ft");
@@ -158,7 +158,7 @@ public class DirectionsView extends ListActivity {
 	 */
 	
 	public Dialog onCreateDialog(final int id) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(getText(R.string.about_message)).setCancelable(
 				true).setPositiveButton("OK",
 				new DialogInterface.OnClickListener() {

@@ -2,7 +2,7 @@ package com.nanosheep.bikeroute.utility;
 
 import java.io.IOException;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
@@ -13,6 +13,7 @@ import android.util.Log;
 
 import org.andnav.osm.util.GeoPoint;
 
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
 import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
 import com.nanosheep.bikeroute.parser.GoogleElevationParser;
@@ -22,21 +23,11 @@ import com.nanosheep.bikeroute.parser.Parser;
  * Plans routes and displays them as overlays on the provided mapview.
  * 
  * @author jono@nanosheep.net
- * @version Jun 21, 2010
+ * @version Oct 3, 2010
  */
 public class RouteManager {
 	/** Owning activity. **/
-	private final Activity act;
-	/** API feed. */
-	private static final String API =
-		"http://bike.nanosheep.net/cs.php?";
-	/** US API. **/
-	private static final String US_API =
-		"http://maps.google.com/maps/api/directions/json?";
-	/** Google elevation api. **/
-	private static final String ELEV_API = "http://maps.google.com/maps/api/elevation/json?sensor=true&locations=enc:";
-	/** Route overlay. **/
-	//private RouteOverlay routeOverlay;
+	private final Context ctxt;
 	/** Route planned switch. **/
 	private boolean planned;
 	/** Route. **/
@@ -50,11 +41,11 @@ public class RouteManager {
 	/** Geocoder. **/
 	private final Geocoder geocoder;
 	
-	public RouteManager(final Activity activity) {
+	public RouteManager(final Context context) {
 		super();
-		act = activity;
+		ctxt = context;
 		planned = false;
-		geocoder = new Geocoder(act);
+		geocoder = new Geocoder(ctxt);
 	}
 	
 	/**
@@ -94,9 +85,9 @@ public class RouteManager {
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
 		Parser parser;
 		if ("GB".equals(country)) {
-			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(act);
+			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
 			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
-			final StringBuffer sBuf = new StringBuffer(API);
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.cs_api));
 			sBuf.append("start_lat=");
 			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
 			sBuf.append("&start_lng=");
@@ -111,7 +102,7 @@ public class RouteManager {
 			parser = new CycleStreetsParser(sBuf
 				.toString());
 		} else {
-			final StringBuffer sBuf = new StringBuffer(US_API);
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.us_api));
 			sBuf.append("origin=");
 			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
 			sBuf.append(',');
@@ -132,7 +123,7 @@ public class RouteManager {
 		//If a polyline is set, need to query elevations api for
 		//this route.
 		if (r.getPolyline() != null) {
-			final StringBuffer elev = new StringBuffer(ELEV_API);
+			final StringBuffer elev = new StringBuffer(ctxt.getString(R.string.elev_api));
 			elev.append(r.getPolyline());
 			parser = new GoogleElevationParser(elev.toString(), r);
 			r = parser.parse();

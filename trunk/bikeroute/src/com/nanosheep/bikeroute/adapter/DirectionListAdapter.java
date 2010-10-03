@@ -28,7 +28,7 @@ public class DirectionListAdapter extends ArrayAdapter<Segment> {
 	/** Layout inflater . **/
 	private final transient LayoutInflater inflater;
 	/** Units. **/
-	private String unit;
+	private final String unit;
 
 	/**
 	 * @param context
@@ -39,7 +39,7 @@ public class DirectionListAdapter extends ArrayAdapter<Segment> {
 			final List<Segment> objects) {
 		super(context, textView, objects);
 		inflater = LayoutInflater.from(context);
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 		unit = settings.getString("unitsPref", "km");
 	}
 	

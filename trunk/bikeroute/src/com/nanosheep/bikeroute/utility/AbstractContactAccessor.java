@@ -32,17 +32,17 @@ import android.os.Build;
  * @author jono@nanosheep.net
  * @version Jul 28, 2010
  */
-public abstract class ContactAccessor {
+public abstract class AbstractContactAccessor {
 	
-	private static ContactAccessor instance;
+	private static AbstractContactAccessor instance;
 	
-	public static ContactAccessor getInstance() {
+	public static AbstractContactAccessor getInstance() {
         if (instance == null) {
-            String className;
+            final String className;
 
             @SuppressWarnings("deprecation")
             int sdkVersion = Integer.parseInt(Build.VERSION.SDK);
-            if (sdkVersion < Build.VERSION_CODES.ECLAIR) {
+            if (sdkVersion < 5) {
                 className = "com.nanosheep.bikeroute.utility.ContactAccessorSdk3_4";
             } else {
                 className = "com.nanosheep.bikeroute.utility.ContactAccessorSdk5";
@@ -52,8 +52,8 @@ public abstract class ContactAccessor {
              * Find the required class by name and instantiate it.
              */
             try {
-                final Class<? extends ContactAccessor> clazz =
-                        Class.forName(className).asSubclass(ContactAccessor.class);
+                final Class<? extends AbstractContactAccessor> clazz =
+                        Class.forName(className).asSubclass(AbstractContactAccessor.class);
                 instance = clazz.newInstance();
             } catch (Exception e) {
                 throw new IllegalStateException(e);

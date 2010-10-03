@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.nanosheep.bikeroute.Navigate;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.StringAddress;
 
@@ -14,7 +14,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 
@@ -84,7 +83,6 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				res.count = 0;
 			} else {
 				final String addressInput = ch.toString();
-				final Activity act = (Activity) getContext();
 				
 				//Add results from db
 				results.addAll(db.selectLike(ch));
@@ -121,7 +119,7 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				FindPlaceAdapter.this.notifyDataSetChanged();
 			} else if (results.count == -1) {
 				//Show an io error message if an exception was thrown
-				((Activity) getContext()).showDialog(Navigate.IOERROR);
+				((Activity) getContext()).showDialog(BikeRouteConsts.IOERROR);
 				FindPlaceAdapter.this.notifyDataSetInvalidated();
 			} else {
 				FindPlaceAdapter.this.notifyDataSetInvalidated();

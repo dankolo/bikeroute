@@ -1,10 +1,9 @@
 package com.nanosheep.bikeroute.utility;
 
+import org.andnav.osm.util.GeoPoint;
+
 import android.os.Parcel;
 import android.os.Parcelable;
-
-//import com.google.android.maps.GeoPoint;
-import org.andnav.osm.util.GeoPoint;
 
 /**
  * Holds a segment of a route - a road name, the points
@@ -14,7 +13,7 @@ import org.andnav.osm.util.GeoPoint;
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
-public class Segment {
+public class Segment implements Parcelable{
 	/** Points in this segment. **/
 	private GeoPoint start;
 	/** Turn instruction to reach next segment. **/
@@ -23,15 +22,44 @@ public class Segment {
 	private int length;
 	/** Distance covered. **/
 	private double distance;
-	
-	/**
-	 * Create an empty segment.
-	 */
-	
-	public Segment() {
-	}
 
 	
+	public Segment() {
+		
+	}
+	
+	/**
+     * Create a segment from a previously parcelled segment.
+     * @param in
+     */
+    public Segment(final Parcel in) {
+            readFromParcel(in);
+    }
+	
+	/* (non-Javadoc)
+     * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
+     */
+    @Override
+    public void writeToParcel(final Parcel dest, final int flags) {
+            dest.writeString(instruction);
+            dest.writeInt(length);
+            dest.writeInt(start.getLatitudeE6());
+            dest.writeInt(start.getLongitudeE6());
+            dest.writeDouble(distance);
+    }
+    
+    /**
+     * Rehydrate a segment from a parcel.
+     * @param in The parcel to rehydrate.
+     */
+    
+    public void readFromParcel(final Parcel in) {
+            instruction = in.readString();
+            length = in.readInt();
+            start = new GeoPoint(in.readInt(), in.readInt());
+            distance = in.readDouble();
+    }
+
 	/**
 	 * Set the turn instruction.
 	 * @param turn Turn instruction string.
@@ -98,7 +126,7 @@ public class Segment {
 	/**
 	 * @param distance the distance to set
 	 */
-	public void setDistance(double distance) {
+	public void setDistance(final double distance) {
 		this.distance = distance;
 	}
 
@@ -107,6 +135,28 @@ public class Segment {
 	 */
 	public double getDistance() {
 		return distance;
+	}
+	
+	 public static final Parcelable.Creator CREATOR =
+	        new Parcelable.Creator() {
+	            public Segment createFromParcel(final Parcel in) {
+	                return new Segment(in);
+	            }
+
+	                        @Override
+	                        public Segment[] newArray(final int size) {
+	                                return new Segment[size];
+	                        }
+	        };
+
+
+	/* (non-Javadoc)
+	 * @see android.os.Parcelable#describeContents()
+	 */
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }

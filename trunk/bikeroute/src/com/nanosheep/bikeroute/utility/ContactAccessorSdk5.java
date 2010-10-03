@@ -34,7 +34,7 @@ import android.provider.ContactsContract.Contacts;
  * @author jono@nanosheep.net
  * @version Jul 28, 2010
  */
-public class ContactAccessorSdk5 extends ContactAccessor {
+public class ContactAccessorSdk5 extends AbstractContactAccessor {
 
 	/* (non-Javadoc)
 	 * @see com.nanosheep.bikeroute.ContactAccessor#getPickContactIntent()
