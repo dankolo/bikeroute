@@ -338,7 +338,7 @@ public class Navigate extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.map:
-			intent = new Intent(this, RouteMap.class);
+			intent = new Intent(this, LiveRouteMap.class);
 			startActivity(intent);
 			break;
 		case R.id.bike:
@@ -380,7 +380,7 @@ public class Navigate extends Activity {
 				}
 				final BikeRouteApp app = (BikeRouteApp) getApplication();
 				app.setRoute(route);
-				final Intent map = new Intent(this, RouteMap.class);
+				final Intent map = new Intent(this, LiveRouteMap.class);
 				startActivity(map);
 			} else {
 				showDialog(msg);

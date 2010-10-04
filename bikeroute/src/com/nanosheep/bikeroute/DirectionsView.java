@@ -95,7 +95,7 @@ public class DirectionsView extends ListActivity {
 	protected void onListItemClick(final ListView l, final View v,
 			final int position, final long id) {
 		((BikeRouteApp)getApplication()).setSegId(position - 1);
-		final Intent intent = new Intent(this, RouteMap.class);
+		final Intent intent = new Intent(this, LiveRouteMap.class);
 
 		intent.putExtra("jump", true);
 		startActivity(intent);
@@ -126,7 +126,7 @@ public class DirectionsView extends ListActivity {
 			intentDir = new Intent(this, Navigate.class);
 			break;
 		case R.id.map:
-			intentDir = new Intent(this, RouteMap.class);
+			intentDir = new Intent(this, LiveRouteMap.class);
 			break;
 		case R.id.prefs:
 			intentDir = new Intent(this, Preferences.class);

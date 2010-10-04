@@ -77,7 +77,7 @@ public class Preferences extends PreferenceActivity {
     			startActivity(intent);
     			break;
     		case R.id.map:
-    			intent = new Intent(this, RouteMap.class);
+    			intent = new Intent(this, LiveRouteMap.class);
     			startActivity(intent);
     			break;
     		case R.id.about:

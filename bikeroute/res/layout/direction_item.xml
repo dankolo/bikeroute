@@ -10,6 +10,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:textSize="18px"
+        android:textColor="#000000"
         android:text="Road and turn." />
     <TextView  
         android:id="@+id/length"
