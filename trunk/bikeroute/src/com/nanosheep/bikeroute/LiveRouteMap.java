@@ -21,6 +21,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
@@ -55,7 +56,8 @@ public class LiveRouteMap extends RouteMap {
 		if (data != null) {
 			isSearching = (Boolean) data[2];
 			if (isSearching) {
-				registerReceiver(new ReplanReceiver(), new IntentFilter(RoutePlannerService.INTENT_ID));
+				routeReceiver = new ReplanReceiver();
+				registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
 			}
 			mShownDialog = (Boolean) data[1];
 		}
@@ -73,6 +75,16 @@ public class LiveRouteMap extends RouteMap {
 		objs[1] = mShownDialog;
 		objs[2] = isSearching;
 	    return objs;
+	}
+	
+	@Override
+	public final boolean onPrepareOptionsMenu(final Menu menu) {
+		final MenuItem replan = menu.findItem(R.id.replan);
+		replan.setVisible(true);
+		if (route == null) {
+			replan.setVisible(false);
+		}
+		return super.onPrepareOptionsMenu(menu);
 	}
 	
 	@Override
@@ -205,6 +217,12 @@ public class LiveRouteMap extends RouteMap {
 			return super.onOptionsItemSelected(item);
 		}
 		return true;
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		unregisterReceiver(routeReceiver);
 	}
 
 	private class ReplanReceiver extends BroadcastReceiver {
