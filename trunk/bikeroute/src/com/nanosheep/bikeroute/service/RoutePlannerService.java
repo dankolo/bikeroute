@@ -3,6 +3,8 @@
  */
 package com.nanosheep.bikeroute.service;
 
+import org.andnav.osm.util.GeoPoint;
+
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.RouteManager;
@@ -33,10 +35,11 @@ public class RoutePlannerService extends IntentService {
 	public static final int ADDRESS_PLAN = 4;
 	public static final String START_ADDRESS = "start_address";
 	public static final String END_ADDRESS = "end_address";
-	private static final String START_LOCATION = "start_location";
+	public static final String START_LOCATION = "start_location";
 	private static final String LOCATION = "location package";
 	private static final String END_LOCATION = "end_location";
 	public static final String INTENT_ID = "com.nanosheep.bikeroute.service.RoutePlannerService";
+	public static final String END_POINT = null;
 	
 	/**
 	 * @param name
@@ -97,8 +100,8 @@ public class RoutePlannerService extends IntentService {
 			}
 			break;
 		case REPLAN_PLAN:
-			final Location start = intent.getBundleExtra(LOCATION).getParcelable(START_LOCATION);
-			final Location dest = intent.getBundleExtra(LOCATION).getParcelable(END_LOCATION);
+			final Location start = intent.getParcelableExtra(START_LOCATION);
+			final GeoPoint dest = intent.getParcelableExtra(END_POINT);
 			msg = BikeRouteConsts.RESULT_OK;
 			planner.setStart(start);
 			planner.setDest(dest);	

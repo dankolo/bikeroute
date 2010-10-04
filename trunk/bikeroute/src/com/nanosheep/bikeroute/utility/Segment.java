@@ -43,8 +43,9 @@ public class Segment implements Parcelable{
     public void writeToParcel(final Parcel dest, final int flags) {
             dest.writeString(instruction);
             dest.writeInt(length);
-            dest.writeInt(start.getLatitudeE6());
-            dest.writeInt(start.getLongitudeE6());
+            //dest.writeInt(start.getLatitudeE6());
+            //dest.writeInt(start.getLongitudeE6());
+            dest.writeParcelable(start, 0);
             dest.writeDouble(distance);
     }
     
@@ -56,7 +57,8 @@ public class Segment implements Parcelable{
     public void readFromParcel(final Parcel in) {
             instruction = in.readString();
             length = in.readInt();
-            start = new GeoPoint(in.readInt(), in.readInt());
+            //start = new GeoPoint(in.readInt(), in.readInt());
+            start = in.readParcelable(GeoPoint.class.getClassLoader());
             distance = in.readDouble();
     }
 

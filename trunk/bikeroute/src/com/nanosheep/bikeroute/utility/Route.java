@@ -56,11 +56,12 @@ public class Route implements Parcelable{
              dest.writeString(polyline);
              dest.writeInt(length);
              int pointSize = points.size();
-             dest.writeInt(pointSize);
+             /*dest.writeInt(pointSize);
              for (int i = 0; i < pointSize; i++) {
                      dest.writeInt(points.get(i).getLatitudeE6());
                      dest.writeInt(points.get(i).getLongitudeE6());
-             }
+             }*/
+             dest.writeTypedList(points);
              int elevSize = elevations.getItemCount();
              dest.writeInt(elevSize);
              for (int i = 0; i < elevSize; i++) {
@@ -78,10 +79,11 @@ public class Route implements Parcelable{
              country = in.readString();
              polyline = in.readString();
              length = in.readInt();
-             int pointSize = in.readInt();
+             /*int pointSize = in.readInt();
              for (int i = 0; i < pointSize; i++) {
                      points.add(new GeoPoint(in.readInt(), in.readInt()));
-             }
+             }*/
+             in.readTypedList(points, GeoPoint.CREATOR);
              int elevSize = in.readInt();
              for (int i = 0; i < elevSize; i++) {
             	 elevations.add(in.readDouble(), in.readDouble());

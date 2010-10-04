@@ -13,12 +13,9 @@ import org.andnav.osm.views.util.OpenStreetMapRendererFactory;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
@@ -63,21 +60,21 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
 public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 
 	/** The controller for the view. */
-	private OpenStreetMapViewController mc;
+	protected OpenStreetMapViewController mc;
 	/** Stand markers overlay. */
 	private LiveMarkers stands;
 	/** Route overlay. **/
-	private OpenStreetMapViewPathOverlay routeOverlay;
+	protected OpenStreetMapViewPathOverlay routeOverlay;
 	/** Location manager. **/
-	private LocationManager mLocationManager;
+	protected LocationManager mLocationManager;
 	
 	/** Route. **/
-	private Route route;
+	protected Route route;
 	
 	/* Constants. */
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
-	private static final Intent SEGMENT_START = null;
+	protected static boolean isSearching = false;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -89,12 +86,12 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	private Dialog dialog;
 	
 	/** Current segment. **/
-	private Segment currSegment;
+	protected Segment currSegment;
 	/** Segment pointer. **/
-	private int segId;
+	protected int segId;
 	
 	/** Onscreen directions shown. **/
-	private boolean directionsVisible;
+	protected boolean directionsVisible;
 	
 	/** Gesture detection for the onscreen directions. **/
     private GestureDetector gestureDetector;
@@ -103,10 +100,9 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	/** Units for directions. **/
 	private String unit;
 	/** TTS enabled. **/
-	private boolean tts;
+	protected boolean tts;
 	/** TTS. **/
-	private TextToSpeech directionsTts;
-	private ProximityReceiver proxAlerter;
+	protected TextToSpeech directionsTts;
 	
 
 	@Override
@@ -115,8 +111,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 		
 		/* Get location manager. */
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-		
-		proxAlerter = new ProximityReceiver();
 		
 		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
@@ -478,7 +472,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	
 	public void showStep() {
 		((BikeRouteApp) getApplication()).setSegId(segId);
-		proxAlerter.setStepAlert(route.getSegments().get(segId + 1).startPoint());
 		directionsVisible = true;
 		this.mOsmv.setBuiltInZoomControls(false);
         this.mOsmv.setMultiTouchControls(false);
@@ -599,57 +592,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 		 */
 		@Override
 		protected void onDrawFinished(final Canvas arg0, final OpenStreetMapView arg1) {			
-		}
-		
-	}
-	
-	private class ProximityReceiver extends BroadcastReceiver {
-		private static final String INTENT_ID = "com.nanosheep.bikeroute.STEP";
-		/** Intent filter. **/
-		private final IntentFilter filter;
-		/** Pending Intent. **/
-		private final PendingIntent pi;
-
-		public ProximityReceiver () {
-			super();
-			filter = new IntentFilter(INTENT_ID);
-			pi = PendingIntent.getBroadcast(RouteMap.this, 0, new Intent(INTENT_ID),
-					PendingIntent.FLAG_CANCEL_CURRENT);
-		}
-		
-		/* (non-Javadoc)
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
-		 */
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) {
-				unsetAlert();
-				nextStep();
-				setStepAlert(currSegment.startPoint());
-			}
-			return;
-		}
-		
-		/**
-		 * Set a proximity alert at the given point for updating directions step.
-		 * 
-		 * @param start point to alert at.
-		 */
-
-		public void setStepAlert(final GeoPoint start) {
-			final LocationManager lm = (LocationManager) RouteMap.this.getSystemService(Context.LOCATION_SERVICE);
-			lm.addProximityAlert(Convert.asDegrees(start.getLatitudeE6()),
-					Convert.asDegrees(start.getLongitudeE6()), 20f, -1, pi);
-			RouteMap.this.registerReceiver(this, filter);
-		}
-
-		/**
-		 * Remove the alert.
-		 */
-
-		public void unsetAlert() {
-			final LocationManager lm = (LocationManager) RouteMap.this.getSystemService(Context.LOCATION_SERVICE);
-			lm.removeProximityAlert(pi);
 		}
 		
 	}

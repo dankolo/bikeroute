@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="minVersion">3</string>
-    <string name="version">Alpha</string>
+    <string name="version">Beta</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
@@ -39,4 +39,10 @@
 <string name="about_message">BikeRoute uses map and parking data provided by OpenStreetMap.org; routing by Google &amp; CycleStreets.net and the OSMDroid &amp; achartengine libraries.</string>
 
 <string name="about_menu">About</string>
+<string name="cs_api">http://bike.nanosheep.net/cs.php?</string>
+<string name="us_api">http://maps.google.com/maps/api/directions/json?</string>
+<string name="elev_api">http://maps.google.com/maps/api/elevation/json?sensor=true&amp;locations=enc:</string>
+<string name="cs_copyright">Route planning by CycleStreets.net</string>
+<string name="stands_api">http://xapi.openstreetmap.org/api/0.6/node[amenity=bicycle_parking]</string>
+<string name="replan_title">Replan</string>
 </resources>
