@@ -77,9 +77,12 @@ public class LiveRouteMap extends RouteMap {
 	
 	@Override
 	public void showStep() {
-		proxAlerter.setStepAlert(route.getSegments().get(segId + 1));
+		if (segId < route.getSegments().size()) {
+			proxAlerter.setStepAlert(route.getSegments().get(segId + 1));
+		}
 		super.showStep();
 		mLocationOverlay.enableMyLocation();
+		mLocationOverlay.followLocation(true);
 	}
 	
 	/**
@@ -88,20 +91,27 @@ public class LiveRouteMap extends RouteMap {
 	 */
 	
 	private void replan() {
+		if (tts) {
+			directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
+		}
 		showDialog(BikeRouteConsts.PLAN);
 		mLocationOverlay.followLocation(true);
 		
 		mLocationOverlay.runOnFirstFix(new Runnable() {
 			@Override
 			public void run() {
-						Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+						Location self = mLocationOverlay.getLastFix();
+						
+						if (self == null) {
+							self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+						}
 						if (self == null) {
 							self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 						}
 						if (self != null) {
 							searchIntent = new Intent(LiveRouteMap.this, RoutePlannerService.class);
 							searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.REPLAN_PLAN);
-							searchIntent.putExtra(RoutePlannerService.START_LOCATION, mLocationOverlay.getLastFix());
+							searchIntent.putExtra(RoutePlannerService.START_LOCATION, self);
 							searchIntent.putExtra(RoutePlannerService.END_POINT,
 									route.getPoints().get(route.getPoints().size() - 1));
 							isSearching = true;
@@ -121,9 +131,6 @@ public class LiveRouteMap extends RouteMap {
 		Dialog dialog;
 		switch(id) {
 		case BikeRouteConsts.PLAN:
-			if (tts) {
-				directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
-			}
 			ProgressDialog pDialog = new ProgressDialog(this);
 			pDialog.setCancelable(true);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);

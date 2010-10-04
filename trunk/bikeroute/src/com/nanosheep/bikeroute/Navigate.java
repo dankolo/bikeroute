@@ -369,10 +369,11 @@ public class Navigate extends Activity {
 	 */
 	
 	private void searchComplete(final Integer msg, final Route route) {
+		if (mShownDialog) {
+			dismissDialog(BikeRouteConsts.PLAN);
+		}
+		unregisterReceiver(routeReceiver);
 		if (msg != null) {
-			if (mShownDialog) {
-				dismissDialog(BikeRouteConsts.PLAN);
-			}
 			if (msg == BikeRouteConsts.RESULT_OK) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
