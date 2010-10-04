@@ -133,7 +133,8 @@ public class Navigate extends Activity {
 	if (data != null) {
 		isSearching = (Boolean) data[2];
 		if (isSearching) {
-			registerReceiver(new RouteReceiver(), new IntentFilter(RoutePlannerService.INTENT_ID));
+			routeReceiver = new RouteReceiver();
+			registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
 		}
 		mShownDialog = (Boolean) data[1];
 		startAddressField.setText((String) data[3]);
@@ -446,6 +447,12 @@ public class Navigate extends Activity {
 		objs[3] = startAddressField.getText().toString();
 		objs[4] = endAddressField.getText().toString();
 	    return objs;
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		unregisterReceiver(routeReceiver);
 	}
 
 }

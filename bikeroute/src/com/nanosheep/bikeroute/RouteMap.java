@@ -283,7 +283,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	 */
 
 	@Override
-	public final boolean onPrepareOptionsMenu(final Menu menu) {
+	public boolean onPrepareOptionsMenu(final Menu menu) {
 		final MenuItem park = menu.findItem(R.id.park);
 		final MenuItem unPark = menu.findItem(R.id.unpark);
 		final MenuItem steps = menu.findItem(R.id.directions);
