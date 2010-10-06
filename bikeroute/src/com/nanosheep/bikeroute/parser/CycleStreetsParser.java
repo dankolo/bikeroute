@@ -76,14 +76,6 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					final String[] elevations = elev.split(",", -1);
 					final String[] dists = distances.split(",", -1);
 					
-					//Split points string to geopoints list.
-					final String[] point = pointsArray[0].split(",", -1);
-
-					p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
-							Convert.asMicroDegrees(Double.parseDouble(point[0])));
-				
-					segment.setPoint(p);
-					
 					//Add elevations to the elevation/distance series
 					for (int i = 0; i < dists.length; i++) {
 						int len = Integer.parseInt(dists[i]);
@@ -106,6 +98,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 						p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
 								Convert.asMicroDegrees(Double.parseDouble(point[0])));
 						route.addPoint(p);
+						segment.addPoint(p);
 					}
 				}
 			}

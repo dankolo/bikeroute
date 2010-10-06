@@ -380,9 +380,8 @@ public class Navigate extends Activity {
 				if (!"".equals(endAddressField.getText().toString())) {
 					db.insert(endAddressField.getText().toString());
 				}
-				final BikeRouteApp app = (BikeRouteApp) getApplication();
-				app.setRoute(route);
 				final Intent map = new Intent(this, LiveRouteMap.class);
+				((BikeRouteApp)getApplication()).setRoute(route);
 				startActivity(map);
 			} else {
 				showDialog(msg);
@@ -452,7 +451,9 @@ public class Navigate extends Activity {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		unregisterReceiver(routeReceiver);
+		if (routeReceiver != null) {
+			unregisterReceiver(routeReceiver);
+		}
 	}
 
 }

@@ -1,11 +1,12 @@
 package com.nanosheep.bikeroute;
 
+import java.util.ListIterator;
+
 import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.OpenStreetMapView;
-import org.andnav.osm.views.OpenStreetMapViewController;
 import org.andnav.osm.views.overlay.MyLocationOverlay;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlay;
 import org.andnav.osm.views.overlay.OpenStreetMapViewPathOverlay;
@@ -25,8 +26,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +42,6 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.BikeAlert;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.Route;
 import com.nanosheep.bikeroute.utility.Segment;
 import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
 import com.nanosheep.bikeroute.view.overlay.LiveMarkers;
@@ -57,10 +55,8 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
  * 
  */
 
-public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
+public class RouteMap extends OpenStreetMapActivity {
 
-	/** The controller for the view. */
-	protected OpenStreetMapViewController mc;
 	/** Stand markers overlay. */
 	private LiveMarkers stands;
 	/** Route overlay. **/
@@ -68,13 +64,10 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	/** Location manager. **/
 	protected LocationManager mLocationManager;
 	
-	/** Route. **/
-	protected Route route;
-	
 	/* Constants. */
 	/** Initial zoom level. */
 	private static final int ZOOM = 15;
-	protected static boolean isSearching = false;
+	protected boolean isSearching = false;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -85,10 +78,8 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	/** Dialog display. **/
 	private Dialog dialog;
 	
-	/** Current segment. **/
-	protected Segment currSegment;
-	/** Segment pointer. **/
-	protected int segId;
+	/** Application reference. **/
+	protected BikeRouteApp app;
 	
 	/** Onscreen directions shown. **/
 	protected boolean directionsVisible;
@@ -98,11 +89,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	private OnTouchListener gestureListener;
 	
 	/** Units for directions. **/
-	private String unit;
-	/** TTS enabled. **/
-	protected boolean tts;
-	/** TTS. **/
-	protected TextToSpeech directionsTts;
+	protected String unit;
 	
 
 	@Override
@@ -114,7 +101,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 		
 		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
-		tts = settings.getBoolean("tts", false);
 		
 		//Detect swipes (left & right, taps.)
         gestureDetector = new GestureDetector(this, new TurnByTurnGestureListener(this));
@@ -126,11 +112,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
                 return false;
             }
         };
-        
-        //Initialize tts if in use.
-        if (tts) {
-        	directionsTts = new TextToSpeech(this, this);
-        }
 		
 		//Set OSD invisible
 		directionsVisible = false;
@@ -152,29 +133,25 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
         mOsmv.scrollTo(mPrefs.getInt(BikeRouteConsts.PREFS_SCROLL_X, 0), mPrefs.getInt(BikeRouteConsts.PREFS_SCROLL_Y, 0));
 		mOsmv.setBuiltInZoomControls(true);
 		
-		mc = mOsmv.getController();
-		mc.setZoom(ZOOM);
+		mOsmv.getController().setZoom(ZOOM);
 		
 		//Directions overlay
 		final View overlay = (View) findViewById(R.id.directions_overlay);
 		overlay.setVisibility(View.INVISIBLE);
 		
-		
-		//Route and segment
-		route = ((BikeRouteApp)getApplication()).getRoute();
-		segId = ((BikeRouteApp)getApplication()).getSegId();
-		
-		if (route != null) {
+		//Get application reference
+		app = (BikeRouteApp)getApplication();
+				
+		if (app.getRoute() != null) {
 			routeOverlay = new RouteOverlay(Color.BLUE,this);
-			for(GeoPoint pt : route.getPoints()) {
+			for(GeoPoint pt : app.getRoute().getPoints()) {
 				routeOverlay.addPoint(pt);
 			}
 			mOsmv.getOverlays().add(routeOverlay);
-			currSegment = route.getSegments().get(segId);
 			if (getIntent().getBooleanExtra("jump", false)) {
 				showStep();
 			}
-			mc.setCenter(currSegment.startPoint());
+			mOsmv.getController().setCenter(app.getSegment().startPoint());
 		}
 
 
@@ -191,8 +168,8 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		if ((data != null) && ((Boolean) data[0])) {
-				mc.setZoom(16);
-				showStep();
+			mOsmv.getController().setZoom(16);
+			showStep();
 		}
 	}
 	
@@ -219,6 +196,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 									prk.unPark();
 									RouteMap.this.mOsmv.getOverlays().remove(routeOverlay);
 									RouteMap.this.hideStep();
+									RouteMap.this.app.setRoute(null);
 									bikeAlert.unsetAlert();
 									dialog.dismiss();
 								}
@@ -297,11 +275,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 			park.setVisible(true);
 			unPark.setVisible(false);
 		}
-		map.setVisible(false);
-		steps.setVisible(false);
-		turnByTurn.setVisible(false);
-		elev.setVisible(false);
-		if (route != null) {
+		if (app.getRoute() != null) {
 			steps.setVisible(true);
 			elev.setVisible(true);
 			if (directionsVisible) {
@@ -338,12 +312,16 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 				public void run() {
 					if (RouteMap.this.dialog.isShowing()) {
 							RouteMap.this.dismissDialog(BikeRouteConsts.AWAITING_FIX);
-							Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							Location self = mLocationOverlay.getLastFix();
+							
+							if (self == null) {
+								self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							}
 							if (self == null) {
 								self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 							}
 							if (self != null) {
-								RouteMap.this.mc.animateTo(
+								RouteMap.this.mOsmv.getController().animateTo(
 									new GeoPoint(self.getLatitude(), self.getLongitude()));
 							}
 					}
@@ -362,7 +340,11 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 				public void run() {
 					if (RouteMap.this.dialog.isShowing()) {
 							RouteMap.this.dismissDialog(BikeRouteConsts.AWAITING_FIX);
-							Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							Location self = mLocationOverlay.getLastFix();
+							
+							if (self == null) {
+								self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							}
 							if (self == null) {
 								self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 							}
@@ -376,9 +358,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
-			intent.putExtra("segment", segId);
 			startActivity(intent);
-			
 			break;
 		case R.id.turnbyturn:
 			showStep();
@@ -388,15 +368,12 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 			break;
 		case R.id.navigate:
 			intent = new Intent(this, Navigate.class);
-			if (route != null) {
-				intent.putExtra("segment", segId);
-			} 
 			startActivity(intent);
 			
 			break;
 		case R.id.elevation:
-			XYMultipleSeriesDataset elevation = route.getElevations();
-			final XYMultipleSeriesRenderer renderer = route.getChartRenderer();
+			XYMultipleSeriesDataset elevation = app.getRoute().getElevations();
+			final XYMultipleSeriesRenderer renderer = app.getRoute().getChartRenderer();
 			if (!"km".equals(unit)) {
 				elevation = Convert.asImperial(elevation);
 				renderer.setYTitle("ft");
@@ -431,8 +408,10 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	 */
 	
 	public void nextStep() {
-		if (segId + 1 < route.getSegments().size()) {
-			segId++;
+		final int index = app.getRoute().getSegments().indexOf(app.getSegment());
+		final ListIterator<Segment> it = app.getRoute().getSegments().listIterator(index + 1);
+		if (it.hasNext()) {
+			app.setSegment(it.next());
 		}
 		showStep();
 	}
@@ -442,8 +421,10 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	 */
 	
 	public void lastStep() {
-		if (segId > 0) {
-			segId--;
+		final int index = app.getRoute().getSegments().indexOf(app.getSegment());
+		final ListIterator<Segment> it = app.getRoute().getSegments().listIterator(index + 1);
+		if (it.hasPrevious()) {
+			app.setSegment(it.previous());
 		}
 		showStep();
  	}
@@ -457,10 +438,6 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 		overlay.setVisibility(View.INVISIBLE);
 		mOsmv.setClickable(true);
 		directionsVisible = false;
-		((BikeRouteApp) getApplication()).setSegId(0);
-		if (tts) {
-			directionsTts.stop();
-		}
 		this.mOsmv.setBuiltInZoomControls(true);
         this.mOsmv.setMultiTouchControls(true);
 	}
@@ -471,13 +448,11 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 	 */
 	
 	public void showStep() {
-		((BikeRouteApp) getApplication()).setSegId(segId);
 		directionsVisible = true;
 		this.mOsmv.setBuiltInZoomControls(false);
         this.mOsmv.setMultiTouchControls(false);
-		currSegment = route.getSegments().get(segId);
-		mc.setZoom(16);
-		mc.setCenter(currSegment.startPoint());
+        mOsmv.getController().setZoom(16);
+        mOsmv.getController().setCenter(app.getSegment().startPoint());
 		
 		final View overlay = (View) findViewById(R.id.directions_overlay);
 		this.mOsmv.setClickable(false);
@@ -503,7 +478,7 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 			
 		});
 		
-		if (segId > 0) {
+		/*if (segId > 0) {
 			back.setVisibility(View.VISIBLE);
 		} else {
 			back.setVisibility(View.INVISIBLE);
@@ -513,43 +488,24 @@ public class RouteMap extends OpenStreetMapActivity implements OnInitListener {
 			next.setVisibility(View.VISIBLE);
 		} else {
 			next.setVisibility(View.INVISIBLE);
-		}
+		}*/
 		
 		overlay.setOnTouchListener(gestureListener);
 		
 		final TextView turn = (TextView) overlay.findViewById(R.id.turn);
 		final TextView distance = (TextView) overlay.findViewById(R.id.distance);
 		final TextView num = (TextView) overlay.findViewById(R.id.step_no);
-		turn.setText(currSegment.getInstruction());
+		turn.setText(app.getSegment().getInstruction());
 		
-		final String distanceString = "km".equals(unit) ? Convert.asMeterString(currSegment.getLength()) + " ("
-				+ Convert.asKilometerString(currSegment.getDistance()) + ")" : 
-					Convert.asFeetString(currSegment.getLength()) + " ("
-					+ Convert.asMilesString(currSegment.getDistance()) + ")";
+		final String distanceString = "km".equals(unit) ? Convert.asMeterString(app.getSegment().getLength()) + " ("
+				+ Convert.asKilometerString(app.getSegment().getDistance()) + ")" : 
+					Convert.asFeetString(app.getSegment().getLength()) + " ("
+					+ Convert.asMilesString(app.getSegment().getDistance()) + ")";
 		
 		distance.setText(distanceString);
-		num.setText(segId + 1 + "/" + route.getSegments().size());
+		num.setText(app.getRoute().getSegments().indexOf(app.getSegment()) 
+				+ 1 + "/" + app.getRoute().getSegments().size());
 		overlay.setVisibility(View.VISIBLE);
-		
-		if (tts) {
-			if (directionsTts.isSpeaking()) {
-				final String speech = "then " + currSegment.getInstruction();
-				directionsTts.speak(speech, TextToSpeech.QUEUE_ADD, null);
-			}	else {
-				directionsTts.speak(currSegment.getInstruction(), TextToSpeech.QUEUE_FLUSH, null);
-			}
-		}
-	}
-	
-	
-
-	/* (non-Javadoc)
-	 * @see android.speech.tts.TextToSpeech.OnInitListener#onInit(int)
-	 */
-	@Override
-	public void onInit(int arg0) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	/** Overlay to handle swipe events when showing directions.

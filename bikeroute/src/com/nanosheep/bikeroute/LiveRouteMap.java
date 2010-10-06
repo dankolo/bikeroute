@@ -3,6 +3,8 @@
  */
 package com.nanosheep.bikeroute;
 
+import java.util.Iterator;
+
 import org.andnav.osm.util.GeoPoint;
 
 import android.app.AlertDialog;
@@ -38,7 +40,7 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
  * @author jono@nanosheep.net
  * @version Oct 4, 2010
  */
-public class LiveRouteMap extends RouteMap {
+public class LiveRouteMap extends SpeechRouteMap {
 	/** Proximity alert receiver for directions. **/
 	private ProximityReceiver proxAlerter;
 	/** Intent for replanning searches. **/
@@ -50,6 +52,7 @@ public class LiveRouteMap extends RouteMap {
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
+		proxAlerter = new ProximityReceiver();
 		super.onCreate(savedState);
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
@@ -61,7 +64,6 @@ public class LiveRouteMap extends RouteMap {
 			}
 			mShownDialog = (Boolean) data[1];
 		}
-		proxAlerter = new ProximityReceiver();
 	}
 	
 	/**
@@ -81,7 +83,7 @@ public class LiveRouteMap extends RouteMap {
 	public final boolean onPrepareOptionsMenu(final Menu menu) {
 		final MenuItem replan = menu.findItem(R.id.replan);
 		replan.setVisible(true);
-		if (route == null) {
+		if (app.getRoute() == null) {
 			replan.setVisible(false);
 		}
 		return super.onPrepareOptionsMenu(menu);
@@ -89,8 +91,10 @@ public class LiveRouteMap extends RouteMap {
 	
 	@Override
 	public void showStep() {
-		if (segId < route.getSegments().size()) {
-			proxAlerter.setStepAlert(route.getSegments().get(segId + 1));
+		Iterator<Segment> it = app.getRoute().getSegments().listIterator(
+				app.getRoute().getSegments().indexOf(app.getSegment()));
+		if (it.hasNext()) {
+			proxAlerter.setStepAlert(it.next());
 		}
 		super.showStep();
 		mLocationOverlay.enableMyLocation();
@@ -125,7 +129,7 @@ public class LiveRouteMap extends RouteMap {
 							searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.REPLAN_PLAN);
 							searchIntent.putExtra(RoutePlannerService.START_LOCATION, self);
 							searchIntent.putExtra(RoutePlannerService.END_POINT,
-									route.getPoints().get(route.getPoints().size() - 1));
+									app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
 							isSearching = true;
 							startService(searchIntent);
 							routeReceiver = new ReplanReceiver();
@@ -233,19 +237,16 @@ public class LiveRouteMap extends RouteMap {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
 				if (intent.getIntExtra("msg", BikeRouteConsts.PLAN_FAIL_DIALOG) == BikeRouteConsts.RESULT_OK) {
-					final BikeRouteApp app = (BikeRouteApp) getApplication();
-					route = (Route) intent.getParcelableExtra("route");
-					app.setRoute(route);
+					app.setRoute((Route) intent.getParcelableExtra("route"));
 					mOsmv.getOverlays().remove(routeOverlay);
 					
 					routeOverlay = new RouteOverlay(Color.BLUE, LiveRouteMap.this);
-					for(GeoPoint pt : route.getPoints()) {
+					for(GeoPoint pt : app.getRoute().getPoints()) {
 						routeOverlay.addPoint(pt);
 					}
 					mOsmv.getOverlays().add(routeOverlay);
-					segId = 0;
-					currSegment = route.getSegments().get(segId);
-					mc.setCenter(currSegment.startPoint());
+					app.setSegment(app.getRoute().getSegments().get(0));
+					mOsmv.getController().setCenter(app.getSegment().startPoint());
 					dismissDialog(BikeRouteConsts.PLAN);
 					if (directionsVisible) {
 						showStep();
@@ -281,7 +282,7 @@ public class LiveRouteMap extends RouteMap {
 			unsetAlert();
 			if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) {
 				nextStep();
-				setStepAlert(currSegment);
+				setStepAlert(app.getSegment());
 			} else {
 				replan();
 			}
