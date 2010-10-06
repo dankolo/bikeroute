@@ -74,11 +74,6 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 			for (int i = 0; i < numSteps; i++) {
 				//Get the individual step
 				final JSONObject step = steps.getJSONObject(i);
-				//Get the start position for this step and set it on the segment
-				final JSONObject start = step.getJSONObject("start_location");
-				final GeoPoint position = new GeoPoint(Convert.asMicroDegrees(start.getDouble("lat")), 
-						Convert.asMicroDegrees(start.getDouble("lng")));
-				segment.setPoint(position);
 				//Set the length of this segment in metres
 				final int length = step.getJSONObject("distance").getInt("value");
 				distance += length;
@@ -86,8 +81,10 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 				segment.setDistance(distance/1000);
 				//Strip html from google directions and set as turn instruction
 				segment.setInstruction(step.getString("html_instructions").replaceAll("<(.*?)*>", ""));
-				//Retrieve & decode this segment's polyline and add it to the route.
-				route.addPoints(decodePolyLine(step.getJSONObject("polyline").getString("points")));
+				//Retrieve & decode this segment's polyline and add it to the route & segment.
+				List<GeoPoint> points = decodePolyLine(step.getJSONObject("polyline").getString("points"));
+				route.addPoints(points);
+				segment.addPoints(points);
 				//Push a copy of the segment to the route
 				route.addSegment(segment.copy());
 			}

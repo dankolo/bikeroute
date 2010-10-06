@@ -94,7 +94,8 @@ public class DirectionsView extends ListActivity {
 	@Override
 	protected void onListItemClick(final ListView l, final View v,
 			final int position, final long id) {
-		((BikeRouteApp)getApplication()).setSegId(position - 1);
+		((BikeRouteApp)getApplication()).
+		setSegment(route.getSegments().get(position -1));
 		final Intent intent = new Intent(this, LiveRouteMap.class);
 
 		intent.putExtra("jump", true);

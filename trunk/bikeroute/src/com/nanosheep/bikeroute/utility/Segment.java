@@ -1,5 +1,8 @@
 package com.nanosheep.bikeroute.utility;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andnav.osm.util.GeoPoint;
 
 import android.os.Parcel;
@@ -15,7 +18,7 @@ import android.os.Parcelable;
  */
 public class Segment implements Parcelable{
 	/** Points in this segment. **/
-	private GeoPoint start;
+	private List<GeoPoint> points;
 	/** Turn instruction to reach next segment. **/
 	private String instruction;
 	/** Length of segment. **/
@@ -25,7 +28,7 @@ public class Segment implements Parcelable{
 
 	
 	public Segment() {
-		
+		points = new ArrayList<GeoPoint>();
 	}
 	
 	/**
@@ -43,9 +46,7 @@ public class Segment implements Parcelable{
     public void writeToParcel(final Parcel dest, final int flags) {
             dest.writeString(instruction);
             dest.writeInt(length);
-            //dest.writeInt(start.getLatitudeE6());
-            //dest.writeInt(start.getLongitudeE6());
-            dest.writeParcelable(start, 0);
+            dest.writeList(points);
             dest.writeDouble(distance);
     }
     
@@ -57,8 +58,8 @@ public class Segment implements Parcelable{
     public void readFromParcel(final Parcel in) {
             instruction = in.readString();
             length = in.readInt();
-            //start = new GeoPoint(in.readInt(), in.readInt());
-            start = in.readParcelable(GeoPoint.class.getClassLoader());
+            points = new ArrayList<GeoPoint>();
+            in.readList(points, GeoPoint.class.getClassLoader());
             distance = in.readDouble();
     }
 
@@ -85,8 +86,16 @@ public class Segment implements Parcelable{
 	 * @param point GeoPoint to add.
 	 */
 	
-	public void setPoint(final GeoPoint point) {
-		start = point;
+	public void addPoint(final GeoPoint point) {
+		points.add(point);
+	}
+	
+	/** Add a list of points to this segment.
+	 * 
+	 */
+	
+	public void addPoints(final List<GeoPoint> points) {
+		this.points.addAll(points);
 	}
 	
 	/** Get the starting point of this 
@@ -95,7 +104,11 @@ public class Segment implements Parcelable{
 	 */
 	
 	public GeoPoint startPoint() {
-		return start;
+		return points.get(0);
+	}
+	
+	public List<GeoPoint> getPoints() {
+		return points;
 	}
 	
 	/** Creates a segment which is a copy of this one.
@@ -104,7 +117,7 @@ public class Segment implements Parcelable{
 	
 	public Segment copy() {
 		final Segment copy = new Segment();
-		copy.start = start;
+		copy.points = points;
 		copy.instruction = instruction;
 		copy.length = length;
 		copy.distance = distance;

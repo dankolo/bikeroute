@@ -5,6 +5,7 @@ package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.Segment;
 
 import android.app.Application;
 
@@ -16,13 +17,12 @@ public class BikeRouteApp extends Application {
 	/** Route object. **/
 	private Route route;
 	/** The current segment. **/
-	private int segId;
+	private Segment segment;
 	/** Previous addresses db. **/
 	private AddressDatabase db;
 
 	public BikeRouteApp () {
 		super();
-		segId = 0;
 	}
 	
 	@Override
@@ -35,7 +35,7 @@ public class BikeRouteApp extends Application {
 	 */
 	public void setRoute(final Route route) {
 		this.route = route;
-		this.segId = 0;
+		segment = route.getSegments().get(0);
 	}
 
 	/**
@@ -46,17 +46,17 @@ public class BikeRouteApp extends Application {
 	}
 
 	/**
-	 * @param segId the segId to set
+	 * @param segment the segment to set.
 	 */
-	public void setSegId(final int segId) {
-		this.segId = segId;
+	public void setSegment(final Segment segment) {
+		this.segment = segment;
 	}
 
 	/**
-	 * @return the segId
+	 * @return the current segment
 	 */
-	public int getSegId() {
-		return segId;
+	public Segment getSegment() {
+		return segment;
 	}
 
 	/**
