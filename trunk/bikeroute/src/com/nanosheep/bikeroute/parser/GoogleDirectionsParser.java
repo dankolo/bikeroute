@@ -69,9 +69,10 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 			}
 			/* Loop through the steps, creating a segment for each one and
 			 * decoding any polylines found as we go to add to the route object's
-			 * map array. Using an explicit for loop because it is faster!
+			 * map array.
 			 */
 			for (int i = 0; i < numSteps; i++) {
+				segment.clearPoints();
 				//Get the individual step
 				final JSONObject step = steps.getJSONObject(i);
 				//Set the length of this segment in metres

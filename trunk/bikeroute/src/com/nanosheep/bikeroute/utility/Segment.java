@@ -82,6 +82,14 @@ public class Segment implements Parcelable{
 	}
 	
 	/**
+	 * Clear the points out of a segment.
+	 */
+	
+	public void clearPoints() {
+		points.clear();
+	}
+	
+	/**
 	 * Add a point to this segment.
 	 * @param point GeoPoint to add.
 	 */

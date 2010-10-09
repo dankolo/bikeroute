@@ -16,8 +16,8 @@ import android.os.Parcelable;
 
 import org.andnav.osm.util.GeoPoint;
 
-import edu.wlu.cs.levy.CG.KDTree;
-
+import com.nanosheep.bikeroute.utility.kdtree.KDTree;
+import com.nanosheep.bikeroute.utility.kdtree.KeySizeException;
 /**
  * @author jono@nanosheep.net
  * @version Jun 22, 2010
@@ -33,14 +33,14 @@ public class Route implements Parcelable{
 	private XYSeries elevations;
 	private String polyline;
 	private Bundle segmentMap;
-	private KDTree<Segment> kd;
+	private KDTree kd;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
 		segments = new ArrayList<Segment>();
 		elevations = new XYSeries("Elevation");
 		segmentMap = new Bundle();
-		kd = new KDTree<Segment>(2);
+		kd = new KDTree(2);
 	}
 	
 	 public Route(final Parcel in) {
@@ -48,16 +48,6 @@ public class Route implements Parcelable{
          segments = new ArrayList<Segment>();
          elevations = new XYSeries("Elevation");
          readFromParcel(in);
-         kd = new KDTree<Segment>(2);
-         for (Segment s : segments) {
-        	 for (GeoPoint p : s.getPoints()) {
-        		 try {
-					kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, s);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-        	 }
-         }
 	 }
 	
 	 /* (non-Javadoc)
@@ -80,6 +70,7 @@ public class Route implements Parcelable{
             	 dest.writeDouble(elevations.getY(i));
              }
              dest.writeBundle(segmentMap);
+             dest.writeParcelable(kd, 0);
      }
      
      public void readFromParcel(final Parcel in) {
@@ -96,7 +87,18 @@ public class Route implements Parcelable{
             	 elevations.add(in.readDouble(), in.readDouble());
              }
              segmentMap = in.readBundle();
+             kd = in.readParcelable(KDTree.class.getClassLoader());
      }
+     
+    public void buildTree() {
+    	for (GeoPoint p : points) {
+    		try {
+    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, p);
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+    }
 
 	public void addPoint(final GeoPoint p) {
 		points.add(p);
@@ -110,15 +112,14 @@ public class Route implements Parcelable{
 		return points;
 	}
 	
+	public GeoPoint nearest(final GeoPoint p) throws KeySizeException {
+		return kd.nearest(new double[] {p.getLatitudeE6(), p.getLongitudeE6()});
+	}
+	
 	public void addSegment(final Segment s) {
 		segments.add(s);
 		for (GeoPoint p : s.getPoints()) {
 			segmentMap.putParcelable(p.toString(), s);
-			try {
-				kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, s);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 		}
 	}
 	
