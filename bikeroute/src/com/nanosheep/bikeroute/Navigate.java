@@ -381,7 +381,7 @@ public class Navigate extends Activity {
 					db.insert(endAddressField.getText().toString());
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
-				((BikeRouteApp)getApplication()).setRoute(route);
+				//((BikeRouteApp)getApplication()).setRoute(route);
 				startActivity(map);
 			} else {
 				showDialog(msg);

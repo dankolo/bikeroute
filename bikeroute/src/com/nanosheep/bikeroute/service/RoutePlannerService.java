@@ -5,6 +5,7 @@ package com.nanosheep.bikeroute.service;
 
 import org.andnav.osm.util.GeoPoint;
 
+import com.nanosheep.bikeroute.BikeRouteApp;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.RouteManager;
@@ -112,8 +113,10 @@ public class RoutePlannerService extends IntentService {
 		try {
 			if ((msg == BikeRouteConsts.RESULT_OK) && !planner.showRoute()) {
 				msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
+			} else {
+				((BikeRouteApp)getApplication()).setRoute(planner.getRoute());
 			}
-			resultIntent.putExtra("route", planner.getRoute());
+			//resultIntent.putExtra("route", planner.getRoute());
 		} catch (Exception e) {
 			msg = BikeRouteConsts.IOERROR;
 		} finally {

@@ -226,7 +226,9 @@ public class LiveRouteMap extends SpeechRouteMap {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		unregisterReceiver(routeReceiver);
+		if (routeReceiver != null) {
+			unregisterReceiver(routeReceiver);
+		}
 	}
 
 	private class ReplanReceiver extends BroadcastReceiver {

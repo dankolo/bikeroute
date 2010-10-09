@@ -43,6 +43,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 		// on current marker.
 		marker.setStartElementListener(new StartElementListener() {
 			public void start(final Attributes attributes) {
+				segment.clearPoints();
 				GeoPoint p;
 				
 				final String pointString = attributes.getValue("points");
@@ -83,15 +84,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 						distance += len;
 						route.addElevation(elevation, distance);
 					}
-					segment.setDistance(distance/1000);
-					segment.setLength(Integer.parseInt(length));
 					
-					
-				} else {
-					/** Parse route details. **/
-					route.setName(nameString);
-					route.setLength(Integer.parseInt(totalDistance));
-					final String[] pointsArray = geom.split(" ", -1);
 					final int len = pointsArray.length;
 					for (int i = 0; i < len; i++) {
 						final String[] point = pointsArray[i].split(",", -1);
@@ -100,6 +93,22 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 						route.addPoint(p);
 						segment.addPoint(p);
 					}
+					segment.setDistance(distance/1000);
+					segment.setLength(Integer.parseInt(length));
+					
+					
+				} else {
+					/** Parse route details. **/
+					route.setName(nameString);
+					route.setLength(Integer.parseInt(totalDistance));
+					//final String[] pointsArray = geom.split(" ", -1);
+					/*final int len = pointsArray.length;
+					for (int i = 0; i < len; i++) {
+						final String[] point = pointsArray[i].split(",", -1);
+						p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
+								Convert.asMicroDegrees(Double.parseDouble(point[0])));
+						route.addPoint(p);
+					}*/
 				}
 			}
 		});
@@ -117,6 +126,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 			Log.e(e.getMessage(), "CycleStreets parser - " + feedUrl);
 			return null;
 		}
+		route.buildTree();
 		return route;
 	}
 }
