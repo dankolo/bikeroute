@@ -20,6 +20,8 @@ public class BikeRouteApp extends Application {
 	private Segment segment;
 	/** Previous addresses db. **/
 	private AddressDatabase db;
+	/** Routing request id. **/
+	private int id;
 
 	public BikeRouteApp () {
 		super();
@@ -28,6 +30,7 @@ public class BikeRouteApp extends Application {
 	@Override
 	public void onCreate() {
 		db = new AddressDatabase(this);
+		id = 0;
 	}
 	
 	/**
@@ -64,6 +67,24 @@ public class BikeRouteApp extends Application {
 	 */
 	public AddressDatabase getDb() {
 		return db;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public void incrementId() {
+		id++;
+	}
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
 	}
 
 }

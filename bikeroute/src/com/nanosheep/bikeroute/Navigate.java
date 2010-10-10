@@ -179,6 +179,8 @@ public class Navigate extends Activity {
 	 */
 	private void requestRoute() {
 		showDialog(BikeRouteConsts.PLAN);
+		((BikeRouteApp)getApplication()).incrementId();
+		searchIntent.putExtra("id",((BikeRouteApp)getApplication()).getId());
 		isSearching = true;
 		startService(searchIntent);
 		routeReceiver = new RouteReceiver();
@@ -370,6 +372,7 @@ public class Navigate extends Activity {
 	 */
 	
 	private void searchComplete(final Integer msg, final Route route) {
+		route.buildTree();
 		if (mShownDialog) {
 			dismissDialog(BikeRouteConsts.PLAN);
 		}
@@ -381,7 +384,7 @@ public class Navigate extends Activity {
 					db.insert(endAddressField.getText().toString());
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
-				//((BikeRouteApp)getApplication()).setRoute(route);
+				((BikeRouteApp)getApplication()).setRoute(route);
 				startActivity(map);
 			} else {
 				showDialog(msg);
@@ -427,9 +430,11 @@ public class Navigate extends Activity {
 		 */
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			Navigate.this.searchComplete(intent.getIntExtra("msg", 0), 
+			if (intent.getIntExtra("id", 0) == ((BikeRouteApp)getApplication()).getId()) {
+				Navigate.this.searchComplete(intent.getIntExtra("msg", 0), 
 					(Route) intent.getParcelableExtra("route"));
-			Navigate.this.isSearching = false;
+				Navigate.this.isSearching = false;
+			}
 		}
     	
     }

@@ -24,7 +24,7 @@ import com.nanosheep.bikeroute.utility.kdtree.KeySizeException;
  */
 public class Route implements Parcelable{
 	private String name;
-	private final List<GeoPoint> points;
+	private List<GeoPoint> points;
 	private List<Segment> segments;
 	private String copyright;
 	private String warning;
@@ -39,7 +39,7 @@ public class Route implements Parcelable{
 		points = new ArrayList<GeoPoint>();
 		segments = new ArrayList<Segment>();
 		elevations = new XYSeries("Elevation");
-		segmentMap = new Bundle();
+		segmentMap = new Bundle(Segment.class.getClassLoader());
 		kd = new KDTree(2);
 	}
 	
@@ -86,18 +86,25 @@ public class Route implements Parcelable{
              for (int i = 0; i < elevSize; i++) {
             	 elevations.add(in.readDouble(), in.readDouble());
              }
-             segmentMap = in.readBundle();
+             segmentMap = in.readBundle(Segment.class.getClassLoader());
              kd = in.readParcelable(KDTree.class.getClassLoader());
      }
      
     public void buildTree() {
-    	for (GeoPoint p : points) {
-    		try {
-    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, p);
-    		} catch (Exception e) {
-    			e.printStackTrace();
-    		}
-    	}
+    	Thread t = new Thread(new Runnable() {
+		@Override
+		public void run() {
+			for (GeoPoint p : points) {
+	    		try {
+	    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, p);
+	    		} catch (Exception e) {
+	    			e.printStackTrace();
+	    		}
+	    	}
+		}
+    	});
+    	t.run();
+    	return;
     }
 
 	public void addPoint(final GeoPoint p) {

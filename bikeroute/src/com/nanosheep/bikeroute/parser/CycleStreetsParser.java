@@ -126,7 +126,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 			Log.e(e.getMessage(), "CycleStreets parser - " + feedUrl);
 			return null;
 		}
-		route.buildTree();
+		//route.buildTree();
 		return route;
 	}
 }

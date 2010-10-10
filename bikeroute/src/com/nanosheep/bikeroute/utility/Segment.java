@@ -46,7 +46,7 @@ public class Segment implements Parcelable{
     public void writeToParcel(final Parcel dest, final int flags) {
             dest.writeString(instruction);
             dest.writeInt(length);
-            dest.writeList(points);
+            dest.writeTypedList(points);
             dest.writeDouble(distance);
     }
     
@@ -58,8 +58,7 @@ public class Segment implements Parcelable{
     public void readFromParcel(final Parcel in) {
             instruction = in.readString();
             length = in.readInt();
-            points = new ArrayList<GeoPoint>();
-            in.readList(points, GeoPoint.class.getClassLoader());
+            points = in.createTypedArrayList(GeoPoint.CREATOR);
             distance = in.readDouble();
     }
 
@@ -125,7 +124,7 @@ public class Segment implements Parcelable{
 	
 	public Segment copy() {
 		final Segment copy = new Segment();
-		copy.points = points;
+		copy.points = new ArrayList<GeoPoint>(points);
 		copy.instruction = instruction;
 		copy.length = length;
 		copy.distance = distance;
@@ -158,6 +157,14 @@ public class Segment implements Parcelable{
 	 */
 	public double getDistance() {
 		return distance;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if ((o instanceof Segment) && ((Segment)o).getInstruction().equals(instruction)) {
+			return true;
+		}
+		return false;
 	}
 	
 	 public static final Parcelable.Creator CREATOR =

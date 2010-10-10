@@ -422,7 +422,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	
 	public void lastStep() {
 		final int index = app.getRoute().getSegments().indexOf(app.getSegment());
-		final ListIterator<Segment> it = app.getRoute().getSegments().listIterator(index + 1);
+		final ListIterator<Segment> it = app.getRoute().getSegments().listIterator(index);
 		if (it.hasPrevious()) {
 			app.setSegment(it.previous());
 		}
