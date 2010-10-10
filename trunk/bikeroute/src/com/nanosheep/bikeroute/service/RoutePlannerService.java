@@ -41,6 +41,7 @@ public class RoutePlannerService extends IntentService {
 	private static final String END_LOCATION = "end_location";
 	public static final String INTENT_ID = "com.nanosheep.bikeroute.service.RoutePlannerService";
 	public static final String END_POINT = null;
+	private RouteManager planner;
 	
 	/**
 	 * @param name
@@ -49,16 +50,23 @@ public class RoutePlannerService extends IntentService {
 		super("Route Planner Service.");
 	}
 
+	/**
+	 * Take route planning requests as intents, process them and feed back
+	 * when completed by sending an intent to signal completion and setting
+	 * the route object in the application.
+	 */
+	
 	/* (non-Javadoc)
 	 * @see android.app.IntentService#onHandleIntent(android.content.Intent)
 	 */
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		int msg = BikeRouteConsts.PLAN_FAIL_DIALOG; 
-		RouteManager planner = new RouteManager(this);
+		planner = new RouteManager(this);
 		final String startAddressInput = intent.getStringExtra(START_ADDRESS);
 		final String endAddressInput = intent.getStringExtra(END_ADDRESS);
 		final Intent resultIntent = new Intent(INTENT_ID);
+		final int id = intent.getIntExtra("id", 0);
 		
 		switch(intent.getIntExtra(PLAN_TYPE, ADDRESS_PLAN)) {
 		case ADDRESS_PLAN:
@@ -113,14 +121,13 @@ public class RoutePlannerService extends IntentService {
 		try {
 			if ((msg == BikeRouteConsts.RESULT_OK) && !planner.showRoute()) {
 				msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
-			} else {
-				((BikeRouteApp)getApplication()).setRoute(planner.getRoute());
-			}
-			//resultIntent.putExtra("route", planner.getRoute());
+			} 
+			resultIntent.putExtra("route", planner.getRoute());
 		} catch (Exception e) {
 			msg = BikeRouteConsts.IOERROR;
 		} finally {
 			resultIntent.putExtra("msg", msg);
+			resultIntent.putExtra("id", id);
 			sendBroadcast(resultIntent);
 		}
 		

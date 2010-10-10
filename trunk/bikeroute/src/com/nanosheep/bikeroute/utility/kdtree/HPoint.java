@@ -48,7 +48,6 @@ class HPoint implements Parcelable {
     }
 
     protected Object clone() {
-    	coord = new double[] {};
         return new HPoint(coord);
     }
 

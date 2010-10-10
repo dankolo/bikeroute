@@ -20,9 +20,11 @@ import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -31,6 +33,7 @@ import com.nanosheep.bikeroute.service.RoutePlannerService;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Route;
 import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.kdtree.KeySizeException;
 import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
 
 /**
@@ -40,7 +43,7 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
  * @author jono@nanosheep.net
  * @version Oct 4, 2010
  */
-public class LiveRouteMap extends SpeechRouteMap {
+public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	/** Proximity alert receiver for directions. **/
 	private ProximityReceiver proxAlerter;
 	/** Intent for replanning searches. **/
@@ -49,11 +52,14 @@ public class LiveRouteMap extends SpeechRouteMap {
 	protected BroadcastReceiver routeReceiver;
 	/** Planning dialog tracker. **/
 	protected boolean mShownDialog;
+	private boolean spoken;
+	private Object lastSegment;
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
-		proxAlerter = new ProximityReceiver();
+		//proxAlerter = new ProximityReceiver();
 		super.onCreate(savedState);
+		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		if (data != null) {
@@ -64,6 +70,9 @@ public class LiveRouteMap extends SpeechRouteMap {
 			}
 			mShownDialog = (Boolean) data[1];
 		}
+		
+		spoken = false;
+		lastSegment = app.getSegment();
 	}
 	
 	/**
@@ -94,7 +103,11 @@ public class LiveRouteMap extends SpeechRouteMap {
 		Iterator<Segment> it = app.getRoute().getSegments().listIterator(
 				app.getRoute().getSegments().indexOf(app.getSegment()));
 		if (it.hasNext()) {
-			proxAlerter.setStepAlert(it.next());
+			//proxAlerter.setStepAlert(it.next());
+		}
+		if (!spoken) {
+			speak(app.getSegment());
+			spoken = true;
 		}
 		super.showStep();
 		mLocationOverlay.enableMyLocation();
@@ -240,6 +253,7 @@ public class LiveRouteMap extends SpeechRouteMap {
 		public void onReceive(Context arg0, Intent intent) {
 				if (intent.getIntExtra("msg", BikeRouteConsts.PLAN_FAIL_DIALOG) == BikeRouteConsts.RESULT_OK) {
 					app.setRoute((Route) intent.getParcelableExtra("route"));
+					app.getRoute().buildTree();
 					mOsmv.getOverlays().remove(routeOverlay);
 					
 					routeOverlay = new RouteOverlay(Color.BLUE, LiveRouteMap.this);
@@ -251,6 +265,8 @@ public class LiveRouteMap extends SpeechRouteMap {
 					mOsmv.getController().setCenter(app.getSegment().startPoint());
 					dismissDialog(BikeRouteConsts.PLAN);
 					if (directionsVisible) {
+						spoken = false;
+						lastSegment = app.getSegment();
 						showStep();
 					}
 				} else {
@@ -312,6 +328,61 @@ public class LiveRouteMap extends SpeechRouteMap {
 			final LocationManager lm = (LocationManager) LiveRouteMap.this.getSystemService(Context.LOCATION_SERVICE);
 			lm.removeProximityAlert(pi);
 		}
+		
+	}
+
+
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
+	 */
+	@Override
+	public void onLocationChanged(Location location) {
+		if (directionsVisible) {
+		try {
+			GeoPoint self = new GeoPoint(location.getLatitude(), location.getLongitude());
+			GeoPoint near = app.getRoute().nearest(self);
+			
+			if (self.distanceTo(near) < 30) {
+				app.setSegment(app.getRoute().getSegment(near));
+				if (!lastSegment.equals(app.getSegment())) {
+					spoken = false;
+					lastSegment = app.getSegment();
+				}
+				showStep();
+			} else {
+				replan();
+			}
+			
+		} catch (KeySizeException e) {
+			Log.e("KD", e.toString());
+		}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onProviderDisabled(java.lang.String)
+	 */
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onProviderEnabled(java.lang.String)
+	 */
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see android.location.LocationListener#onStatusChanged(java.lang.String, int, android.os.Bundle)
+	 */
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
 		
 	}
 }
