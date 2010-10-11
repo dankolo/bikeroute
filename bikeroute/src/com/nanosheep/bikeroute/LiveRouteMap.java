@@ -3,13 +3,10 @@
  */
 package com.nanosheep.bikeroute;
 
-import java.util.Iterator;
-
 import org.andnav.osm.util.GeoPoint;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,7 +15,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
-import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -30,11 +26,7 @@ import android.view.MenuItem;
 
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RoutePlannerService;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Route;
-import com.nanosheep.bikeroute.utility.Segment;
-import com.nanosheep.bikeroute.utility.kdtree.KeySizeException;
-import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
+import edu.wlu.cs.levy.CG.KeySizeException;
 
 /**
  * Extends RouteMap providing live/satnav features - turn guidance advancing with location,
@@ -44,8 +36,6 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
  * @version Oct 4, 2010
  */
 public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
-	/** Proximity alert receiver for directions. **/
-	private ProximityReceiver proxAlerter;
 	/** Intent for replanning searches. **/
 	protected Intent searchIntent;
 	/** Replanning result receiver. **/
@@ -57,7 +47,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
-		//proxAlerter = new ProximityReceiver();
 		super.onCreate(savedState);
 		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 		//Handle rotations
@@ -100,18 +89,12 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	
 	@Override
 	public void showStep() {
-		Iterator<Segment> it = app.getRoute().getSegments().listIterator(
-				app.getRoute().getSegments().indexOf(app.getSegment()));
-		if (it.hasNext()) {
-			//proxAlerter.setStepAlert(it.next());
-		}
 		if (!spoken) {
 			speak(app.getSegment());
 			spoken = true;
 		}
 		super.showStep();
 		mLocationOverlay.enableMyLocation();
-		mLocationOverlay.followLocation(true);
 	}
 	
 	/**
@@ -124,7 +107,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 			directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
 		}
 		showDialog(BikeRouteConsts.PLAN);
-		mLocationOverlay.followLocation(true);
 		
 		mLocationOverlay.runOnFirstFix(new Runnable() {
 			@Override
@@ -242,6 +224,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 		if (routeReceiver != null) {
 			unregisterReceiver(routeReceiver);
 		}
+		mLocationManager.removeUpdates(this);
 	}
 
 	private class ReplanReceiver extends BroadcastReceiver {
@@ -252,18 +235,11 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 		@Override
 		public void onReceive(Context arg0, Intent intent) {
 				if (intent.getIntExtra("msg", BikeRouteConsts.PLAN_FAIL_DIALOG) == BikeRouteConsts.RESULT_OK) {
-					app.setRoute((Route) intent.getParcelableExtra("route"));
-					app.getRoute().buildTree();
-					mOsmv.getOverlays().remove(routeOverlay);
 					
-					routeOverlay = new RouteOverlay(Color.BLUE, LiveRouteMap.this);
-					for(GeoPoint pt : app.getRoute().getPoints()) {
-						routeOverlay.addPoint(pt);
-					}
-					mOsmv.getOverlays().add(routeOverlay);
 					app.setSegment(app.getRoute().getSegments().get(0));
 					mOsmv.getController().setCenter(app.getSegment().startPoint());
 					dismissDialog(BikeRouteConsts.PLAN);
+					traverse(app.getSegment().startPoint());
 					if (directionsVisible) {
 						spoken = false;
 						lastSegment = app.getSegment();
@@ -273,82 +249,34 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 					dismissDialog(BikeRouteConsts.PLAN);
 					showDialog(intent.getIntExtra("msg", 0));
 				}
+				isSearching = false;
 		}
 		
 	}
 	
+	/**
+	 * Listen for location changes, check for the nearest point to the new location
+	 * find the segment for it and advance to that step of the directions. If that point
+	 * is more than 50m away, fire a replan request,
+	 */
 	
-	private class ProximityReceiver extends BroadcastReceiver {
-		private static final String INTENT_ID = "com.nanosheep.bikeroute.STEP";
-		/** Intent filter. **/
-		private final IntentFilter filter;
-		/** Pending Intent. **/
-		private final PendingIntent pi;
-
-		public ProximityReceiver () {
-			super();
-			filter = new IntentFilter(INTENT_ID);
-			pi = PendingIntent.getBroadcast(LiveRouteMap.this, 0, new Intent(INTENT_ID),
-					PendingIntent.FLAG_CANCEL_CURRENT);
-		}
-		
-		/* (non-Javadoc)
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
-		 */
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			unsetAlert();
-			if (intent.getBooleanExtra(LocationManager.KEY_PROXIMITY_ENTERING, false)) {
-				nextStep();
-				setStepAlert(app.getSegment());
-			} else {
-				replan();
-			}
-			return;
-		}
-		
-		/**
-		 * Set a proximity alert at the given point for updating directions step.
-		 * 
-		 * @param segment point to alert at.
-		 */
-
-		public void setStepAlert(final Segment segment) {
-			final LocationManager lm = (LocationManager) LiveRouteMap.this.getSystemService(Context.LOCATION_SERVICE);
-			lm.addProximityAlert(Convert.asDegrees(segment.startPoint().getLatitudeE6()),
-					Convert.asDegrees(segment.startPoint().getLongitudeE6()), 20f, -1, pi);
-			LiveRouteMap.this.registerReceiver(this, filter);
-		}
-
-		/**
-		 * Remove the alert.
-		 */
-
-		public void unsetAlert() {
-			final LocationManager lm = (LocationManager) LiveRouteMap.this.getSystemService(Context.LOCATION_SERVICE);
-			lm.removeProximityAlert(pi);
-		}
-		
-	}
-
-
 	/* (non-Javadoc)
 	 * @see android.location.LocationListener#onLocationChanged(android.location.Location)
 	 */
 	@Override
 	public void onLocationChanged(Location location) {
-		if (directionsVisible) {
+		if (directionsVisible && !isSearching) {
 		try {
 			GeoPoint self = new GeoPoint(location.getLatitude(), location.getLongitude());
 			GeoPoint near = app.getRoute().nearest(self);
-			
-			if (self.distanceTo(near) < 30) {
+			if (self.distanceTo(near) < 50) {
 				app.setSegment(app.getRoute().getSegment(near));
 				if (!lastSegment.equals(app.getSegment())) {
 					spoken = false;
 					lastSegment = app.getSegment();
 				}
 				showStep();
+				traverse(near);
 			} else {
 				replan();
 			}

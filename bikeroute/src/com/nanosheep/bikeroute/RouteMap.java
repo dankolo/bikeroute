@@ -61,6 +61,8 @@ public class RouteMap extends OpenStreetMapActivity {
 	private LiveMarkers stands;
 	/** Route overlay. **/
 	protected OpenStreetMapViewPathOverlay routeOverlay;
+	/** Travelled route overlay. **/
+	protected OpenStreetMapViewPathOverlay travelledRouteOverlay;
 	/** Location manager. **/
 	protected LocationManager mLocationManager;
 	
@@ -99,19 +101,10 @@ public class RouteMap extends OpenStreetMapActivity {
 		/* Get location manager. */
 		mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 		
+		
+		/* Units preferences. */
 		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString("unitsPref", "km");
-		
-		//Detect swipes (left & right, taps.)
-        gestureDetector = new GestureDetector(this, new TurnByTurnGestureListener(this));
-        gestureListener = new View.OnTouchListener() {
-            public boolean onTouch(final View v, final MotionEvent event) {
-                if (gestureDetector.onTouchEvent(event)) {
-                    return true;
-                }
-                return false;
-            }
-        };
 		
 		//Set OSD invisible
 		directionsVisible = false;
@@ -144,10 +137,13 @@ public class RouteMap extends OpenStreetMapActivity {
 				
 		if (app.getRoute() != null) {
 			routeOverlay = new RouteOverlay(Color.BLUE,this);
+			travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
 			for(GeoPoint pt : app.getRoute().getPoints()) {
 				routeOverlay.addPoint(pt);
 			}
 			mOsmv.getOverlays().add(routeOverlay);
+			mOsmv.getOverlays().add(travelledRouteOverlay);
+			traverse(app.getSegment().startPoint());
 			if (getIntent().getBooleanExtra("jump", false)) {
 				showStep();
 			}
@@ -162,8 +158,6 @@ public class RouteMap extends OpenStreetMapActivity {
 		prk = new Parking(this);
 		// Initialize bike alert manager
 		bikeAlert = new BikeAlert(this);
-		// Initialize location service
-		mOsmv.getOverlays().add(mLocationOverlay);
 				
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
@@ -306,7 +300,6 @@ public class RouteMap extends OpenStreetMapActivity {
 			break;
 		case R.id.center:
 			showDialog(BikeRouteConsts.AWAITING_FIX);
-			mLocationOverlay.followLocation(true);
 			RouteMap.this.mLocationOverlay.runOnFirstFix(new Runnable() {
 				@Override
 				public void run() {
@@ -404,6 +397,25 @@ public class RouteMap extends OpenStreetMapActivity {
 	}
 	
 	/**
+	 * Traverse the route up to the point given, overlay a different coloured route
+	 * up to there.
+	 * @param point
+	 */
+	
+	protected void traverse(final GeoPoint point) {
+		travelledRouteOverlay.clearPath();
+		routeOverlay.clearPath();
+		int index = app.getRoute().getPoints().indexOf(point);
+		for (int i = 1; i < app.getRoute().getPoints().size(); i++) {
+			if (i <= index) {
+				travelledRouteOverlay.addPoint(app.getRoute().getPoints().get(i));
+			}	else {
+				routeOverlay.addPoint(app.getRoute().getPoints().get(i));
+			}
+		}
+	}
+	
+	/**
 	 * Go to the next step of the directions and show it.
 	 */
 	
@@ -414,6 +426,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			app.setSegment(it.next());
 		}
 		showStep();
+		traverse(app.getSegment().startPoint());
 	}
 	
 	/**
@@ -427,6 +440,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			app.setSegment(it.previous());
 		}
 		showStep();
+		traverse(app.getSegment().startPoint());
  	}
 	
 	/**
@@ -478,18 +492,6 @@ public class RouteMap extends OpenStreetMapActivity {
 			
 		});
 		
-		/*if (segId > 0) {
-			back.setVisibility(View.VISIBLE);
-		} else {
-			back.setVisibility(View.INVISIBLE);
-		}
-		
-		if (segId + 1 < route.getSegments().size()) {
-			next.setVisibility(View.VISIBLE);
-		} else {
-			next.setVisibility(View.INVISIBLE);
-		}*/
-		
 		overlay.setOnTouchListener(gestureListener);
 		
 		final TextView turn = (TextView) overlay.findViewById(R.id.turn);
@@ -519,6 +521,16 @@ public class RouteMap extends OpenStreetMapActivity {
 		 */
 		public OSDOverlay(final Context ctx) {
 			super(ctx);
+			//Detect swipes (left & right, taps.)
+	        gestureDetector = new GestureDetector(RouteMap.this, new TurnByTurnGestureListener(RouteMap.this));
+	        gestureListener = new View.OnTouchListener() {
+	            public boolean onTouch(final View v, final MotionEvent event) {
+	                if (gestureDetector.onTouchEvent(event)) {
+	                    return true;
+	                }
+	                return false;
+	            }
+	        };
 		}
 		
 		/**

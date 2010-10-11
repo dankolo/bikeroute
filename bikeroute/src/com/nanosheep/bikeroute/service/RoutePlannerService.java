@@ -37,8 +37,6 @@ public class RoutePlannerService extends IntentService {
 	public static final String START_ADDRESS = "start_address";
 	public static final String END_ADDRESS = "end_address";
 	public static final String START_LOCATION = "start_location";
-	private static final String LOCATION = "location package";
-	private static final String END_LOCATION = "end_location";
 	public static final String INTENT_ID = "com.nanosheep.bikeroute.service.RoutePlannerService";
 	public static final String END_POINT = null;
 	private RouteManager planner;
@@ -119,10 +117,13 @@ public class RoutePlannerService extends IntentService {
 			msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
 		}
 		try {
-			if ((msg == BikeRouteConsts.RESULT_OK) && !planner.showRoute()) {
-				msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
-			} 
-			resultIntent.putExtra("route", planner.getRoute());
+			if (id == ((BikeRouteApp)getApplication()).getId()) {
+				if ((msg == BikeRouteConsts.RESULT_OK) && !planner.showRoute()) {
+					msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
+				} else {
+					((BikeRouteApp)getApplication()).setRoute(planner.getRoute());
+				}
+			}
 		} catch (Exception e) {
 			msg = BikeRouteConsts.IOERROR;
 		} finally {

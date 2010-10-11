@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.andnav.osm.util.GeoPoint;
 
+import edu.wlu.cs.levy.CG.KDTree;
+import edu.wlu.cs.levy.CG.KeySizeException;
+
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -25,6 +28,7 @@ public class Segment implements Parcelable{
 	private int length;
 	/** Distance covered. **/
 	private double distance;
+	private KDTree<GeoPoint> kd;
 
 	
 	public Segment() {
@@ -105,6 +109,21 @@ public class Segment implements Parcelable{
 		this.points.addAll(points);
 	}
 	
+	public GeoPoint nearest(GeoPoint p) throws KeySizeException {
+		return kd.nearest(new double[] {p.getLatitudeE6(), p.getLongitudeE6()});
+	}
+	
+	public void buildTree() {
+		kd = new KDTree<GeoPoint>(2);
+		for (GeoPoint p : points) {
+    		try {
+    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, p);
+    		} catch (Exception e) {
+    			e.printStackTrace();
+    		}
+    	}
+	}
+	
 	/** Get the starting point of this 
 	 * segment.
 	 * @return a GeoPoint
@@ -128,6 +147,7 @@ public class Segment implements Parcelable{
 		copy.instruction = instruction;
 		copy.length = length;
 		copy.distance = distance;
+		copy.kd = kd;
 		return copy;
 	}
 	

@@ -71,7 +71,7 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	public void speak(final Segment segment) {
 		if (tts) {
 			Iterator<Segment> it = app.getRoute().getSegments().listIterator(
-					app.getRoute().getSegments().indexOf(segment));
+					app.getRoute().getSegments().indexOf(segment) + 1);
 			StringBuffer sb = new StringBuffer(segment.getInstruction());
 			if (it.hasNext()) {
 				sb.append(" then after ");
