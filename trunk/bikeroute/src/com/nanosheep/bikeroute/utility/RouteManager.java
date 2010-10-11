@@ -67,6 +67,8 @@ public class RouteManager {
 			if (RouteManager.this.route.getPoints().isEmpty()) {
 				throw new PlanException("Route is empty.");
 			}
+			//Build KD tree for the route
+			route.buildTree();
 		} catch (Exception e) {
 			Log.e(e.getMessage(), "Planner");
 			return false;

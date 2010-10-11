@@ -13,16 +13,17 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.andnav.osm.util.GeoPoint;
 
-import com.nanosheep.bikeroute.utility.kdtree.KDTree;
-import com.nanosheep.bikeroute.utility.kdtree.KeySizeException;
+import edu.wlu.cs.levy.CG.KDTree;
+import edu.wlu.cs.levy.CG.KeySizeException;
 /**
  * @author jono@nanosheep.net
  * @version Jun 22, 2010
  */
-public class Route implements Parcelable{
+public class Route {
 	private String name;
 	private List<GeoPoint> points;
 	private List<Segment> segments;
@@ -33,78 +34,31 @@ public class Route implements Parcelable{
 	private XYSeries elevations;
 	private String polyline;
 	private Bundle segmentMap;
-	private KDTree kd;
+	private KDTree<Segment> kd;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
 		segments = new ArrayList<Segment>();
 		elevations = new XYSeries("Elevation");
 		segmentMap = new Bundle(Segment.class.getClassLoader());
-		kd = new KDTree(2);
+		kd = new KDTree<Segment>(2);
 	}
-	
-	 public Route(final Parcel in) {
-         points = new ArrayList<GeoPoint>();
-         segments = new ArrayList<Segment>();
-         elevations = new XYSeries("Elevation");
-         readFromParcel(in);
-	 }
-	
-	 /* (non-Javadoc)
-      * @see android.os.Parcelable#writeToParcel(android.os.Parcel, int)
-      */
-     @Override
-     public void writeToParcel(final Parcel dest, final int flags) {
-             dest.writeString(name);
-             dest.writeTypedList(segments);
-             dest.writeString(copyright);
-             dest.writeString(warning);
-             dest.writeString(country);
-             dest.writeString(polyline);
-             dest.writeInt(length);
-             dest.writeTypedList(points);
-             int elevSize = elevations.getItemCount();
-             dest.writeInt(elevSize);
-             for (int i = 0; i < elevSize; i++) {
-            	 dest.writeDouble(elevations.getX(i));
-            	 dest.writeDouble(elevations.getY(i));
-             }
-             dest.writeBundle(segmentMap);
-             dest.writeParcelable(kd, 0);
-     }
-     
-     public void readFromParcel(final Parcel in) {
-             name = in.readString();
-             in.readTypedList(segments, Segment.CREATOR);
-             copyright = in.readString();
-             warning = in.readString();
-             country = in.readString();
-             polyline = in.readString();
-             length = in.readInt();
-             in.readTypedList(points, GeoPoint.CREATOR);
-             int elevSize = in.readInt();
-             for (int i = 0; i < elevSize; i++) {
-            	 elevations.add(in.readDouble(), in.readDouble());
-             }
-             segmentMap = in.readBundle(Segment.class.getClassLoader());
-             kd = in.readParcelable(KDTree.class.getClassLoader());
-     }
      
     public void buildTree() {
-    	Thread t = new Thread(new Runnable() {
-		@Override
-		public void run() {
-			for (GeoPoint p : points) {
+			for (Segment s : segments) {
+				GeoPoint p = s.startPoint();
+				GeoPoint pMid = s.getPoints().get(s.getPoints().size() / 2);
+				GeoPoint pEnd = s.getPoints().get(s.getPoints().size() - 2);
 	    		try {
-	    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, p);
+	    			s.buildTree();
+	    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, s);
+	    			kd.insert(new double[] {pEnd.getLatitudeE6(), pEnd.getLongitudeE6()}, s);
+	    			kd.insert(new double[] {pMid.getLatitudeE6(), pMid.getLongitudeE6()}, s);
 	    		} catch (Exception e) {
+	    			Log.e("KD: ", p + " " + pMid + " " + pEnd);
 	    			e.printStackTrace();
 	    		}
 	    	}
-		}
-    	});
-    	t.run();
-    	return;
     }
 
 	public void addPoint(final GeoPoint p) {
@@ -120,7 +74,8 @@ public class Route implements Parcelable{
 	}
 	
 	public GeoPoint nearest(final GeoPoint p) throws KeySizeException {
-		return kd.nearest(new double[] {p.getLatitudeE6(), p.getLongitudeE6()});
+		Segment near =  kd.nearest(new double[] {p.getLatitudeE6(), p.getLongitudeE6()});
+		return near.nearest(p);
 	}
 	
 	public void addSegment(final Segment s) {
@@ -271,26 +226,4 @@ public class Route implements Parcelable{
 	public String getPolyline() {
 		return polyline;
 	}
-
-	/* (non-Javadoc)
-	 * @see android.os.Parcelable#describeContents()
-	 */
-	@Override
-	public int describeContents() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-	
-	 public static final Parcelable.Creator CREATOR =
-	        new Parcelable.Creator() {
-	            public Route createFromParcel(final Parcel in) {
-	                return new Route(in);
-	            }
-
-	                        @Override
-	                        public Route[] newArray(final int size) {
-	                                return new Route[size];
-	                        }
-	        };
-
 }
