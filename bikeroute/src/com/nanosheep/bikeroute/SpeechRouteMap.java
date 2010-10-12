@@ -39,6 +39,7 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	
 	/**
 	 * Handle option selection.
+	 * Speak first step of directions iff turnbyturn selected.
 	 * @return true if option selected.
 	 */
 	@Override
@@ -52,6 +53,12 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	@Override
 	public void nextStep() {
 		super.nextStep();
+		speak(app.getSegment());
+	}
+	
+	@Override
+	public void lastStep() {
+		super.lastStep();
 		speak(app.getSegment());
 	}
 	
@@ -77,10 +84,10 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 				sb.append(" then after ");
 				if (unit.equals("km")) {
 					sb.append(segment.getLength());
-					sb.append("meters");
+					sb.append("meters ");
 				} else {
 					sb.append(Convert.asFeet(segment.getLength()));
-					sb.append("feet");
+					sb.append("feet ");
 				}
 				sb.append(it.next().getInstruction());
 			}
