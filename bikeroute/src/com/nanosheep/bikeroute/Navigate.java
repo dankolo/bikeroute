@@ -2,7 +2,8 @@ package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.service.RoutePlannerService;
+import com.nanosheep.bikeroute.service.RouteListener;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.AbstractContactAccessor;
 import com.nanosheep.bikeroute.utility.Parking;
@@ -19,7 +20,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -43,7 +43,7 @@ import android.widget.Button;
  * @author jono@nanosheep.net
  * @version Oct 3, 2010
  */
-public class Navigate extends Activity {	
+public class Navigate extends Activity implements RouteListener {	
 	
 	/** Start Address box. **/
 	private transient AutoCompleteTextView startAddressField;
@@ -63,6 +63,8 @@ public class Navigate extends Activity {
 	protected AbstractContactAccessor mContactAccessor;
 	private Intent searchIntent;
 	protected BroadcastReceiver routeReceiver;
+	protected BikeRouteApp app;
+	private RoutePlannerTask search;
 
 	/**Is planning dialog showing. **/
 	private static boolean mShownDialog;
@@ -71,18 +73,19 @@ public class Navigate extends Activity {
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
+	app = ((BikeRouteApp) getApplication());
 	mContactAccessor = AbstractContactAccessor.getInstance();
 	requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 	setContentView(R.layout.findplace);
 	setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
 	
-	searchIntent = new Intent(this, RoutePlannerService.class);
+	searchIntent = new Intent();
 	
 	isSearching = false;
 	mShownDialog = false;
 	
 	//DB
-	db = ((BikeRouteApp) getApplication()).getDb();
+	db = app.getDb();
 	
 	//Parking manager
 	prk = new Parking(this);
@@ -132,13 +135,10 @@ public class Navigate extends Activity {
 	final Object[] data = (Object[]) getLastNonConfigurationInstance();
 	if (data != null) {
 		isSearching = (Boolean) data[2];
-		if (isSearching) {
-			routeReceiver = new RouteReceiver();
-			registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
-		}
 		mShownDialog = (Boolean) data[1];
 		startAddressField.setText((String) data[3]);
 		endAddressField.setText((String) data[4]);
+		search = (RoutePlannerTask) data[5];
 	}
 	}
 	
@@ -154,9 +154,9 @@ public class Navigate extends Activity {
 	private class SearchClickListener implements OnClickListener {
 
 		public void onClick(final View view) {
-			searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.ADDRESS_PLAN);
-			searchIntent.putExtra(RoutePlannerService.START_ADDRESS, startAddressField.getText().toString());
-			searchIntent.putExtra(RoutePlannerService.END_ADDRESS, endAddressField.getText().toString());
+			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN);
+			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
+			searchIntent.putExtra(RoutePlannerTask.END_ADDRESS, endAddressField.getText().toString());
 			requestRoute();
 		}
 	}
@@ -179,12 +179,9 @@ public class Navigate extends Activity {
 	 */
 	private void requestRoute() {
 		showDialog(BikeRouteConsts.PLAN);
-		((BikeRouteApp)getApplication()).incrementId();
-		searchIntent.putExtra("id",((BikeRouteApp)getApplication()).getId());
 		isSearching = true;
-		startService(searchIntent);
-		routeReceiver = new RouteReceiver();
-		registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
+		search = new RoutePlannerTask(this, searchIntent);
+		search.execute();
 	}
 
 	/**
@@ -217,11 +214,7 @@ public class Navigate extends Activity {
 
 				@Override
 				public void onCancel(final DialogInterface arg0) {
-					if (isSearching) {
-						stopService(searchIntent);
-						unregisterReceiver(routeReceiver);
-						isSearching = false;
-					}
+						search.cancel(true);
 				}
 				
 			});
@@ -310,7 +303,7 @@ public class Navigate extends Activity {
 		final MenuItem back = menu.findItem(R.id.bike);
 		final MenuItem stand  = menu.findItem(R.id.stand);
 		steps.setVisible(false);
-		if (((BikeRouteApp)getApplication()).getRoute() != null) {
+		if (app.getRoute() != null) {
 			steps.setVisible(true);
 		}
 		back.setVisible(false);
@@ -345,13 +338,13 @@ public class Navigate extends Activity {
 			startActivity(intent);
 			break;
 		case R.id.bike:
-			searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.BIKE_PLAN);
-			searchIntent.putExtra(RoutePlannerService.START_ADDRESS, startAddressField.getText().toString());
+			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.BIKE_PLAN);
+			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
 			requestRoute();
 			break;
 		case R.id.stand:
-			searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.STANDS_PLAN);
-			searchIntent.putExtra(RoutePlannerService.START_ADDRESS, startAddressField.getText().toString());
+			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.STANDS_PLAN);
+			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
 			requestRoute();
 			break;
 		case R.id.about:
@@ -371,20 +364,18 @@ public class Navigate extends Activity {
 	 * @param route Route returned by the planner, or null.
 	 */
 	
-	private void searchComplete(final Integer msg, final Route route) {
-		//route.buildTree();
-		if (mShownDialog) {
-			dismissDialog(BikeRouteConsts.PLAN);
-		}
-		unregisterReceiver(routeReceiver);
+	public void searchComplete(final Integer msg, final Route route) {
 		if (msg != null) {
+			if (mShownDialog) {
+				dismissDialog(BikeRouteConsts.PLAN);
+			}
 			if (msg == BikeRouteConsts.RESULT_OK) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
 					db.insert(endAddressField.getText().toString());
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
-				//((BikeRouteApp)getApplication()).setRoute(route);
+				app.setRoute(route);
 				startActivity(map);
 			} else {
 				showDialog(msg);
@@ -422,22 +413,6 @@ public class Navigate extends Activity {
 
         task.execute(contactUri);
     }
-    
-    private class RouteReceiver extends BroadcastReceiver {
-
-		/* (non-Javadoc)
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
-		 */
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (intent.getIntExtra("id", 0) == ((BikeRouteApp)getApplication()).getId()) {
-				Navigate.this.searchComplete(intent.getIntExtra("msg", 0), 
-					(Route) intent.getParcelableExtra("route"));
-				Navigate.this.isSearching = false;
-			}
-		}
-    	
-    }
 	
 	/**
 	 * Overridden to preserve searchtask, dialog & textfields on rotation.
@@ -445,20 +420,30 @@ public class Navigate extends Activity {
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		Object[] objs = new Object[5];
+		Object[] objs = new Object[6];
 		objs[1] = mShownDialog;
 		objs[2] = isSearching;
 		objs[3] = startAddressField.getText().toString();
 		objs[4] = endAddressField.getText().toString();
+		objs[5] = search;
 	    return objs;
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see com.nanosheep.bikeroute.service.RouteListener#searchCancelled()
+	 */
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		if (routeReceiver != null) {
-			unregisterReceiver(routeReceiver);
-		}
+	public void searchCancelled() {
+		isSearching = false;
+		search = null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.nanosheep.bikeroute.service.RouteListener#getContext()
+	 */
+	@Override
+	public Context getContext() {
+		return this;
 	}
 
 }

@@ -7,6 +7,7 @@ import org.andnav.osm.DefaultResourceProxyImpl;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.OpenStreetMapView;
 import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay;
+import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemTapListener;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 
 import com.nanosheep.bikeroute.R;
@@ -14,6 +15,7 @@ import com.nanosheep.bikeroute.utility.Stands;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 
@@ -24,7 +26,7 @@ import android.os.Message;
  * @version Jun 21, 2010
  */
 
-public class LiveMarkers {
+public class LiveMarkers implements OnItemTapListener<OpenStreetMapViewOverlayItem> {
 	/** Update thread. **/
 	private Thread update;
 	/** Reference to map view to draw markers over. **/
@@ -43,7 +45,8 @@ public class LiveMarkers {
 		mv = mapview;
 		context = ctxt;
 		mOverlays = new ArrayList<OpenStreetMapViewOverlayItem>();
-		iOverlay = new OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem>(ctxt, mOverlays, null);
+		iOverlay = new OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem>(ctxt, mOverlays,
+				this, new DefaultResourceProxyImpl(ctxt));
 	}
 
 	/**
@@ -55,7 +58,7 @@ public class LiveMarkers {
 		update = new Thread() {
 			private static final int MSG = 0;
 			public void run() {
-				markers = Stands.getMarkers(p, RADIUS);
+				markers = Stands.getMarkers(p, RADIUS, context);
 				LiveMarkers.this.messageHandler.sendEmptyMessage(MSG);
 			}
 		};
@@ -77,11 +80,18 @@ public class LiveMarkers {
 			mOverlays.clear();
 			mOverlays.addAll(markers);
 			iOverlay = new OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem>(
-					context, mOverlays, context.getResources().getDrawable(R.drawable.marker_default),
-					new Point(0,0), null, new DefaultResourceProxyImpl(context));
+					context, mOverlays, null, new DefaultResourceProxyImpl(context));
 			mv.getOverlays().add(iOverlay);
 			mv.postInvalidate();
 		}
 	};
+
+	/* (non-Javadoc)
+	 * @see org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemTapListener#onItemTap(int, java.lang.Object)
+	 */
+	@Override
+	public boolean onItemTap(int aIndex, OpenStreetMapViewOverlayItem aItem) {
+		return false;
+	}
 
 }

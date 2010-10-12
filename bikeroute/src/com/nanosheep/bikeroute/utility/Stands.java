@@ -3,11 +3,15 @@ package com.nanosheep.bikeroute.utility;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.Context;
+import android.graphics.Point;
 import android.location.Address;
 
+import org.andnav.osm.DefaultResourceProxyImpl;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.parser.OSMParser;
 import com.nanosheep.bikeroute.view.overlay.Marker;
@@ -19,7 +23,6 @@ import com.nanosheep.bikeroute.view.overlay.Marker;
  */
 
 public final class Stands {
-
 	private Stands() {
 	}
 	
@@ -30,13 +33,13 @@ public final class Stands {
 	 * @return a GeoPoint representing the cycle stand position or null.
 	 */
 	
-	public static GeoPoint getNearest(final GeoPoint point) {
+	public static GeoPoint getNearest(final GeoPoint point, final Context mAct) {
 		GeoPoint closest = null;
 		double xD;
 		double yD;
 		double best = 9999999;
 		double dist;
-		for (OpenStreetMapViewOverlayItem o : getMarkers(point, 1)) {
+		for (OpenStreetMapViewOverlayItem o : getMarkers(point, 1, mAct)) {
 			xD = o.mGeoPoint.getLatitudeE6() - point.getLatitudeE6();
 			yD = o.mGeoPoint.getLongitudeE6() - point.getLongitudeE6();
 			dist = Math.sqrt(xD*xD + yD*yD);
@@ -48,9 +51,9 @@ public final class Stands {
 		return closest;
 	}
 	
-	public static GeoPoint getNearest(final Address address) {
+	public static GeoPoint getNearest(final Address address, final Context mAct) {
 		return getNearest(new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
-				Convert.asMicroDegrees(address.getLongitude())));
+				Convert.asMicroDegrees(address.getLongitude())), mAct);
 	}
 
 	/**
@@ -62,15 +65,17 @@ public final class Stands {
 	 */
 
 	public static List<OpenStreetMapViewOverlayItem> getMarkers(final GeoPoint p,
-			final double distance) {
+			final double distance, final Context mAct) {
 		final String query = BikeRouteConsts.OSM_API + getOSMBounds(getBounds(p, distance));
 		final List<OpenStreetMapViewOverlayItem> markers = new ArrayList<OpenStreetMapViewOverlayItem>();
 		final OSMParser parser = new OSMParser(query);
 
 		// Parse XML to overlayitems (cycle stands)
 		for (Marker m : parser.parse()) {
-			markers.add(new OpenStreetMapViewOverlayItem(Integer.toString(m
-					.getCapacity()), "", m.getLocation()));
+			/*markers.add(new OpenStreetMapViewOverlayItem(Integer.toString(m
+					.getCapacity()), "", m.getLocation()));*/
+			markers.add(OpenStreetMapViewOverlayItem.getDefaultItem(mAct.getResources().getDrawable(R.drawable.icon),
+					new Point(20, 0), null, new DefaultResourceProxyImpl(mAct)));
 		}
 
 		return markers;

@@ -3,16 +3,16 @@
  */
 package com.nanosheep.bikeroute;
 
+import java.util.Iterator;
+
 import org.andnav.osm.util.GeoPoint;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.location.Location;
@@ -25,7 +25,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.service.RoutePlannerService;
+import com.nanosheep.bikeroute.service.RouteListener;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
+import com.nanosheep.bikeroute.utility.Route;
+
 import edu.wlu.cs.levy.CG.KeySizeException;
 
 /**
@@ -35,15 +38,14 @@ import edu.wlu.cs.levy.CG.KeySizeException;
  * @author jono@nanosheep.net
  * @version Oct 4, 2010
  */
-public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
+public class LiveRouteMap extends SpeechRouteMap implements LocationListener, RouteListener {
 	/** Intent for replanning searches. **/
 	protected Intent searchIntent;
-	/** Replanning result receiver. **/
-	protected BroadcastReceiver routeReceiver;
 	/** Planning dialog tracker. **/
 	protected boolean mShownDialog;
 	private boolean spoken;
 	private Object lastSegment;
+	private RoutePlannerTask search;
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
@@ -53,14 +55,11 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		if (data != null) {
 			isSearching = (Boolean) data[2];
-			if (isSearching) {
-				routeReceiver = new ReplanReceiver();
-				registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
-			}
+			search = (RoutePlannerTask) data[3];
 			mShownDialog = (Boolean) data[1];
 		}
 		
-		spoken = false;
+		spoken = true;
 		lastSegment = app.getSegment();
 	}
 	
@@ -70,10 +69,11 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		Object[] objs = new Object[3];
+		Object[] objs = new Object[4];
 		objs[0] = directionsVisible;
 		objs[1] = mShownDialog;
 		objs[2] = isSearching;
+		objs[3] = search;
 	    return objs;
 	}
 	
@@ -90,11 +90,16 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	@Override
 	public void showStep() {
 		if (!spoken) {
-			speak(app.getSegment());
 			spoken = true;
+			speak(app.getSegment());
 		}
 		super.showStep();
-		mLocationOverlay.enableMyLocation();
+	}
+	
+	@Override
+	public void hideStep() {
+		super.hideStep();
+		spoken = false;
 	}
 	
 	/**
@@ -120,15 +125,14 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 							self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 						}
 						if (self != null) {
-							searchIntent = new Intent(LiveRouteMap.this, RoutePlannerService.class);
-							searchIntent.putExtra(RoutePlannerService.PLAN_TYPE, RoutePlannerService.REPLAN_PLAN);
-							searchIntent.putExtra(RoutePlannerService.START_LOCATION, self);
-							searchIntent.putExtra(RoutePlannerService.END_POINT,
+							searchIntent = new Intent();
+							searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.REPLAN_PLAN);
+							searchIntent.putExtra(RoutePlannerTask.START_LOCATION, self);
+							searchIntent.putExtra(RoutePlannerTask.END_POINT,
 									app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
 							isSearching = true;
-							startService(searchIntent);
-							routeReceiver = new ReplanReceiver();
-							registerReceiver(routeReceiver, new IntentFilter(RoutePlannerService.INTENT_ID));
+							search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
+							search.execute();
 						} else {
 							dismissDialog(BikeRouteConsts.PLAN);
 							showDialog(BikeRouteConsts.PLAN_FAIL_DIALOG);
@@ -159,11 +163,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 
 				@Override
 				public void onCancel(final DialogInterface arg0) {
-					if (isSearching) {
-						stopService(searchIntent);
-						unregisterReceiver(routeReceiver);
-						isSearching = false;
-					}
+					search.cancel(true);
 				}
 			
 			});
@@ -221,37 +221,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		if (routeReceiver != null) {
-			unregisterReceiver(routeReceiver);
-		}
 		mLocationManager.removeUpdates(this);
-	}
-
-	private class ReplanReceiver extends BroadcastReceiver {
-
-		/* (non-Javadoc)
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
-		 */
-		@Override
-		public void onReceive(Context arg0, Intent intent) {
-				if (intent.getIntExtra("msg", BikeRouteConsts.PLAN_FAIL_DIALOG) == BikeRouteConsts.RESULT_OK) {
-					
-					app.setSegment(app.getRoute().getSegments().get(0));
-					mOsmv.getController().setCenter(app.getSegment().startPoint());
-					dismissDialog(BikeRouteConsts.PLAN);
-					traverse(app.getSegment().startPoint());
-					if (directionsVisible) {
-						spoken = false;
-						lastSegment = app.getSegment();
-						showStep();
-					}
-				} else {
-					dismissDialog(BikeRouteConsts.PLAN);
-					showDialog(intent.getIntExtra("msg", 0));
-				}
-				isSearching = false;
-		}
-		
 	}
 	
 	/**
@@ -265,10 +235,13 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	 */
 	@Override
 	public void onLocationChanged(Location location) {
+		//Ignore if directions not shown or replanning
 		if (directionsVisible && !isSearching) {
 		try {
+			//Find the nearest point and unless it is far, assume we're there
 			GeoPoint self = new GeoPoint(location.getLatitude(), location.getLongitude());
 			GeoPoint near = app.getRoute().nearest(self);
+			
 			if (self.distanceTo(near) < 50) {
 				app.setSegment(app.getRoute().getSegment(near));
 				if (!lastSegment.equals(app.getSegment())) {
@@ -277,8 +250,14 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 				}
 				showStep();
 				traverse(near);
-			} else {
-				replan();
+			} else if (!isSearching) {
+				Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
+						app.getRoute().getPoints().indexOf(near));
+				GeoPoint next = it.hasNext() ? it.next() : near;
+				
+				if (range(self, near, next) >= 50){
+					replan();
+				}
 			}
 			
 		} catch (KeySizeException e) {
@@ -312,5 +291,66 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener {
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.nanosheep.bikeroute.service.RouteListener#searchComplete(java.lang.Integer, com.nanosheep.bikeroute.utility.Route)
+	 */
+	@Override
+	public void searchComplete(Integer msg, Route route) {
+		if (msg != null) {
+			if (mShownDialog) {
+				dismissDialog(BikeRouteConsts.PLAN);
+			}
+			isSearching = false;
+			if (msg == BikeRouteConsts.RESULT_OK) {
+				app.setRoute(route);
+				app.setSegment(app.getRoute().getSegments().get(0));
+				mOsmv.getController().setCenter(app.getSegment().startPoint());
+				traverse(app.getSegment().startPoint());
+				spoken = true;
+				if (directionsVisible) {
+					spoken = false;
+					lastSegment = app.getSegment();
+					showStep();
+				}
+			} else {
+				showDialog(msg);
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.nanosheep.bikeroute.service.RouteListener#searchCancelled()
+	 */
+	@Override
+	public void searchCancelled() {
+		isSearching = false;
+		search = null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.nanosheep.bikeroute.service.RouteListener#getContext()
+	 */
+	@Override
+	public Context getContext() {
+		return this;
+	}
+	
+	/**
+	 * Get the distance of p0 from the line defined by p1,p2.
+	 * @param p0 point to get distance to.
+	 * @param p1 start point of line.
+	 * @param p2 end point of line.
+	 * @return the distance from p0 to the line as a double.
+	 */
+	
+	private double range(final GeoPoint p0, final GeoPoint p1, final GeoPoint p2) {
+		double dist = ((p2.getLatitudeE6() - p1.getLatitudeE6())*(p1.getLongitudeE6() - p0.getLongitudeE6()) - 
+		(p1.getLatitudeE6() - p0.getLatitudeE6())*(p2.getLongitudeE6() - p1.getLongitudeE6())) /
+		Math.sqrt(Math.pow(p2.getLatitudeE6() - p1.getLatitudeE6(), 2) 
+				+ Math.pow(p2.getLongitudeE6() - p1.getLongitudeE6(), 2));
+		
+		return dist;
 	}
 }

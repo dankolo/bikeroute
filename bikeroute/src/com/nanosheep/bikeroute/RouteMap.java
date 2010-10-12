@@ -116,6 +116,7 @@ public class RouteMap extends OpenStreetMapActivity {
         mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
         this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
         this.mLocationOverlay.enableMyLocation();
+        this.mLocationOverlay.followLocation(false);
         this.mOsmv.setBuiltInZoomControls(true);
         this.mOsmv.setMultiTouchControls(true);
         this.mOsmv.getOverlays().add(this.mLocationOverlay);
@@ -406,10 +407,11 @@ public class RouteMap extends OpenStreetMapActivity {
 		travelledRouteOverlay.clearPath();
 		routeOverlay.clearPath();
 		int index = app.getRoute().getPoints().indexOf(point);
-		for (int i = 1; i < app.getRoute().getPoints().size(); i++) {
+		for (int i = 0; i < app.getRoute().getPoints().size(); i++) {
 			if (i <= index) {
 				travelledRouteOverlay.addPoint(app.getRoute().getPoints().get(i));
-			}	else {
+			} 
+			if (i >= index){
 				routeOverlay.addPoint(app.getRoute().getPoints().get(i));
 			}
 		}
