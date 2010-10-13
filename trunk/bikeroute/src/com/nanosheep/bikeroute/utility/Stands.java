@@ -35,14 +35,12 @@ public final class Stands {
 	
 	public static GeoPoint getNearest(final GeoPoint point, final Context mAct) {
 		GeoPoint closest = null;
-		double xD;
-		double yD;
 		double best = 9999999;
 		double dist;
+		
 		for (OpenStreetMapViewOverlayItem o : getMarkers(point, 1, mAct)) {
-			xD = o.mGeoPoint.getLatitudeE6() - point.getLatitudeE6();
-			yD = o.mGeoPoint.getLongitudeE6() - point.getLongitudeE6();
-			dist = Math.sqrt(xD*xD + yD*yD);
+			dist = point.distanceTo(o.mGeoPoint);
+		
 			if (best > dist) {
 				best = dist;
 				closest = o.mGeoPoint;
