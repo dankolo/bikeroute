@@ -130,7 +130,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 							searchIntent.putExtra(RoutePlannerTask.START_LOCATION, self);
 							searchIntent.putExtra(RoutePlannerTask.END_POINT,
 									app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
-							isSearching = true;
 							search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
 							search.execute();
 						} else {
@@ -250,12 +249,13 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				}
 				showStep();
 				traverse(near);
-			} else if (!isSearching) {
+			} else {
 				Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
 						app.getRoute().getPoints().indexOf(near));
 				GeoPoint next = it.hasNext() ? it.next() : near;
 				
 				if (range(self, near, next) >= 50){
+					isSearching = true;
 					replan();
 				}
 			}
@@ -338,18 +338,17 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	}
 	
 	/**
-	 * Get the distance of p0 from the line defined by p1,p2.
+	 * Get the cross track error of p0 from the path p1 -> p2
 	 * @param p0 point to get distance to.
 	 * @param p1 start point of line.
 	 * @param p2 end point of line.
-	 * @return the distance from p0 to the line as a double.
+	 * @return the distance from p0 to the path in meters as a double.
 	 */
 	
 	private double range(final GeoPoint p0, final GeoPoint p1, final GeoPoint p2) {
-		double dist = ((p2.getLatitudeE6() - p1.getLatitudeE6())*(p1.getLongitudeE6() - p0.getLongitudeE6()) - 
-		(p1.getLatitudeE6() - p0.getLatitudeE6())*(p2.getLongitudeE6() - p1.getLongitudeE6())) /
-		Math.sqrt(Math.pow(p2.getLatitudeE6() - p1.getLatitudeE6(), 2) 
-				+ Math.pow(p2.getLongitudeE6() - p1.getLongitudeE6(), 2));
+		double dist = Math.asin(Math.sin(p1.distanceTo(p0)/BikeRouteConsts.EARTH_RADIUS) * 
+				Math.sin(p1.bearingTo(p0) - p1.bearingTo(p2))) * 
+				BikeRouteConsts.EARTH_RADIUS;
 		
 		return dist;
 	}
