@@ -27,7 +27,10 @@ import android.view.MenuItem;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
-import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
+import com.nanosheep.bikeroute.R;
+
 
 import edu.wlu.cs.levy.CG.KeySizeException;
 
@@ -43,14 +46,19 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	protected Intent searchIntent;
 	/** Planning dialog tracker. **/
 	protected boolean mShownDialog;
+	
+	/** Directions spoken trigger. **/
 	private boolean spoken;
-	private Object lastSegment;
+	
+	/** Search task for replanning. **/
 	private RoutePlannerTask search;
+	
+	/** Live navigation toggle. **/
+	private boolean liveNavigation;
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
-		mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		if (data != null) {
@@ -60,7 +68,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		}
 		
 		spoken = true;
-		lastSegment = app.getSegment();
 	}
 	
 	/**
@@ -94,12 +101,18 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			speak(app.getSegment());
 		}
 		super.showStep();
+		if(mSettings.getBoolean("gps", false)) {
+			mLocationOverlay.followLocation(true);
+		} else {
+			mLocationOverlay.followLocation(false);
+		}
 	}
 	
 	@Override
 	public void hideStep() {
 		super.hideStep();
 		spoken = false;
+		mLocationOverlay.followLocation(false);
 	}
 	
 	/**
@@ -111,7 +124,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		if (tts) {
 			directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
 		}
-		showDialog(BikeRouteConsts.PLAN);
+		showDialog(R.id.plan);
 		
 		mLocationOverlay.runOnFirstFix(new Runnable() {
 			@Override
@@ -133,18 +146,35 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 							search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
 							search.execute();
 						} else {
-							dismissDialog(BikeRouteConsts.PLAN);
-							showDialog(BikeRouteConsts.PLAN_FAIL_DIALOG);
+							dismissDialog(R.id.plan);
+							showDialog(R.id.plan_fail);
 						}
 				}
 		});
 	}
 	
 
+	@Override
 	public Dialog onCreateDialog(final int id) {
 		Dialog dialog;
+		AlertDialog.Builder builder;
 		switch(id) {
-		case BikeRouteConsts.PLAN:
+		case R.id.gps:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(R.string.gps_msg);
+			builder.setCancelable(false);
+			builder.setPositiveButton(getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+						showGpsOptions();
+					}
+				});
+			builder.setTitle(R.string.gps_msg_title);
+			dialog = builder.create();
+			break;
+		case R.id.plan:
 			ProgressDialog pDialog = new ProgressDialog(this);
 			pDialog.setCancelable(true);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -152,7 +182,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			pDialog.setOnDismissListener(new OnDismissListener() {
 				@Override
 				public void onDismiss(final DialogInterface arg0) {
-					removeDialog(BikeRouteConsts.PLAN);
+					removeDialog(R.id.plan);
 					if (!LiveRouteMap.this.isSearching) {
 						mShownDialog = false;
 					}
@@ -168,14 +198,16 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			});
 			dialog = pDialog;
 			break;
-		case BikeRouteConsts.PLAN_FAIL_DIALOG:
+		case R.id.plan_fail:
 			if (tts) {
-				directionsTts.speak("Planning failed.", TextToSpeech.QUEUE_FLUSH, null);
+				directionsTts.speak(getString(R.string.plan_failed_speech), TextToSpeech.QUEUE_FLUSH, null);
 			}
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
-				true).setPositiveButton("OK",
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(R.string.planfail_msg);
+			builder.setCancelable(
+				true).setPositiveButton(getString(R.string.ok),
 				new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(final DialogInterface dialog,
 							final int id) {
 					}
@@ -196,7 +228,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	@Override
 	protected void onPrepareDialog(final int id, final Dialog dialog) {
 		super.onPrepareDialog(id, dialog);
-		if (id == BikeRouteConsts.PLAN) {
+		if (id == R.id.plan) {
 			mShownDialog = true;
 		}
 	}
@@ -218,9 +250,23 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	}
 	
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
+	public void onStop() {
+		super.onStop();
 		mLocationManager.removeUpdates(this);
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		liveNavigation = mSettings.getBoolean("gps", false);
+		
+		if (liveNavigation) {
+			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
+			}	else {
+				showDialog(R.id.gps);
+			}
+		}
 	}
 	
 	/**
@@ -235,29 +281,28 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	@Override
 	public void onLocationChanged(Location location) {
 		//Ignore if directions not shown or replanning
-		if (directionsVisible && !isSearching) {
+		if (directionsVisible && !isSearching && liveNavigation) {
 		try {
 			//Find the nearest point and unless it is far, assume we're there
-			GeoPoint self = new GeoPoint(location.getLatitude(), location.getLongitude());
+			GeoPoint self = new GeoPoint(location);
 			GeoPoint near = app.getRoute().nearest(self);
 			
-			if (self.distanceTo(near) < 50) {
+			Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
+					app.getRoute().getPoints().indexOf(near));
+			GeoPoint next = it.hasNext() ? it.next() : near;
+			double range = range(self, near, next);
+			
+			if (range < 50) {
 				app.setSegment(app.getRoute().getSegment(near));
-				if (!lastSegment.equals(app.getSegment())) {
+				//Speak directions if the next point is a new segment
+				if (!app.getSegment().equals(app.getRoute().getSegment(next))) {
 					spoken = false;
-					lastSegment = app.getSegment();
 				}
 				showStep();
 				traverse(near);
 			} else {
-				Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
-						app.getRoute().getPoints().indexOf(near));
-				GeoPoint next = it.hasNext() ? it.next() : near;
-				
-				if (range(self, near, next) >= 50){
 					isSearching = true;
 					replan();
-				}
 			}
 			
 		} catch (KeySizeException e) {
@@ -300,10 +345,10 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	public void searchComplete(Integer msg, Route route) {
 		if (msg != null) {
 			if (mShownDialog) {
-				dismissDialog(BikeRouteConsts.PLAN);
+				dismissDialog(R.id.plan);
 			}
 			isSearching = false;
-			if (msg == BikeRouteConsts.RESULT_OK) {
+			if (msg == R.id.result_ok) {
 				app.setRoute(route);
 				app.setSegment(app.getRoute().getSegments().get(0));
 				mOsmv.getController().setCenter(app.getSegment().startPoint());
@@ -311,7 +356,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				spoken = true;
 				if (directionsVisible) {
 					spoken = false;
-					lastSegment = app.getSegment();
 					showStep();
 				}
 			} else {
@@ -350,6 +394,15 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				Math.sin(p1.bearingTo(p0) - p1.bearingTo(p2))) * 
 				BikeRouteConsts.EARTH_RADIUS;
 		
-		return dist;
+		return Math.abs(dist);
+	}
+	
+	/** Show GPS options if GPS provider is disabled.
+	 * 
+	 */
+	
+	private void showGpsOptions() { 
+        startActivity(new Intent(  
+                android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)); 
 	}
 }

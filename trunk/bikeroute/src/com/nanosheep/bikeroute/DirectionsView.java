@@ -7,9 +7,8 @@ import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -43,9 +42,13 @@ public class DirectionsView extends ListActivity {
 	public void onCreate(final Bundle in) {
 		requestWindowFeature(Window.FEATURE_RIGHT_ICON);
 		super.onCreate(in);
-		
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
 		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		unit = settings.getString("unitsPref", "km");
+		unit = settings.getString(getString(R.string.prefs_units), getString(R.string.km));
 
 		route = ((BikeRouteApp)getApplication()).getRoute();
 		
@@ -55,7 +58,7 @@ public class DirectionsView extends ListActivity {
 		//Create a header for the list.
 		final TextView header = new TextView(this);
 		StringBuffer sBuf = new StringBuffer("Total distance: ");
-		if ("km".equals(unit)) {
+		if (getString(R.string.km).equals(unit)) {
 			sBuf.append(Convert.asMeterString(route.getLength()));
 			sBuf.append(" (");
 			sBuf.append(Convert.asKilometerString(route.getLength()));
@@ -133,15 +136,15 @@ public class DirectionsView extends ListActivity {
 			intentDir = new Intent(this, Preferences.class);
 			break;
 		case R.id.about:
-			showDialog(BikeRouteConsts.ABOUT);
+			showDialog(R.id.about);
 			return true;
 		case R.id.elevation:
 			XYMultipleSeriesDataset elevation = route.getElevations();
 			final XYMultipleSeriesRenderer renderer = route.getChartRenderer();
-			if (!"km".equals(unit)) {
+			if (!getString(R.string.km).equals(unit)) {
 				elevation = Convert.asImperial(elevation);
-				renderer.setYTitle("ft");
-			    renderer.setXTitle("m");
+				renderer.setYTitle(getString(R.string.ft));
+			    renderer.setXTitle(getString(R.string.meters));
 			}
 			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
 			intentDir = ChartFactory.getLineChartIntent(this, elevation, renderer);
@@ -158,11 +161,13 @@ public class DirectionsView extends ListActivity {
 	 * @return the approriate Dialog object
 	 */
 	
+	@Override
 	public Dialog onCreateDialog(final int id) {
 		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage(getText(R.string.about_message)).setCancelable(
-				true).setPositiveButton("OK",
+				true).setPositiveButton(getString(R.string.ok),
 				new DialogInterface.OnClickListener() {
+					@Override
 					public void onClick(final DialogInterface dialog,
 							final int id) {
 						dialog.dismiss();

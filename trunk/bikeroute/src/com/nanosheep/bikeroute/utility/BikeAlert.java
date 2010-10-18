@@ -1,5 +1,6 @@
 package com.nanosheep.bikeroute.utility;
 
+import com.nanosheep.bikeroute.R;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -9,8 +10,6 @@ import android.content.IntentFilter;
 import android.location.LocationManager;
 
 import org.andnav.osm.util.GeoPoint;
-
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 
 /**
  * Display an alert on return to the location the bike was parked at.
@@ -30,9 +29,8 @@ public final class BikeAlert extends BroadcastReceiver {
 	public BikeAlert(final Activity activity) {
 		super();
 		act = activity;
-		final String intentId = "com.nanosheep.bikeroute.BIKE_ALERT";
-		filter = new IntentFilter(intentId);
-		pi = PendingIntent.getBroadcast(activity, 0, new Intent(intentId),
+		filter = new IntentFilter(act.getString(R.string.bike_alert_intent));
+		pi = PendingIntent.getBroadcast(activity, 0, new Intent(act.getString(R.string.bike_alert_intent)),
 				PendingIntent.FLAG_CANCEL_CURRENT);
 	}
 
@@ -45,7 +43,7 @@ public final class BikeAlert extends BroadcastReceiver {
 		final boolean enter = intent.getBooleanExtra(
 				LocationManager.KEY_PROXIMITY_ENTERING, false);
 		if (enter) {
-			act.showDialog(BikeRouteConsts.UNPARK_DIALOG);
+			act.showDialog(R.id.unpark);
 		}
 	}
 

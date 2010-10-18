@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.StringAddress;
 
@@ -18,6 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Filter;
 
 import com.nanosheep.bikeroute.BikeRouteApp;
+import com.nanosheep.bikeroute.R;
 
 /**
  * Overrides the arrayadapter to display a list of suggestions retrieved
@@ -119,7 +119,7 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				FindPlaceAdapter.this.notifyDataSetChanged();
 			} else if (results.count == -1) {
 				//Show an io error message if an exception was thrown
-				((Activity) getContext()).showDialog(BikeRouteConsts.IOERROR);
+				((Activity) getContext()).showDialog(R.id.ioerror);
 				FindPlaceAdapter.this.notifyDataSetInvalidated();
 			} else {
 				FindPlaceAdapter.this.notifyDataSetInvalidated();

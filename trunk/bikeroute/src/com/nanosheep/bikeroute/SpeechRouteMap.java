@@ -6,10 +6,9 @@ package com.nanosheep.bikeroute;
 import java.util.Iterator;
 
 import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.MenuItem;
@@ -30,11 +29,16 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
-		tts = PreferenceManager.getDefaultSharedPreferences(this).getBoolean("tts", false);
+	}
+	
+	@Override
+	public void onStart() {
+		tts = mSettings.getBoolean("tts", false);
 		//Initialize tts if in use.
         if (tts) {
         	directionsTts = new TextToSpeech(this, this);
         }
+        super.onStart();
 	}
 	
 	/**
@@ -82,7 +86,7 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 			StringBuffer sb = new StringBuffer(segment.getInstruction());
 			if (it.hasNext()) {
 				sb.append(" then after ");
-				if (unit.equals("km")) {
+				if (unit.equals(getString(R.string.km))) {
 					sb.append(segment.getLength());
 					sb.append("meters ");
 				} else {

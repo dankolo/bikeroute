@@ -7,7 +7,7 @@
     </item>
     <item android:id="@+id/directions"
           android:title="@string/directions_title"
-          android:icon="@drawable/ic_menu_directions" >
+          android:icon="@drawable/ic_menu_directions" android:visible="false" >
     </item>
     <item android:id="@+id/map"
     android:title="@string/map_title"
@@ -26,11 +26,11 @@
     </item>
     <item android:id="@+id/turnbyturn"
     	android:title="@string/turnbyturn"
-    	android:icon="@drawable/ic_menu_turnbyturn">
+    	android:icon="@drawable/ic_menu_turnbyturn" android:visible="false" >
     	</item>
     <item android:id="@+id/replan"
           android:title="@string/replan_title"
-          android:icon="@drawable/ic_menu_stand" >
+          android:icon="@drawable/ic_menu_stand" android:visible="false" >
     </item>
     <item android:id="@+id/showstands"
           android:title="@string/showstands_title"
@@ -41,7 +41,7 @@
     android:icon="@drawable/ic_menu_preferences"></item>
     <item android:id="@+id/elevation"
     android:title="Elevation"
-    android:icon="@drawable/ic_menu_elevation"></item>
+    android:icon="@drawable/ic_menu_elevation" android:visible="false" ></item>
     <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
     
 </menu>

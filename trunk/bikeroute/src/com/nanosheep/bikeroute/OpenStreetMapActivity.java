@@ -6,8 +6,6 @@ import org.andnav.osm.views.OpenStreetMapView;
 import org.andnav.osm.views.overlay.MyLocationOverlay;
 import org.andnav.osm.views.util.OpenStreetMapRendererFactory;
 
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -43,18 +41,18 @@ public class OpenStreetMapActivity extends Activity {
 
         mResourceProxy = new DefaultResourceProxyImpl(getApplicationContext());
 
-        mPrefs = getSharedPreferences(BikeRouteConsts.PREFS_NAME, MODE_PRIVATE);
+        mPrefs = getSharedPreferences(getString(R.string.prefs_name), MODE_PRIVATE);
 
     }
 
     @Override
     protected void onPause() {
         final SharedPreferences.Editor edit = mPrefs.edit();
-        edit.putInt(BikeRouteConsts.PREFS_SCROLL_X, mOsmv.getScrollX());
-        edit.putInt(BikeRouteConsts.PREFS_SCROLL_Y, mOsmv.getScrollY());
-        edit.putInt(BikeRouteConsts.PREFS_ZOOM_LEVEL, mOsmv.getZoomLevel());
-        edit.putBoolean(BikeRouteConsts.PREFS_SHOW_LOCATION, mLocationOverlay.isMyLocationEnabled());
-        edit.putBoolean(BikeRouteConsts.PREFS_FOLLOW_LOCATION, mLocationOverlay.isLocationFollowEnabled());
+        edit.putInt(getString(R.string.prefs_scrollx), mOsmv.getScrollX());
+        edit.putInt(getString(R.string.prefs_scrolly), mOsmv.getScrollY());
+        edit.putInt(getString(R.string.prefs_zoomlevel), mOsmv.getZoomLevel());
+        edit.putBoolean(getString(R.string.prefs_showlocation), mLocationOverlay.isMyLocationEnabled());
+        edit.putBoolean(getString(R.string.prefs_followlocation), mLocationOverlay.isLocationFollowEnabled());
         edit.commit();
 
         this.mLocationOverlay.disableMyLocation();
@@ -66,10 +64,10 @@ public class OpenStreetMapActivity extends Activity {
     protected void onResume() {
         super.onResume();
         mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
-        if(mPrefs.getBoolean(BikeRouteConsts.PREFS_SHOW_LOCATION, false)) {
+        if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
         }
-        this.mLocationOverlay.followLocation(mPrefs.getBoolean(BikeRouteConsts.PREFS_FOLLOW_LOCATION, true));
+        this.mLocationOverlay.followLocation(mPrefs.getBoolean(getString(R.string.prefs_followlocation), true));
     }
 
 

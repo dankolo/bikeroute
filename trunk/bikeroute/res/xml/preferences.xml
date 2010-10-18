@@ -28,4 +28,11 @@
         		android:key="tts"
         		/>
         	</PreferenceCategory>
+        	<PreferenceCategory
+        	android:title="Live Satnav">
+        	<CheckBoxPreference
+        	android:title="Use GPS based satnav"
+        	android:defaultValue="false"
+        		android:key="gps" />
+        	</PreferenceCategory>
 </PreferenceScreen>

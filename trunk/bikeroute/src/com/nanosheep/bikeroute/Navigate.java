@@ -1,14 +1,13 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
-import com.nanosheep.bikeroute.utility.AbstractContactAccessor;
 import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.Route;
 import com.nanosheep.bikeroute.utility.StringAddress;
+import com.nanosheep.bikeroute.utility.contacts.AbstractContactAccessor;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -90,9 +89,6 @@ public class Navigate extends Activity implements RouteListener {
 	//Parking manager
 	prk = new Parking(this);
 	
-	//Initialise geocoder
-	final Geocoder geocoder = new Geocoder(this);
-	
 	//Initialise fields
 	startAddressField = (AutoCompleteTextView) findViewById(R.id.start_address_input);
 	endAddressField = (AutoCompleteTextView) findViewById(R.id.end_address_input);		
@@ -104,30 +100,6 @@ public class Navigate extends Activity implements RouteListener {
 	startAddressField.setAdapter(adapter);
 	endAddressField.setAdapter(adapter);
 	
-	
-	
-	/* Get current lat & lng if available. */
-	final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-	
-	Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-	if (self == null) {
-		self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-	}
-	
-	/* Autofill starting location by reverse geocoding current
-	 * lat & lng
-	 */
-	
-	if (self != null) {
-		try {
-			final Address startAddress = geocoder.getFromLocation(self.getLatitude(),
-				self.getLongitude(), 1).get(0);
-			startAddressField.setText(StringAddress.asString(startAddress));
-		} catch (Exception e) {
-			Log.e(e.getMessage(), "FindPlace - location: " + self);
-		}
-	}
-	
 	//Initialise search button
 	searchButton.setOnClickListener(new SearchClickListener());
 	
@@ -135,11 +107,39 @@ public class Navigate extends Activity implements RouteListener {
 	final Object[] data = (Object[]) getLastNonConfigurationInstance();
 	if (data != null) {
 		isSearching = (Boolean) data[2];
-		mShownDialog = (Boolean) data[1];
 		startAddressField.setText((String) data[3]);
 		endAddressField.setText((String) data[4]);
 		search = (RoutePlannerTask) data[5];
+		mShownDialog = false;
 	}
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		//Initialise geocoder
+		final Geocoder geocoder = new Geocoder(this);
+		/* Get current lat & lng if available. */
+		final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+		
+		Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+		if (self == null) {
+			self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+		}
+		
+		/* Autofill starting location by reverse geocoding current
+		 * lat & lng
+		 */
+		
+		if (self != null) {
+			try {
+				final Address startAddress = geocoder.getFromLocation(self.getLatitude(),
+					self.getLongitude(), 1).get(0);
+				startAddressField.setText(StringAddress.asString(startAddress));
+			} catch (Exception e) {
+				Log.e(e.getMessage(), "FindPlace - location: " + self);
+			}
+		}
 	}
 	
 	/**
@@ -153,6 +153,7 @@ public class Navigate extends Activity implements RouteListener {
 	
 	private class SearchClickListener implements OnClickListener {
 
+		@Override
 		public void onClick(final View view) {
 			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN);
 			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
@@ -169,7 +170,7 @@ public class Navigate extends Activity implements RouteListener {
 	@Override
 	protected void onPrepareDialog(final int id, final Dialog dialog) {
 		super.onPrepareDialog(id, dialog);
-		if (id == BikeRouteConsts.PLAN) {
+		if (id == R.id.plan) {
 			mShownDialog = true;
 		}
 	}
@@ -178,7 +179,7 @@ public class Navigate extends Activity implements RouteListener {
 	 * Request a route from the planning service, register a receiver to handle it.
 	 */
 	private void requestRoute() {
-		showDialog(BikeRouteConsts.PLAN);
+		showDialog(R.id.plan);
 		isSearching = true;
 		search = new RoutePlannerTask(this, searchIntent);
 		search.execute();
@@ -191,12 +192,13 @@ public class Navigate extends Activity implements RouteListener {
 	 * @return the approriate Dialog object
 	 */
 	
+	@Override
 	public Dialog onCreateDialog(final int id) {
 		AlertDialog.Builder builder;
 		ProgressDialog pDialog;
 		Dialog dialog;
 		switch(id) {
-		case BikeRouteConsts.PLAN:
+		case R.id.plan:
 			pDialog = new ProgressDialog(this);
 			pDialog.setCancelable(true);
 			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -204,7 +206,7 @@ public class Navigate extends Activity implements RouteListener {
 			pDialog.setOnDismissListener(new OnDismissListener() {
 				@Override
 				public void onDismiss(final DialogInterface arg0) {
-					removeDialog(BikeRouteConsts.PLAN);
+					removeDialog(R.id.plan);
 					if (!Navigate.this.isSearching) {
 						mShownDialog = false;
 					}
@@ -220,22 +222,24 @@ public class Navigate extends Activity implements RouteListener {
 			});
 			dialog = pDialog;
 			break;
-		case BikeRouteConsts.PLAN_FAIL_DIALOG:
+		case R.id.plan_fail:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
-					true).setPositiveButton("OK",
+					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 						}
 					});
 			dialog = builder.create();
 			break;
-		case BikeRouteConsts.IOERROR:
+		case R.id.ioerror:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.io_error_msg)).setCancelable(
-					true).setPositiveButton("OK",
+					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 							dialog.dismiss();
@@ -243,11 +247,12 @@ public class Navigate extends Activity implements RouteListener {
 					});
 			dialog = builder.create();
 			break;
-		case BikeRouteConsts.ARGERROR:
+		case R.id.argerror:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.arg_error_msg)).setCancelable(
-					true).setPositiveButton("OK",
+					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 							dialog.dismiss();
@@ -255,11 +260,12 @@ public class Navigate extends Activity implements RouteListener {
 					});
 			dialog = builder.create();
 			break;
-		case BikeRouteConsts.RES_ERROR:
+		case R.id.reserror:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.result_error_msg)).setCancelable(
-					true).setPositiveButton("OK",
+					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 							dialog.dismiss();
@@ -267,11 +273,12 @@ public class Navigate extends Activity implements RouteListener {
 					});
 			dialog = builder.create();
 			break;
-		case BikeRouteConsts.ABOUT:
+		case R.id.about:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.about_message)).setCancelable(
-					true).setPositiveButton("OK",
+					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 							dialog.dismiss();
@@ -348,7 +355,7 @@ public class Navigate extends Activity implements RouteListener {
 			requestRoute();
 			break;
 		case R.id.about:
-			showDialog(BikeRouteConsts.ABOUT);
+			showDialog(R.id.about);
 			break;
 		case R.id.contacts:
 			startActivityForResult(mContactAccessor.getPickContactIntent(), 0);
@@ -364,12 +371,17 @@ public class Navigate extends Activity implements RouteListener {
 	 * @param route Route returned by the planner, or null.
 	 */
 	
+	@Override
 	public void searchComplete(final Integer msg, final Route route) {
 		if (msg != null) {
 			if (mShownDialog) {
-				dismissDialog(BikeRouteConsts.PLAN);
+				try {
+					dismissDialog(R.id.plan);
+				} catch (IllegalArgumentException e) {
+					Log.e("Dialog", e.getMessage());
+				}
 			}
-			if (msg == BikeRouteConsts.RESULT_OK) {
+			if (msg == R.id.result_ok) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
 					db.insert(endAddressField.getText().toString());
