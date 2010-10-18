@@ -10,12 +10,9 @@ import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay;
 import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemTapListener;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 
-import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.Stands;
 
 import android.content.Context;
-import android.graphics.Point;
-import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Message;
 

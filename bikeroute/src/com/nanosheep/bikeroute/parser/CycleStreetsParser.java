@@ -4,8 +4,8 @@ import org.xml.sax.Attributes;
 import org.andnav.osm.util.GeoPoint;
 
 import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Route;
-import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
 import android.sax.Element;
 import android.sax.EndElementListener;

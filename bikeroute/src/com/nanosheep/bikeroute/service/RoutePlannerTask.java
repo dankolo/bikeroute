@@ -5,10 +5,11 @@ package com.nanosheep.bikeroute.service;
 
 import org.andnav.osm.util.GeoPoint;
 
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.RouteManager;
 import com.nanosheep.bikeroute.utility.Stands;
+import com.nanosheep.bikeroute.utility.route.RouteManager;
 
 import android.content.Intent;
 import android.location.Location;
@@ -40,7 +41,6 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
 	public static final String START_ADDRESS = "start_address";
 	public static final String END_ADDRESS = "end_address";
 	public static final String START_LOCATION = "start_location";
-	public static final String INTENT_ID = "com.nanosheep.bikeroute.service.RoutePlannerService";
 	public static final String END_POINT = "end_point";
 	private RouteManager planner;
     protected String startAddressInput;
@@ -62,65 +62,65 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         }
         @Override
         protected Integer doInBackground(Void... arg0) {
-        	int msg = BikeRouteConsts.PLAN_FAIL_DIALOG; 
+        	int msg = R.id.plan_fail; 
     		final String startAddressInput = mIntent.getStringExtra(START_ADDRESS);
     		final String endAddressInput = mIntent.getStringExtra(END_ADDRESS);
                 switch(mIntent.getIntExtra(PLAN_TYPE, ADDRESS_PLAN)) {
         		case ADDRESS_PLAN:
         			if ("".equals(startAddressInput) || "".equals(endAddressInput)) {
-        				msg = BikeRouteConsts.ARGERROR;
+        				msg = R.id.argerror;
         			} else {
-        				msg = BikeRouteConsts.RESULT_OK;
+        				msg = R.id.result_ok;
         				try {
         					planner.setStart(startAddressInput);
         					planner.setDest(endAddressInput);		
         				} catch (Exception e) {
-        					msg = BikeRouteConsts.IOERROR;
+        					msg = R.id.ioerror;
         				}
         			}
         			break;
         		case BIKE_PLAN:
         			final Parking prk = new Parking(mAct.getContext());
         			if ("".equals(startAddressInput)) {
-        				msg = BikeRouteConsts.ARGERROR;
+        				msg = R.id.argerror;
         			} else {
         				try {
         					planner.setStart(startAddressInput);
         					planner.setDest(prk.getLocation());	
         				} catch (Exception e) {
-        					msg = BikeRouteConsts.IOERROR;
+        					msg = R.id.ioerror;
         				}
         			}
         			break;
         		case STANDS_PLAN:
         			if ("".equals(startAddressInput)) {
-        				msg = BikeRouteConsts.ARGERROR;
+        				msg = R.id.argerror;
         			} else {
-        				msg = BikeRouteConsts.RESULT_OK;
+        				msg = R.id.result_ok;
         				try {
         					planner.setStart(startAddressInput);
         					planner.setDest(Stands.getNearest(planner.getStart(), mAct.getContext()));	
         				} catch (Exception e) {
-        					msg = BikeRouteConsts.IOERROR;
+        					msg = R.id.ioerror;
         				}
         			}
         			break;
         		case REPLAN_PLAN:
         			final Location start = mIntent.getParcelableExtra(START_LOCATION);
         			final GeoPoint dest = mIntent.getParcelableExtra(END_POINT);
-        			msg = BikeRouteConsts.RESULT_OK;
+        			msg = R.id.result_ok;
         			planner.setStart(start);
         			planner.setDest(dest);	
         			break;
         		default:
-        			msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
+        			msg = R.id.plan_fail;
         		}
                 try {
-                	if ((msg == BikeRouteConsts.RESULT_OK) && !planner.showRoute()) {
-                		msg = BikeRouteConsts.PLAN_FAIL_DIALOG;
+                	if ((msg == R.id.result_ok) && !planner.showRoute()) {
+                		msg = R.id.plan_fail;
                 	}
         		} catch (Exception e) {
-        			msg = BikeRouteConsts.IOERROR;
+        			msg = R.id.ioerror;
         		}
         		return msg;
         }

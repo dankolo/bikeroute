@@ -3,8 +3,6 @@
  */
 package com.nanosheep.bikeroute;
 
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -31,10 +29,10 @@ public class Preferences extends PreferenceActivity {
                 //Check for TTS
                 Intent checkIntent = new Intent();
 				checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-				startActivityForResult(checkIntent, BikeRouteConsts.TTS_CHECK);
+				startActivityForResult(checkIntent, R.id.tts_check);
 				
                 addPreferencesFromResource(R.xml.preferences);
-                tts = (Preference) findPreference("tts");
+                tts = findPreference("tts");
         }
         
         @Override
@@ -81,15 +79,16 @@ public class Preferences extends PreferenceActivity {
     			startActivity(intent);
     			break;
     		case R.id.about:
-    			showDialog(BikeRouteConsts.ABOUT);
+    			showDialog(R.id.about);
     			break;
     		}
     		return true;
     	}
     	
-    	protected void onActivityResult(
+    	@Override
+		protected void onActivityResult(
 		        final int requestCode, final int resultCode, final Intent data) {
-		    if (requestCode == BikeRouteConsts.TTS_CHECK) {
+		    if (requestCode == R.id.tts_check) {
 		        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 		        	tts.setEnabled(true);
 		        } else {
@@ -108,11 +107,13 @@ public class Preferences extends PreferenceActivity {
     	 * @return the approriate Dialog object
     	 */
     	
-    	public Dialog onCreateDialog(final int id) {
+    	@Override
+		public Dialog onCreateDialog(final int id) {
     		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.about_message)).setCancelable(
 					true).setPositiveButton("OK",
 					new DialogInterface.OnClickListener() {
+						@Override
 						public void onClick(final DialogInterface dialog,
 								final int id) {
 							dialog.dismiss();

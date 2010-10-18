@@ -3,7 +3,7 @@
  */
 package com.nanosheep.bikeroute.parser;
 
-import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 /**
  * @author jono@nanosheep.net

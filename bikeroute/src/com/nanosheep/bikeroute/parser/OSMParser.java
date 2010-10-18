@@ -7,10 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andnav.osm.util.GeoPoint;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-
-import com.nanosheep.bikeroute.view.overlay.Marker;
 
 import android.sax.Element;
 import android.sax.EndElementListener;
@@ -33,23 +32,22 @@ public class OSMParser extends XMLParser {
 	}
 
 
-	public List<Marker> parse() {
-			final Marker currentMarker = new Marker();
+	public List<GeoPoint> parse() {
 			final RootElement root = new RootElement("osm");
-			final List<Marker> marks = new ArrayList<Marker>();
+			final List<GeoPoint> marks = new ArrayList<GeoPoint>();
 			final Element node = root.getChild("node");
 			// Listen for start of tag, get attributes and set them
 			// on current marker.
 			node.setStartElementListener(new StartElementListener() {
 				public void start(final Attributes attributes) {
-					currentMarker.setLat(attributes.getValue("lat"));
-					currentMarker.setLng(attributes.getValue("lon"));
+					marks.add(new GeoPoint(
+							Double.parseDouble(attributes.getValue("lat")),
+							Double.parseDouble(attributes.getValue("lon"))));
 				}
 
 			});
 			node.setEndElementListener(new EndElementListener() {
 				public void end() {
-					marks.add(currentMarker.copy());
 				}
 			});
 			try {

@@ -6,7 +6,7 @@ package com.nanosheep.bikeroute.service;
 import android.app.Activity;
 import android.content.Context;
 
-import com.nanosheep.bikeroute.utility.Route;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 /**
  * @author jono@nanosheep.net

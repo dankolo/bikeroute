@@ -17,8 +17,8 @@ import android.util.Log;
 import org.andnav.osm.util.GeoPoint;
 
 import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Route;
-import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
 /**
  * Parse a google directions json object to a route.

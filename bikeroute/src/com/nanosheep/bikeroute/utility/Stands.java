@@ -5,16 +5,15 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 
-import org.andnav.osm.DefaultResourceProxyImpl;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 
 import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.parser.OSMParser;
-import com.nanosheep.bikeroute.view.overlay.Marker;
 
 /**
  * Utility class for querying cycle stands api based on gis data.
@@ -64,16 +63,18 @@ public final class Stands {
 
 	public static List<OpenStreetMapViewOverlayItem> getMarkers(final GeoPoint p,
 			final double distance, final Context mAct) {
-		final String query = BikeRouteConsts.OSM_API + getOSMBounds(getBounds(p, distance));
+		final String query = mAct.getString(R.string.stands_api) + getOSMBounds(getBounds(p, distance));
 		final List<OpenStreetMapViewOverlayItem> markers = new ArrayList<OpenStreetMapViewOverlayItem>();
 		final OSMParser parser = new OSMParser(query);
+		final Point hotspot = new Point(0, 20);
+		final Drawable markerIcon = mAct.getResources().getDrawable(R.drawable.ic_marker_default);
 
 		// Parse XML to overlayitems (cycle stands)
-		for (Marker m : parser.parse()) {
-			/*markers.add(new OpenStreetMapViewOverlayItem(Integer.toString(m
-					.getCapacity()), "", m.getLocation()));*/
-			markers.add(OpenStreetMapViewOverlayItem.getDefaultItem(mAct.getResources().getDrawable(R.drawable.icon),
-					new Point(20, 0), null, new DefaultResourceProxyImpl(mAct)));
+		for (GeoPoint point : parser.parse()) {
+			OpenStreetMapViewOverlayItem marker = new OpenStreetMapViewOverlayItem("", "", point);
+			marker.setMarker(markerIcon);
+			marker.setMarkerHotspot(hotspot);
+			markers.add(marker);
 		}
 
 		return markers;

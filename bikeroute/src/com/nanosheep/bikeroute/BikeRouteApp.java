@@ -4,8 +4,8 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.utility.AddressDatabase;
-import com.nanosheep.bikeroute.utility.Route;
-import com.nanosheep.bikeroute.utility.Segment;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
 import android.app.Application;
 
