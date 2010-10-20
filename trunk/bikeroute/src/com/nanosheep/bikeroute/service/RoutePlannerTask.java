@@ -56,6 +56,10 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
                 planner = new RouteManager(mAct.getContext());
         }
         
+        public void setListener(final RouteListener listener) {
+        	mAct = listener;
+        }
+        
         @Override
         protected void onPreExecute() {
                 

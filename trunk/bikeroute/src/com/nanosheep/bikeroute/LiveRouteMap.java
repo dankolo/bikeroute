@@ -28,6 +28,7 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 import com.nanosheep.bikeroute.R;
 
 
@@ -55,6 +56,10 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	/** Live navigation toggle. **/
 	private boolean liveNavigation;
 	
+	/** Last segment visited. **/
+	
+	private Segment lastSegment;
+	
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
@@ -63,6 +68,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		if (data != null) {
 			isSearching = (Boolean) data[2];
 			search = (RoutePlannerTask) data[3];
+			if(search != null) {
+				search.setListener(this);
+			}
 		}
 		
 		spoken = true;
@@ -295,7 +303,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			if (range < 50) {
 				app.setSegment(app.getRoute().getSegment(near));
 				//Speak directions if the next point is a new segment
-				if (!app.getSegment().equals(app.getRoute().getSegment(next))) {
+				if (!app.getSegment().equals(app.getRoute().getSegment(next)) &&
+						!app.getSegment().equals(lastSegment)) {
+					lastSegment = app.getSegment();
 					spoken = false;
 				}
 				showStep();
@@ -343,9 +353,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	 */
 	@Override
 	public void searchComplete(Integer msg, Route route) {
-		if (mShownDialog) {
+		//if (mShownDialog) {
 			dismissDialog(R.id.plan);
-		}
+		//}
 		isSearching = false;
 		if (msg != null) {
 			

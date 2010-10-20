@@ -110,7 +110,9 @@ public class Navigate extends Activity implements RouteListener {
 		startAddressField.setText((String) data[3]);
 		endAddressField.setText((String) data[4]);
 		search = (RoutePlannerTask) data[5];
-		mShownDialog = false;
+		if(search != null) {
+			search.setListener(this);
+		}
 	}
 	}
 	
@@ -374,13 +376,7 @@ public class Navigate extends Activity implements RouteListener {
 	@Override
 	public void searchComplete(final Integer msg, final Route route) {
 		if (msg != null) {
-			if (mShownDialog) {
-				try {
-					dismissDialog(R.id.plan);
-				} catch (IllegalArgumentException e) {
-					Log.e("Dialog", e.getMessage());
-				}
-			}
+			dismissDialog(R.id.plan);
 			if (msg == R.id.result_ok) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
