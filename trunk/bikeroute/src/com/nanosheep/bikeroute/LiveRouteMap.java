@@ -28,7 +28,6 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
 import com.nanosheep.bikeroute.R;
 
 
@@ -64,10 +63,19 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		if (data != null) {
 			isSearching = (Boolean) data[2];
 			search = (RoutePlannerTask) data[3];
-			mShownDialog = (Boolean) data[1];
 		}
 		
 		spoken = true;
+		
+		liveNavigation = mSettings.getBoolean("gps", false);
+		
+		if (liveNavigation) {
+			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, this);
+			}	else {
+				showDialog(R.id.gps);
+			}
+		}
 	}
 	
 	/**
@@ -250,23 +258,15 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	}
 	
 	@Override
-	public void onStop() {
-		super.onStop();
+	public void onDestroy() {
+		super.onDestroy();
 		mLocationManager.removeUpdates(this);
 	}
 	
 	@Override
 	public void onStart() {
 		super.onStart();
-		liveNavigation = mSettings.getBoolean("gps", false);
 		
-		if (liveNavigation) {
-			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 60000, 0, this);
-			}	else {
-				showDialog(R.id.gps);
-			}
-		}
 	}
 	
 	/**
@@ -288,7 +288,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			GeoPoint near = app.getRoute().nearest(self);
 			
 			Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
-					app.getRoute().getPoints().indexOf(near));
+					app.getRoute().getPoints().indexOf(near) + 1);
 			GeoPoint next = it.hasNext() ? it.next() : near;
 			double range = range(self, near, next);
 			
@@ -343,11 +343,12 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	 */
 	@Override
 	public void searchComplete(Integer msg, Route route) {
+		if (mShownDialog) {
+			dismissDialog(R.id.plan);
+		}
+		isSearching = false;
 		if (msg != null) {
-			if (mShownDialog) {
-				dismissDialog(R.id.plan);
-			}
-			isSearching = false;
+			
 			if (msg == R.id.result_ok) {
 				app.setRoute(route);
 				app.setSegment(app.getRoute().getSegments().get(0));
