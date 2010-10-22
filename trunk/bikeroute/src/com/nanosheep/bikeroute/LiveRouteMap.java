@@ -47,9 +47,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	/** Planning dialog tracker. **/
 	protected boolean mShownDialog;
 	
-	/** Directions spoken trigger. **/
-	private boolean spoken;
-	
 	/** Search task for replanning. **/
 	private RoutePlannerTask search;
 	
@@ -59,6 +56,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	/** Last segment visited. **/
 	
 	private Segment lastSegment;
+	private boolean spoken;
 	
 	@Override
 	public void onCreate(final Bundle savedState) {
@@ -71,15 +69,14 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			if(search != null) {
 				search.setListener(this);
 			}
+			spoken = (Boolean) data[4];
 		}
-		
-		spoken = true;
 		
 		liveNavigation = mSettings.getBoolean("gps", false);
 		
 		if (liveNavigation) {
 			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100, 0, this);
+				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 			}	else {
 				showDialog(R.id.gps);
 			}
@@ -92,11 +89,12 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		Object[] objs = new Object[4];
+		Object[] objs = new Object[5];
 		objs[0] = directionsVisible;
 		objs[1] = mShownDialog;
 		objs[2] = isSearching;
 		objs[3] = search;
+		objs[4] = spoken;
 	    return objs;
 	}
 	
@@ -112,10 +110,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	
 	@Override
 	public void showStep() {
-		if (!spoken) {
-			spoken = true;
-			speak(app.getSegment());
-		}
 		super.showStep();
 		if(mSettings.getBoolean("gps", false)) {
 			mLocationOverlay.followLocation(true);
@@ -127,7 +121,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	@Override
 	public void hideStep() {
 		super.hideStep();
-		spoken = false;
 		mLocationOverlay.followLocation(false);
 	}
 	
@@ -208,7 +201,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 
 				@Override
 				public void onCancel(final DialogInterface arg0) {
-					search.cancel(true);
+					if (search != null) {
+						search.cancel(true);
+					}
 				}
 			
 			});
@@ -237,19 +232,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	}
 	
 	/**
-	 * Overridden to deal with rotations which require tracking
-	 * displayed dialog to ensure it is not duplicated.
-	 */
-	
-	@Override
-	protected void onPrepareDialog(final int id, final Dialog dialog) {
-		super.onPrepareDialog(id, dialog);
-		if (id == R.id.plan) {
-			mShownDialog = true;
-		}
-	}
-	
-	/**
 	 * Handle option selection.
 	 * @return true if option selected.
 	 */
@@ -274,7 +256,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	@Override
 	public void onStart() {
 		super.onStart();
-		
+		liveNavigation = mSettings.getBoolean("gps", false);
 	}
 	
 	/**
@@ -302,11 +284,15 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			
 			if (range < 50) {
 				app.setSegment(app.getRoute().getSegment(near));
-				//Speak directions if the next point is a new segment
-				if (!app.getSegment().equals(app.getRoute().getSegment(next)) &&
-						!app.getSegment().equals(lastSegment)) {
+				if (!app.getSegment().equals(lastSegment)) {
 					lastSegment = app.getSegment();
 					spoken = false;
+				}
+				//Speak directions if the next point is a new segment
+				//and have not spoken already
+				if (!spoken && !app.getSegment().equals(app.getRoute().getSegment(next)) && tts) {
+						speak(app.getRoute().getSegment(next));
+						spoken = true;
 				}
 				showStep();
 				traverse(near);
@@ -353,9 +339,8 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	 */
 	@Override
 	public void searchComplete(Integer msg, Route route) {
-		//if (mShownDialog) {
-			dismissDialog(R.id.plan);
-		//}
+		dismissDialog(R.id.plan);
+		
 		isSearching = false;
 		if (msg != null) {
 			
@@ -364,9 +349,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				app.setSegment(app.getRoute().getSegments().get(0));
 				mOsmv.getController().setCenter(app.getSegment().startPoint());
 				traverse(app.getSegment().startPoint());
-				spoken = true;
 				if (directionsVisible) {
-					spoken = false;
 					showStep();
 				}
 			} else {

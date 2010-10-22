@@ -130,9 +130,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         }
         @Override
         protected void onPostExecute(final Integer msg) {
-        	if (msg != null){
         		mAct.searchComplete(msg, planner.getRoute());
-        	}
         }
         
         @Override

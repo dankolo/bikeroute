@@ -43,12 +43,12 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	
 	/**
 	 * Handle option selection.
-	 * Speak first step of directions iff turnbyturn selected.
+	 * Speak first step of directions if turnbyturn selected.
 	 * @return true if option selected.
 	 */
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
-		if (item.getItemId() == R.id.turnbyturn) {
+		if (tts && (item.getItemId() == R.id.turnbyturn)) {
 			speak(app.getSegment());
 		}
 		return super.onOptionsItemSelected(item);
