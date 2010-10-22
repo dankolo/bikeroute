@@ -426,6 +426,7 @@ public class RouteMap extends OpenStreetMapActivity {
 				routeOverlay.addPoint(app.getRoute().getPoints().get(i));
 			}
 		}
+		mOsmv.invalidate();
 	}
 	
 	/**
