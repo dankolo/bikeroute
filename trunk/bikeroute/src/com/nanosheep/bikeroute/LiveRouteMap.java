@@ -257,6 +257,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	public void onStart() {
 		super.onStart();
 		liveNavigation = mSettings.getBoolean("gps", false);
+		if (tts && directionsVisible && !isSearching) {
+			speak(app.getSegment());
+		}
 	}
 	
 	/**
@@ -282,7 +285,10 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			GeoPoint next = it.hasNext() ? it.next() : near;
 			double range = range(self, near, next);
 			
-			if (range < 50) {
+			if ((range > 50) && (self.distanceTo(near) > 50)) {
+				isSearching = true;
+				replan();
+			} else {
 				app.setSegment(app.getRoute().getSegment(near));
 				if (!app.getSegment().equals(lastSegment)) {
 					lastSegment = app.getSegment();
@@ -296,9 +302,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				}
 				showStep();
 				traverse(near);
-			} else {
-					isSearching = true;
-					replan();
 			}
 			
 		} catch (KeySizeException e) {

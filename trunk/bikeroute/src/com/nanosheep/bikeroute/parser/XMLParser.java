@@ -1,8 +1,10 @@
 package com.nanosheep.bikeroute.parser;
 
 import java.net.URL;
+import java.net.URLConnection;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.zip.GZIPInputStream;
 import java.io.InputStream;
 
 import android.util.Log;
@@ -24,7 +26,14 @@ public class XMLParser {
 
 	protected InputStream getInputStream() {
 		try {
-			return feedUrl.openConnection().getInputStream();
+			URLConnection feed = feedUrl.openConnection();
+			feed.setRequestProperty("Accept-Encoding", "gzip");
+			InputStream instream = feed.getInputStream();
+			String contentEncoding = feed.getContentEncoding();
+			if (contentEncoding != null && contentEncoding.equalsIgnoreCase("gzip")) {
+			    instream = new GZIPInputStream(instream);
+			}
+			return instream;
 		} catch (IOException e) {
 			Log.e(e.getMessage(), "XML parser - " + feedUrl);
 			return null;
