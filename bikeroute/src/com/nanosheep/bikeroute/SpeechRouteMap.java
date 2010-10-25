@@ -41,6 +41,12 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
         super.onStart();
 	}
 	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		directionsTts.shutdown();
+	}
+	
 	/**
 	 * Handle option selection.
 	 * Speak first step of directions if turnbyturn selected.
