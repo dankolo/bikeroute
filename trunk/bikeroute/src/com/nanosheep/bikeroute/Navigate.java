@@ -103,6 +103,10 @@ public class Navigate extends Activity implements RouteListener {
 	//Initialise search button
 	searchButton.setOnClickListener(new SearchClickListener());
 	
+	/* Autofill starting location by reverse geocoding current
+	 * lat & lng
+	 */
+	
 	//Handle rotations
 	final Object[] data = (Object[]) getLastNonConfigurationInstance();
 	if (data != null) {
@@ -116,33 +120,38 @@ public class Navigate extends Activity implements RouteListener {
 	}
 	}
 	
-	@Override
 	public void onStart() {
 		super.onStart();
-		//Initialise geocoder
-		final Geocoder geocoder = new Geocoder(this);
-		/* Get current lat & lng if available. */
-		final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-		
-		Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-		if (self == null) {
-			self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-		}
-		
-		/* Autofill starting location by reverse geocoding current
-		 * lat & lng
-		 */
-		
-		if (self != null) {
-			try {
-				final Address startAddress = geocoder.getFromLocation(self.getLatitude(),
-					self.getLongitude(), 1).get(0);
-				startAddressField.setText(StringAddress.asString(startAddress));
-			} catch (Exception e) {
-				Log.e(e.getMessage(), "FindPlace - location: " + self);
+		Thread t = new Thread() {
+			public void run() {
+				//Initialise geocoder
+				final Geocoder geocoder = new Geocoder(Navigate.this);
+				/* Get current lat & lng if available. */
+				final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+				
+				Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+				if (self == null) {
+					self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				}
+				
+				/* Autofill starting location by reverse geocoding current
+				 * lat & lng
+				 */
+				
+				if (self != null) {
+					try {
+						final Address startAddress = geocoder.getFromLocation(self.getLatitude(),
+								self.getLongitude(), 1).get(0);
+						startAddressField.setText(StringAddress.asString(startAddress));
+					} catch (Exception e) {
+						Log.e(e.getMessage(), "FindPlace - location: " + self);
+					}
+				}
 			}
-		}
+		};
+		t.run();
 	}
+
 	
 	/**
 	 * Handler for navigation requests from the text boxes.

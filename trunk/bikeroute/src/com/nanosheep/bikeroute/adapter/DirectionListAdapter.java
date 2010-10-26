@@ -5,6 +5,7 @@ package com.nanosheep.bikeroute.adapter;
 
 import java.util.List;
 
+import com.nanosheep.bikeroute.BikeRouteApp;
 import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.route.Segment;
@@ -28,21 +29,32 @@ public class DirectionListAdapter extends ArrayAdapter<Segment> {
 	/** Layout inflater . **/
 	private final transient LayoutInflater inflater;
 	/** Units. **/
-	private final String unit;
+	private String unit;
 
 	/**
 	 * @param context
 	 * @param textViewResourceId
 	 * @param objects
 	 */
-	public DirectionListAdapter(final Context context, final int textView,
-			final List<Segment> objects) {
-		super(context, textView, objects);
+	public DirectionListAdapter(final Context context, final int textView) {
+		super(context, textView);
 		inflater = LayoutInflater.from(context);
-		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-		unit = settings.getString("unitsPref", "km");
+		this.populate();
 	}
 	
+	/**
+	 * Populate the adapter with the current segment list, clearing anything already there.
+	 */
+	public void populate() {
+		clear();
+		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getContext());
+		unit = settings.getString("unitsPref", "km");
+		BikeRouteApp app = (BikeRouteApp) getContext().getApplicationContext();
+		for (Segment s : app.getRoute().getSegments()) {
+			add(s);
+		}
+	}
+
 	/**
 	 * Get a view which displays an instruction with road name, a distance
 	 * for that segment and total distance covered below, with an icon on

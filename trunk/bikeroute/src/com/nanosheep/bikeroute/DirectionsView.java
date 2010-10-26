@@ -37,11 +37,23 @@ public class DirectionsView extends ListActivity {
 	private Route route;
 	/** Units. **/
 	private String unit;
+	private TextView header;
+	private TextView footer;
 	
 	@Override
 	public void onCreate(final Bundle in) {
 		requestWindowFeature(Window.FEATURE_RIGHT_ICON);
+		setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
 		super.onCreate(in);
+		//Create a header to display route distance
+		header = new TextView(this);
+		getListView().addHeaderView(header, "", false);
+		//Create a footer to display warnings & copyrights
+		footer = new TextView(this);
+		getListView().addFooterView(footer, "", false);
+		//Add the list of directions and set it filterable
+		setListAdapter(new DirectionListAdapter(this, R.layout.direction_item));
+		getListView().setTextFilterEnabled(true);
 	}
 	
 	@Override
@@ -53,10 +65,8 @@ public class DirectionsView extends ListActivity {
 		route = ((BikeRouteApp)getApplication()).getRoute();
 		
 		setTitle(route.getName());
-		setFeatureDrawableResource(Window.FEATURE_RIGHT_ICON, R.drawable.ic_bar_bikeroute);
 	  
 		//Create a header for the list.
-		final TextView header = new TextView(this);
 		StringBuffer sBuf = new StringBuffer("Total distance: ");
 		if (getString(R.string.km).equals(unit)) {
 			sBuf.append(Convert.asMeterString(route.getLength()));
@@ -70,10 +80,7 @@ public class DirectionsView extends ListActivity {
 			sBuf.append(')');
 		}
 		header.setText(sBuf.toString());
-		getListView().addHeaderView(header, "", false);
-	  
-		//Create a footer to display warnings & copyrights
-		final TextView footer = new TextView(this);
+		
 		sBuf = new StringBuffer();
 		if (route.getWarning() != null) {
 			sBuf.append(route.getWarning());
@@ -83,10 +90,7 @@ public class DirectionsView extends ListActivity {
 			sBuf.append(route.getCopyright());
 		}
 		footer.setText(sBuf.toString());
-		getListView().addFooterView(footer, "", false);
-		//Add the list of directions and set it filterable
-		setListAdapter(new DirectionListAdapter(this, R.layout.direction_item, route.getSegments()));
-		getListView().setTextFilterEnabled(true);
+		((DirectionListAdapter) getListAdapter()).populate();
 	}
 	
 	/**
@@ -103,7 +107,6 @@ public class DirectionsView extends ListActivity {
 
 		intent.putExtra("jump", true);
 		startActivity(intent);
-		
 	}	
 	
 	/**
@@ -150,7 +153,6 @@ public class DirectionsView extends ListActivity {
 			intentDir = ChartFactory.getLineChartIntent(this, elevation, renderer);
 		}
 		startActivity(intentDir);
-		
 		return true;
 	}
 	
