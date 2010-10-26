@@ -134,10 +134,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
 		}
 		showDialog(R.id.plan);
-		
-		mLocationOverlay.runOnFirstFix(new Runnable() {
-			@Override
-			public void run() {
+
 						Location self = mLocationOverlay.getLastFix();
 						
 						if (self == null) {
@@ -152,14 +149,13 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 							searchIntent.putExtra(RoutePlannerTask.START_LOCATION, self);
 							searchIntent.putExtra(RoutePlannerTask.END_POINT,
 									app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
-							search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
-							search.execute();
+							LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
+							LiveRouteMap.this.search.execute();
 						} else {
 							dismissDialog(R.id.plan);
 							showDialog(R.id.plan_fail);
 						}
-				}
-		});
+			
 	}
 	
 
@@ -204,6 +200,7 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 					if (search != null) {
 						search.cancel(true);
 					}
+					isSearching = false;
 				}
 			
 			});
@@ -241,6 +238,8 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		case R.id.replan:
 			replan();
 			break;
+		case R.id.turnbyturn:
+			spoken = true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}

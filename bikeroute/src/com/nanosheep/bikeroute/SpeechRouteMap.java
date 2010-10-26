@@ -44,7 +44,9 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		directionsTts.shutdown();
+		if (directionsTts != null) {
+			directionsTts.shutdown();
+		}
 	}
 	
 	/**
