@@ -117,7 +117,7 @@ public final class Stands {
 	 */
 	
 	private static String getOSMBounds(final List<GeoPoint> points) {
-		final StringBuffer sBuf = new StringBuffer("[bbox=");
+		final StringBuffer sBuf = new StringBuffer("%5Bbbox=");
 		sBuf.append(Convert.asDegrees(points.get(2).getLongitudeE6()));
 		sBuf.append(',');
 		sBuf.append(Convert.asDegrees(points.get(2).getLatitudeE6()));
@@ -125,7 +125,7 @@ public final class Stands {
 		sBuf.append(Convert.asDegrees(points.get(0).getLongitudeE6()));
 		sBuf.append(',');
 		sBuf.append(Convert.asDegrees(points.get(0).getLatitudeE6()));
-		sBuf.append(']');
+		sBuf.append("%5D");
 
 		return sBuf.toString();
 	}

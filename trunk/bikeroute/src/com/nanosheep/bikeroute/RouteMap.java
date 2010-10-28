@@ -151,13 +151,6 @@ public class RouteMap extends OpenStreetMapActivity {
 			mOsmv.getController().setZoom(16);
 			showStep();
 		}
-	}
-	
-	@Override
-	public void onStart() {
-		super.onStart();
-		/* Units preferences. */
-		unit = mSettings.getString("unitsPref", "km");
 		
 		if (app.getRoute() != null) {
 			routeOverlay = new RouteOverlay(Color.BLUE,this);
@@ -173,6 +166,13 @@ public class RouteMap extends OpenStreetMapActivity {
 			}
 			mOsmv.getController().setCenter(app.getSegment().startPoint());
 		}
+	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		/* Units preferences. */
+		unit = mSettings.getString("unitsPref", "km");
 	}
 	
 	/**
