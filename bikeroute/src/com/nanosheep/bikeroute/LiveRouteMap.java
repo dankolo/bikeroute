@@ -353,6 +353,8 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				traverse(app.getSegment().startPoint());
 				if (directionsVisible) {
 					showStep();
+					speak(app.getSegment());
+					spoken = true;
 				}
 			} else {
 				showDialog(msg);

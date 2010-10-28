@@ -91,7 +91,9 @@ public class RouteManager {
 			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
 			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.cs_api));
-			sBuf.append("start_lat=");
+			sBuf.append("key=");
+			sBuf.append(ctxt.getString(R.string.cs_key));
+			sBuf.append("&start_lat=");
 			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
 			sBuf.append("&start_lng=");
 			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
