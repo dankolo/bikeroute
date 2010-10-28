@@ -72,16 +72,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			}
 			spoken = (Boolean) data[4];
 		}
-		
-		liveNavigation = mSettings.getBoolean("gps", false);
-		
-		if (liveNavigation) {
-			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-			}	else {
-				showDialog(R.id.gps);
-			}
-		}
 	}
 	
 	/**
@@ -262,6 +252,13 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			//Disable live navigation for non GB routes to comply with Google tos
 			liveNavigation = !"GB".equals(app.getRoute().getCountry()) ? false : liveNavigation;
 			speak(app.getSegment());
+		}
+		if (liveNavigation) {
+			if(mLocationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+				mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+			}	else {
+				showDialog(R.id.gps);
+			}
 		}
 	}
 	

@@ -43,7 +43,7 @@
 <string name="us_api">http://maps.google.com/maps/api/directions/json?avoid=highways&amp;</string>
 <string name="elev_api">http://maps.google.com/maps/api/elevation/json?sensor=true&amp;locations=enc:</string>
 <string name="cs_copyright">Route planning by CycleStreets.net</string>
-<string name="stands_api">http://xapi.openstreetmap.org/api/0.6/node[amenity=bicycle_parking]</string>
+<string name="stands_api">http://osmxapi.hypercube.telascience.org/api/0.6/node%5Bamenity=bicycle_parking%5D</string>
 <string name="replan_title">Replan</string>
 <string name="gps_msg">Show location options?</string>
 <string name="gps_msg_title">GPS is disabled</string>
