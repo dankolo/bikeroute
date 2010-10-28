@@ -40,7 +40,7 @@
 
 <string name="about_menu">About</string>
 <string name="cs_api">http://bike.nanosheep.net/cs_test.php?</string>
-<string name="us_api">http://maps.google.com/maps/api/directions/json?</string>
+<string name="us_api">http://maps.google.com/maps/api/directions/json?avoid=highways&amp;</string>
 <string name="elev_api">http://maps.google.com/maps/api/elevation/json?sensor=true&amp;locations=enc:</string>
 <string name="cs_copyright">Route planning by CycleStreets.net</string>
 <string name="stands_api">http://xapi.openstreetmap.org/api/0.6/node[amenity=bicycle_parking]</string>
@@ -62,4 +62,5 @@
 <string name="km">km</string>
 <string name="meters">m</string>
 <string name="ft">ft</string>
+
 </resources>

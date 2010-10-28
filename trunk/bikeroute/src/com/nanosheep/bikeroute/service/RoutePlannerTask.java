@@ -9,6 +9,7 @@ import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
+import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.RouteManager;
 
 import android.content.Intent;
@@ -42,6 +43,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
 	public static final String END_ADDRESS = "end_address";
 	public static final String START_LOCATION = "start_location";
 	public static final String END_POINT = "end_point";
+	public static final String ROUTE_ID = "route_id";
 	private RouteManager planner;
     protected String startAddressInput;
     protected String endAddressInput;
@@ -67,6 +69,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         @Override
         protected Integer doInBackground(Void... arg0) {
         	int msg = R.id.plan_fail; 
+        	planner.setRouteId(mIntent.getIntExtra(ROUTE_ID, 0));
     		final String startAddressInput = mIntent.getStringExtra(START_ADDRESS);
     		final String endAddressInput = mIntent.getStringExtra(END_ADDRESS);
                 switch(mIntent.getIntExtra(PLAN_TYPE, ADDRESS_PLAN)) {
@@ -130,7 +133,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         }
         @Override
         protected void onPostExecute(final Integer msg) {
-        		mAct.searchComplete(msg, planner.getRoute());
+        	mAct.searchComplete(msg,  planner.getRoute());
         }
         
         @Override

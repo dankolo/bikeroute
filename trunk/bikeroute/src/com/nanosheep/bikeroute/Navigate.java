@@ -1,5 +1,7 @@
 package com.nanosheep.bikeroute;
 
+import java.util.Random;
+
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
@@ -68,10 +70,14 @@ public class Navigate extends Activity implements RouteListener {
 	/**Is planning dialog showing. **/
 	private static boolean mShownDialog;
 	
+	/** Route id generator. **/
+	Random random;
+	
 	
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
 	super.onCreate(savedInstanceState);
+	random = new Random();
 	app = ((BikeRouteApp) getApplication());
 	mContactAccessor = AbstractContactAccessor.getInstance();
 	requestWindowFeature(Window.FEATURE_RIGHT_ICON);
@@ -190,6 +196,7 @@ public class Navigate extends Activity implements RouteListener {
 	 * Request a route from the planning service, register a receiver to handle it.
 	 */
 	private void requestRoute() {
+		searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, random.nextInt(2147483647));
 		showDialog(R.id.plan);
 		isSearching = true;
 		search = new RoutePlannerTask(this, searchIntent);

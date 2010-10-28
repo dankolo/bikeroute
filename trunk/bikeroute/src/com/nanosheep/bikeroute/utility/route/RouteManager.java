@@ -41,6 +41,7 @@ public class RouteManager {
 	private String country;
 	/** Geocoder. **/
 	private final Geocoder geocoder;
+	private int id;
 	
 	public RouteManager(final Context context) {
 		super();
@@ -77,6 +78,10 @@ public class RouteManager {
 		return true;
 	}
 
+	public void setRouteId(int routeId) {
+		id = routeId;
+	}
+	
 	/**
 	 * Plan a route from the start point to a destination.
 	 * 
@@ -91,9 +96,7 @@ public class RouteManager {
 			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
 			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.cs_api));
-			sBuf.append("key=");
-			sBuf.append(ctxt.getString(R.string.cs_key));
-			sBuf.append("&start_lat=");
+			sBuf.append("start_lat=");
 			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
 			sBuf.append("&start_lng=");
 			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
@@ -103,6 +106,8 @@ public class RouteManager {
 			sBuf.append(Convert.asDegrees(dest.getLongitudeE6()));
 			sBuf.append("&plan=");
 			sBuf.append(routeType);
+			sBuf.append("&route_id=");
+			sBuf.append(id);
 
 			parser = new CycleStreetsParser(sBuf
 				.toString());
@@ -133,6 +138,8 @@ public class RouteManager {
 			parser = new GoogleElevationParser(elev.toString(), r);
 			r = parser.parse();
 		}
+		r.setCountry(country);
+		r.setRouteId(id);
 		return r;
 	}
 	

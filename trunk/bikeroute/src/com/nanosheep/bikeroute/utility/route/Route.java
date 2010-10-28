@@ -11,8 +11,6 @@ import org.achartengine.renderer.XYSeriesRenderer;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.Log;
 
 import org.andnav.osm.util.GeoPoint;
@@ -35,6 +33,7 @@ public class Route {
 	private String polyline;
 	private Bundle segmentMap;
 	private KDTree<Segment> kd;
+	private int id;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
@@ -224,5 +223,16 @@ public class Route {
 	 */
 	public String getPolyline() {
 		return polyline;
+	}
+
+	/**
+	 * @param intExtra
+	 */
+	public void setRouteId(int routeId) {
+		id = routeId;
+	}
+	
+	public int getRouteId() {
+		return id;
 	}
 }

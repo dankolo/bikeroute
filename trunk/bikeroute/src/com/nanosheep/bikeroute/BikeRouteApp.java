@@ -65,5 +65,4 @@ public class BikeRouteApp extends Application {
 	public AddressDatabase getDb() {
 		return db;
 	}
-
 }
