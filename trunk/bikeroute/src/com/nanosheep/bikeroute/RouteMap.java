@@ -387,6 +387,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
 			intent = ChartFactory.getLineChartIntent(this, elevation, renderer);
 			startActivity(intent);
+			break;
 		case R.id.about:
 			showDialog(R.id.about);
 			break;
