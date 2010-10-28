@@ -4,6 +4,7 @@
 package com.nanosheep.bikeroute;
 
 import java.util.Iterator;
+import java.util.ListIterator;
 
 import org.andnav.osm.util.GeoPoint;
 
@@ -135,16 +136,17 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 		}
 		showDialog(R.id.plan);
 
-						Location self = mLocationOverlay.getLastFix();
+						Location self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 						
 						if (self == null) {
-							self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							self = mLocationOverlay.getLastFix();
 						}
 						if (self == null) {
 							self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 						}
 						if (self != null) {
 							searchIntent = new Intent();
+							searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, app.getRoute().getRouteId());
 							searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.REPLAN_PLAN);
 							searchIntent.putExtra(RoutePlannerTask.START_LOCATION, self);
 							searchIntent.putExtra(RoutePlannerTask.END_POINT,
@@ -256,7 +258,9 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	public void onStart() {
 		super.onStart();
 		liveNavigation = mSettings.getBoolean("gps", false);
-		if (tts && directionsVisible && !isSearching) {
+		if (tts && directionsVisible && !isSearching && (app.getRoute() != null)) {
+			//Disable live navigation for non GB routes to comply with Google tos
+			liveNavigation = !"GB".equals(app.getRoute().getCountry()) ? false : liveNavigation;
 			speak(app.getSegment());
 		}
 	}
@@ -279,12 +283,24 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 			GeoPoint self = new GeoPoint(location);
 			GeoPoint near = app.getRoute().nearest(self);
 			
-			Iterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
+			
+			//Range check on previous & next path segments to see if replan
+			//needed.
+			ListIterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
 					app.getRoute().getPoints().indexOf(near) + 1);
 			GeoPoint next = it.hasNext() ? it.next() : near;
+			try {
+				it.previous();
+			} catch (Exception e) {
+				
+			}
+			GeoPoint last = it.hasPrevious() ? it.previous() : near;
 			double range = range(self, near, next);
+			double backRange = range(self, last, near);
 			
-			if ((range > 50) && (self.distanceTo(near) > 50)) {
+			range = range > backRange ? backRange : range;
+			
+			if ((range > 50) && (self.distanceTo(near) > 100)) {
 				isSearching = true;
 				replan();
 			} else {
@@ -353,8 +369,10 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				traverse(app.getSegment().startPoint());
 				if (directionsVisible) {
 					showStep();
-					speak(app.getSegment());
-					spoken = true;
+					if (tts) {
+						speak(app.getSegment());
+						spoken = true;
+					}
 				}
 			} else {
 				showDialog(msg);
