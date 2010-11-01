@@ -32,9 +32,6 @@ import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
 import com.nanosheep.bikeroute.R;
 
-
-import edu.wlu.cs.levy.CG.KeySizeException;
-
 /**
  * Extends RouteMap providing live/satnav features - turn guidance advancing with location,
  * route replanning.
@@ -275,7 +272,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 	public void onLocationChanged(Location location) {
 		//Ignore if directions not shown or replanning
 		if (directionsVisible && !isSearching && liveNavigation) {
-		try {
 			//Find the nearest point and unless it is far, assume we're there
 			GeoPoint self = new GeoPoint(location);
 			GeoPoint near = app.getRoute().nearest(self);
@@ -315,10 +311,6 @@ public class LiveRouteMap extends SpeechRouteMap implements LocationListener, Ro
 				showStep();
 				traverse(near);
 			}
-			
-		} catch (KeySizeException e) {
-			Log.e("KD", e.toString());
-		}
 		}
 	}
 

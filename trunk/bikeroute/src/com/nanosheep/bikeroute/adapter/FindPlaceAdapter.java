@@ -119,7 +119,7 @@ public class FindPlaceAdapter extends ArrayAdapter<String> {
 				FindPlaceAdapter.this.notifyDataSetChanged();
 			} else if (results.count == -1) {
 				//Show an io error message if an exception was thrown
-				((Activity) getContext()).showDialog(R.id.ioerror);
+				//((Activity) getContext()).showDialog(R.id.ioerror);
 				FindPlaceAdapter.this.notifyDataSetInvalidated();
 			} else {
 				FindPlaceAdapter.this.notifyDataSetInvalidated();
