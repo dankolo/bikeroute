@@ -11,7 +11,7 @@
                         android:entryValues="@array/unitsValues" />
         </PreferenceCategory>
         <PreferenceCategory
-                android:title="CycleStreets Options">
+                android:title="CycleStreets Options (UK)">
         <ListPreference
                         android:title="Journey Type"
                         android:summary="Fast, quiet or balanced route"
@@ -29,9 +29,9 @@
         		/>
         	</PreferenceCategory>
         	<PreferenceCategory
-        	android:title="Live Satnav">
+        	android:title="Live Satnav (UK routes only)">
         	<CheckBoxPreference
-        	android:title="Use GPS based satnav"
+        	android:title="Satnav on"
         	android:defaultValue="false"
         		android:key="gps" />
         	</PreferenceCategory>

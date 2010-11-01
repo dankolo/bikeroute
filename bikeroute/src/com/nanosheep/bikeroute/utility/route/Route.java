@@ -1,6 +1,7 @@
 package com.nanosheep.bikeroute.utility.route;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.achartengine.chart.PointStyle;
@@ -15,8 +16,10 @@ import android.util.Log;
 
 import org.andnav.osm.util.GeoPoint;
 
-import edu.wlu.cs.levy.CG.KDTree;
-import edu.wlu.cs.levy.CG.KeySizeException;
+import com.savarese.spatial.GenericPoint;
+import com.savarese.spatial.KDTree;
+import com.savarese.spatial.NearestNeighbors;
+
 /**
  * @author jono@nanosheep.net
  * @version Jun 22, 2010
@@ -32,7 +35,7 @@ public class Route {
 	private XYSeries elevations;
 	private String polyline;
 	private Bundle segmentMap;
-	private KDTree<Segment> kd;
+	private KDTree<?, GenericPoint<Integer>, GeoPoint> kd;
 	private int id;
 	
 	public Route() {
@@ -40,23 +43,18 @@ public class Route {
 		segments = new ArrayList<Segment>();
 		elevations = new XYSeries("Elevation");
 		segmentMap = new Bundle(Segment.class.getClassLoader());
-		kd = new KDTree<Segment>(2);
+		//kd = new KDTree<GeoPoint>(2);
+		kd = new KDTree();
 	}
      
     public void buildTree() {
-			for (Segment s : segments) {
-				GeoPoint p = s.startPoint();
-				GeoPoint pMid = s.getPoints().get(s.getPoints().size() / 2);
-				GeoPoint pEnd = s.getPoints().get(s.getPoints().size() - 2);
-	    		try {
-	    			s.buildTree();
-	    			kd.insert(new double[] {p.getLatitudeE6(), p.getLongitudeE6()}, s);
-	    			kd.insert(new double[] {pEnd.getLatitudeE6(), pEnd.getLongitudeE6()}, s);
-	    			kd.insert(new double[] {pMid.getLatitudeE6(), pMid.getLongitudeE6()}, s);
-	    		} catch (Exception e) {
-	    			Log.e("KD: ", p + " " + pMid + " " + pEnd);
-	    		}
-	    	}
+    	for (GeoPoint p : points) {
+    		try {
+    			kd.put(new GenericPoint(p.getLatitudeE6(), p.getLongitudeE6()), p);
+			} catch (Exception e) {
+				Log.e("KD", e.getMessage());
+			}
+    	}
     }
 
 	public void addPoint(final GeoPoint p) {
@@ -71,9 +69,9 @@ public class Route {
 		return points;
 	}
 	
-	public GeoPoint nearest(final GeoPoint p) throws KeySizeException {
-		Segment near =  kd.nearest(new double[] {p.getLatitudeE6(), p.getLongitudeE6()});
-		return near.nearest(p);
+	public GeoPoint nearest(final GeoPoint p) {
+		NearestNeighbors nn = new NearestNeighbors();
+		return (GeoPoint) nn.get(kd, new GenericPoint(p.getLatitudeE6(), p.getLongitudeE6()), 1)[0].getNeighbor().getValue();
 	}
 	
 	public void addSegment(final Segment s) {

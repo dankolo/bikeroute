@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="minVersion">3</string>
-    <string name="version">Beta</string>
+    <string name="version">Beta 1092</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
