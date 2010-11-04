@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="minVersion">3</string>
-    <string name="version">Beta 1092</string>
+    <string name="version">Beta 1096</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
@@ -63,4 +63,12 @@
 <string name="meters">m</string>
 <string name="ft">ft</string>
 
+<string name="replan">replan</string>
+<string name="arrived">arrived</string>
+<string name="point">point</string>
+<string name="notify_title">BikeRoute</string>
+<string name="navigation_intent">com.nanosheep.bikeroute.service.NavigationService</string>
+<string name="replanning">Replanning...</string>
+<string name="stop_nav_title">Stop Navigating</string>
+<string name="arrived_speech">You have reached your destination.</string>
 </resources>

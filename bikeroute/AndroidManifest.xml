@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionName="@string/version" android:versionCode="1092">
+    package="com.nanosheep.bikeroute" android:versionName="@string/version" android:versionCode="1096">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -27,7 +27,7 @@
        <activity android:name="com.nanosheep.bikeroute.Preferences" android:label="Preferences">
        </activity>
        <activity android:name="org.achartengine.GraphicalActivity" android:label="Elevations" />
-   <service android:exported="false" android:name=".service.RoutePlannerService" android:enabled="true" android:label="Router"></service>
+   <service android:exported="false" android:name=".service.NavigationService" android:enabled="true" android:label="Router"></service>
 </application>
 
 

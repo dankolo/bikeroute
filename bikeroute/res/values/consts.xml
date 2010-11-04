@@ -11,4 +11,5 @@
 <item type="id" name="gps"/>
 <item type="id" name="result_ok"/>
 <item type="id" name="tts_check" />
+<item type="id" name="notifier" />
 </resources>

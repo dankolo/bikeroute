@@ -114,8 +114,6 @@ public class RouteMap extends OpenStreetMapActivity {
         this.mOsmv.setResourceProxy(mResourceProxy);
         mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
         this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
-        this.mLocationOverlay.enableMyLocation();
-        this.mLocationOverlay.followLocation(false);
         this.mOsmv.setBuiltInZoomControls(true);
         this.mOsmv.setMultiTouchControls(true);
         this.mOsmv.getOverlays().add(this.mLocationOverlay);
@@ -173,6 +171,14 @@ public class RouteMap extends OpenStreetMapActivity {
 		super.onStart();
 		/* Units preferences. */
 		unit = mSettings.getString("unitsPref", "km");
+		this.mLocationOverlay.enableMyLocation();
+        this.mLocationOverlay.followLocation(false);
+	}
+	
+	@Override
+	public void onStop() {
+		super.onStop();
+		this.mLocationOverlay.disableMyLocation();
 	}
 	
 	/**
@@ -439,10 +445,13 @@ public class RouteMap extends OpenStreetMapActivity {
 		final ListIterator<Segment> it = app.getRoute().getSegments().listIterator(index + 1);
 		if (it.hasNext()) {
 			app.setSegment(it.next());
+			traverse(app.getSegment().startPoint());
+			mOsmv.getController().setCenter(app.getSegment().startPoint());
+		}	else {
+			traverse(app.getRoute().getEndPoint());
+			mOsmv.getController().setCenter(app.getRoute().getEndPoint());
 		}
 		showStep();
-		traverse(app.getSegment().startPoint());
-		mOsmv.getController().setCenter(app.getSegment().startPoint());
 	}
 	
 	/**

@@ -392,7 +392,11 @@ public class Navigate extends Activity implements RouteListener {
 	@Override
 	public void searchComplete(final Integer msg, final Route route) {
 		if (msg != null) {
-			dismissDialog(R.id.plan);
+			try {
+				dismissDialog(R.id.plan);
+			} catch (Exception e) {
+				Log.e("Navigate", e.getMessage());
+			}
 			if (msg == R.id.result_ok) {
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
