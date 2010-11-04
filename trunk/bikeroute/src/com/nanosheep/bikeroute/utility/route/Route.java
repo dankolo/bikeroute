@@ -19,6 +19,7 @@ import org.andnav.osm.util.GeoPoint;
 import com.savarese.spatial.GenericPoint;
 import com.savarese.spatial.KDTree;
 import com.savarese.spatial.NearestNeighbors;
+import com.savarese.spatial.NearestNeighbors.Entry;
 
 /**
  * @author jono@nanosheep.net
@@ -69,9 +70,34 @@ public class Route {
 		return points;
 	}
 	
+	/**
+	 * Get the nearest neighbouring point on the route to the point given.
+	 * @param p
+	 * @return
+	 */
+	
 	public GeoPoint nearest(final GeoPoint p) {
 		NearestNeighbors nn = new NearestNeighbors();
 		return (GeoPoint) nn.get(kd, new GenericPoint(p.getLatitudeE6(), p.getLongitudeE6()), 1)[0].getNeighbor().getValue();
+	}
+	
+	/**
+	 * Get the k nearest neighbouring points on the route.
+	 * @param p
+	 * @param k
+	 * @return
+	 */
+	
+	public List<GeoPoint> nearest(final GeoPoint p, final int k) {
+		NearestNeighbors nn = new NearestNeighbors();
+		Entry [] neighbours = nn.get(kd, new GenericPoint(p.getLatitudeE6(), p.getLongitudeE6()), k);
+		List<GeoPoint> neighbourList = new ArrayList<GeoPoint>(neighbours.length);
+		
+		for (int i = 0; i < neighbours.length; i++) {
+			neighbourList.add((GeoPoint) neighbours[i].getNeighbor().getValue());
+		}
+		
+		return neighbourList;
 	}
 	
 	public void addSegment(final Segment s) {
@@ -163,6 +189,15 @@ public class Route {
 	 */
 	public int getLength() {
 		return length;
+	}
+	
+	/**
+	 * Get the last point in the route.
+	 * @return  Destination as a GeoPoint
+	 */
+	
+	public GeoPoint getEndPoint() {
+		return points.get(points.size() - 1);
 	}
 	
 	/**
