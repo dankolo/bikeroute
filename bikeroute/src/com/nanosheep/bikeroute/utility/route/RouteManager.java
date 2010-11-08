@@ -1,6 +1,7 @@
 package com.nanosheep.bikeroute.utility.route;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -19,6 +20,7 @@ import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
 import com.nanosheep.bikeroute.parser.GoogleElevationParser;
 import com.nanosheep.bikeroute.parser.Parser;
 import com.nanosheep.bikeroute.utility.Convert;
+
 
 /**
  * Plans routes and displays them as overlays on the provided mapview.
@@ -134,7 +136,7 @@ public class RouteManager {
 		//this route.
 		if (r.getPolyline() != null) {
 			final StringBuffer elev = new StringBuffer(ctxt.getString(R.string.elev_api));
-			elev.append(r.getPolyline());
+			elev.append(URLEncoder.encode(r.getPolyline()));
 			parser = new GoogleElevationParser(elev.toString(), r);
 			r = parser.parse();
 		}

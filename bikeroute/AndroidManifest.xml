@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionName="@string/version" android:versionCode="1096">
+    package="com.nanosheep.bikeroute" android:versionName="@string/version" android:versionCode="1097">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
