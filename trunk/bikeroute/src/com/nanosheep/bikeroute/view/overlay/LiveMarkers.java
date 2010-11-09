@@ -7,7 +7,7 @@ import org.andnav.osm.DefaultResourceProxyImpl;
 import org.andnav.osm.util.GeoPoint;
 import org.andnav.osm.views.OpenStreetMapView;
 import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay;
-import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemTapListener;
+import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemGestureListener;
 import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
 
 import com.nanosheep.bikeroute.utility.Stands;
@@ -23,7 +23,7 @@ import android.os.Message;
  * @version Jun 21, 2010
  */
 
-public class LiveMarkers implements OnItemTapListener<OpenStreetMapViewOverlayItem> {
+public class LiveMarkers implements OnItemGestureListener<OpenStreetMapViewOverlayItem> {
 	/** Update thread. **/
 	private Thread update;
 	/** Reference to map view to draw markers over. **/
@@ -84,10 +84,21 @@ public class LiveMarkers implements OnItemTapListener<OpenStreetMapViewOverlayIt
 	};
 
 	/* (non-Javadoc)
-	 * @see org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemTapListener#onItemTap(int, java.lang.Object)
+	 * @see org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemGestureListener#onItemLongPress(int, java.lang.Object)
 	 */
 	@Override
-	public boolean onItemTap(int aIndex, OpenStreetMapViewOverlayItem aItem) {
+	public boolean onItemLongPress(int index, OpenStreetMapViewOverlayItem item) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemGestureListener#onItemSingleTapUp(int, java.lang.Object)
+	 */
+	@Override
+	public boolean onItemSingleTapUp(int index,
+			OpenStreetMapViewOverlayItem item) {
+		// TODO Auto-generated method stub
 		return false;
 	}
 

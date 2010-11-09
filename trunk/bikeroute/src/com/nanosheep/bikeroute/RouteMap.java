@@ -159,7 +159,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			mOsmv.getOverlays().add(routeOverlay);
 			mOsmv.getOverlays().add(travelledRouteOverlay);
 			traverse(app.getSegment().startPoint());
-			if (getIntent().getBooleanExtra("jump", false)) {
+			if (getIntent().getBooleanExtra(getString(R.string.jump_intent), false)) {
 				showStep();
 			}
 			mOsmv.getController().setCenter(app.getSegment().startPoint());
@@ -280,6 +280,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		final MenuItem turnByTurn = menu.findItem(R.id.turnbyturn);
 		final MenuItem map = menu.findItem(R.id.map);
 		final MenuItem elev = menu.findItem(R.id.elevation);
+		final MenuItem share = menu.findItem(R.id.share);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -297,6 +298,9 @@ public class RouteMap extends OpenStreetMapActivity {
 				turnByTurn.setVisible(true);
 				map.setVisible(false);
 			}
+			if (app.getRoute().getCountry().equals("GB")) {
+				share.setVisible(true);
+			}
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
@@ -309,6 +313,13 @@ public class RouteMap extends OpenStreetMapActivity {
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		Intent intent;
 		switch (item.getItemId()) {
+		case R.id.share:
+			Intent target = new Intent(Intent.ACTION_SEND);
+			target.putExtra(Intent.EXTRA_TEXT, getString(R.string.cs_jump) + app.getRoute().getItineraryId());
+			target.setType("text/plain");
+			intent = Intent.createChooser(target, getString(R.string.share_chooser_title));
+			startActivity(intent);
+			break;
 		case R.id.prefs:
 			intent = new Intent(this, Preferences.class);
 			startActivity(intent);

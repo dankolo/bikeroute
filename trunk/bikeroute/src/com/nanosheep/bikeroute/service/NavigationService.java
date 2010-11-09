@@ -3,6 +3,9 @@
  */
 package com.nanosheep.bikeroute.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import org.andnav.osm.util.GeoPoint;
 
@@ -23,6 +26,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -79,6 +83,7 @@ public class NavigationService extends Service implements LocationListener{
         notification = new Notification(icon, tickerText, when);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         Intent notificationIntent = new Intent(this, LiveRouteMap.class);
+        notificationIntent.putExtra(getString(R.string.jump_intent), true);
         contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         if (app.getRoute() != null) {
@@ -116,16 +121,50 @@ public class NavigationService extends Service implements LocationListener{
     		GeoPoint self = new GeoPoint(location);
     		List<GeoPoint> near = app.getRoute().nearest(self, 2);
     		
-    		double range = range(self, near.get(0), near.get(1)) - 30;
+    		double range = range(self, near.get(0), near.get(1)) - 50;
+    		double accuracy = location.getAccuracy();
     		
     		//Check we're still on the route.
     		
-    		if (range > location.getAccuracy()) {
+    		if (range > accuracy) {
     			update.putExtra((String) getText(R.string.replan), true);
-    			Log.e("Replanned", "Range=" + range + ",Self="+self+",near points:"
-    					+ near + ",near points dist=" + near.get(0).distanceTo(near.get(1)));
+    			String logMsg = "Range=" + range + ",Self="+self+",near points:" + near + ",near points dist=" + near.get(0).distanceTo(near.get(1)) + ",accuracy=" + accuracy;
+    			Log.e("Replanned", logMsg);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.replanning), contentIntent);
+    			boolean mExternalStorageAvailable = false;
+    	        boolean mExternalStorageWriteable = false;
+    	        String state = Environment.getExternalStorageState();
+
+    	        if (Environment.MEDIA_MOUNTED.equals(state)) {
+    	            // We can read and write the media
+    	            mExternalStorageAvailable = mExternalStorageWriteable = true;
+    	            
+    	            File f = Environment.getExternalStorageDirectory ();
+    	            File o = new File(f, "/Android/data/nanosheep_log.txt");
+    	            try {
+						FileOutputStream fs = new FileOutputStream(o, true);
+						// Print a line of text
+					    new PrintStream(fs).println (logMsg);
+
+					    // Close our output stream
+					    fs.close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+    	            
+    	            
+    	        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+    	            // We can only read the media
+    	            mExternalStorageAvailable = true;
+    	            mExternalStorageWriteable = false;
+    	        } else {
+    	            // Something else is wrong. It may be one of many other states, but all we need
+    	            //  to know is we can neither read nor write
+    	            mExternalStorageAvailable = mExternalStorageWriteable = false;
+    	        }
+    	        
     		} else if (near.get(0).equals(app.getRoute().getEndPoint())) { //If we've arrived, shutdown and signal.
     			update.putExtra((String) getText(R.string.arrived), true);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 

@@ -382,7 +382,11 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	 */
 	@Override
 	public void searchComplete(Integer msg, Route route) {
-		dismissDialog(R.id.plan);
+		try {
+			dismissDialog(R.id.plan);
+		} catch (Exception e)  {
+			
+		}
 		
 		isSearching = false;
 		if (msg != null) {

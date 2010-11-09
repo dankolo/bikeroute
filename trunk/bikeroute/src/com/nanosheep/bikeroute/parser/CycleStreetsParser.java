@@ -55,6 +55,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				final String totalDistance = attributes.getValue("length");
 				final String elev = attributes.getValue("elevations");
 				final String distances = attributes.getValue("distances");
+				final String id = attributes.getValue("itinerary");
 				
 				/** Parse segment. **/
 				if ("segment".equals(type)) {
@@ -100,6 +101,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					/** Parse route details. **/
 					route.setName(nameString);
 					route.setLength(Integer.parseInt(totalDistance));
+					route.setItineraryId(Integer.parseInt(id));
 				}
 			}
 		});

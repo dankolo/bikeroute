@@ -105,7 +105,7 @@ public class DirectionsView extends ListActivity {
 		setSegment(route.getSegments().get(position -1));
 		final Intent intent = new Intent(this, LiveRouteMap.class);
 
-		intent.putExtra("jump", true);
+		intent.putExtra(getString(R.string.jump_intent), true);
 		startActivity(intent);
 	}	
 	
