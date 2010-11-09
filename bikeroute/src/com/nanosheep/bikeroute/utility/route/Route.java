@@ -1,7 +1,6 @@
 package com.nanosheep.bikeroute.utility.route;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.achartengine.chart.PointStyle;
@@ -38,6 +37,7 @@ public class Route {
 	private Bundle segmentMap;
 	private KDTree<?, GenericPoint<Integer>, GeoPoint> kd;
 	private int id;
+	private int itineraryId;
 	
 	public Route() {
 		points = new ArrayList<GeoPoint>();
@@ -267,5 +267,19 @@ public class Route {
 	
 	public int getRouteId() {
 		return id;
+	}
+
+	/**
+	 * @param itineraryId the itineraryId to set
+	 */
+	public void setItineraryId(int itineraryId) {
+		this.itineraryId = itineraryId;
+	}
+
+	/**
+	 * @return the itineraryId
+	 */
+	public int getItineraryId() {
+		return itineraryId;
 	}
 }

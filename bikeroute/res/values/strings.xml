@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="minVersion">3</string>
-    <string name="version">Beta 1097</string>
+    <string name="version">Beta 1098</string>
     <string name="app_name">BikeRoute</string>
 <string name="park_title">Park</string>
 <string name="unpark_title">Unpark</string>
@@ -71,4 +71,7 @@
 <string name="replanning">Replanning...</string>
 <string name="stop_nav_title">Stop Navigating</string>
 <string name="arrived_speech">You have reached your destination.</string>
+<string name="jump_intent">jump</string>
+<string name="share_chooser_title">Share Route Using</string>
+<string name="cs_jump">http://cycle.st/j</string>
 </resources>
