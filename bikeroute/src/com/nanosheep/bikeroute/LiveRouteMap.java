@@ -147,9 +147,6 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	
 	private void replan() {
 		isSearching = true;
-		if (tts) {
-			directionsTts.speak("Reeplanning.", TextToSpeech.QUEUE_FLUSH, null);
-		}
 		try {
 			dismissDialog(R.id.plan_fail);
 		} catch (Exception e) {
@@ -211,9 +208,6 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 				@Override
 				public void onDismiss(final DialogInterface arg0) {
 					removeDialog(R.id.plan);
-					if (!LiveRouteMap.this.isSearching) {
-						mShownDialog = false;
-					}
 				}
 				});
 			pDialog.setOnCancelListener(new OnCancelListener() {
@@ -230,9 +224,6 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			dialog = pDialog;
 			break;
 		case R.id.plan_fail:
-			if (tts) {
-				directionsTts.speak(getString(R.string.plan_failed_speech), TextToSpeech.QUEUE_FLUSH, null);
-			}
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(R.string.planfail_msg);
 			builder.setCancelable(
@@ -259,11 +250,14 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.replan:
+			if (!mIsBound) {
+				doBindService();
+			}
 			replan();
 			break;
 		case R.id.stop_nav:
 			doUnbindService();
-			finish();
+			this.finish();
 			break;
 		case R.id.turnbyturn:
 			spoken = true;
@@ -349,9 +343,11 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 		public void onReceive(Context context, Intent intent) {
 			if (liveNavigation && directionsVisible && !arrived && !isSearching) {
 				if (intent.getBooleanExtra(getString(R.string.replan), false)) {
+					isSearching = true;
 					replan();
 				} else if (intent.getBooleanExtra(getString(R.string.arrived), false)) {
 					arrive();
+					spoken = true;
 				} else {
 					GeoPoint current = (GeoPoint) intent.getExtras().get(getString(R.string.point));
 					if (!app.getSegment().equals(lastSegment)) {
@@ -432,6 +428,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	 */
 	
 	private void arrive() {
+		doUnbindService();
 		arrived = true;
 		app.setSegment(app.getRoute().getSegment(app.getRoute().getEndPoint()));
 		traverse(app.getRoute().getEndPoint());
