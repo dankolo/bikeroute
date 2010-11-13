@@ -28,7 +28,7 @@
 <string name="fix_msg">Waiting for GPS fix...</string>
 <string name="nearstands_title">Nearest stand</string>
 <string name="contacts_title">Navigate to Contact</string>
-<string name="hello">Hello World, OpenStreetMapViewer</string>
+
     <string name="app_name_itemizedoverlay">OSMViewer ItemizedOverlay</string>
     
     <string name="unknown">Unknown</string>
@@ -64,7 +64,7 @@
 <string name="ft">ft</string>
 
 <string name="replan">replan</string>
-<string name="arrived">arrived</string>
+<string name="arrived">Arrived</string>
 <string name="point">point</string>
 <string name="notify_title">BikeRoute</string>
 <string name="navigation_intent">com.nanosheep.bikeroute.service.NavigationService</string>
