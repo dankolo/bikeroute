@@ -280,7 +280,6 @@ public class RouteMap extends OpenStreetMapActivity {
 		final MenuItem turnByTurn = menu.findItem(R.id.turnbyturn);
 		final MenuItem map = menu.findItem(R.id.map);
 		final MenuItem elev = menu.findItem(R.id.elevation);
-		final MenuItem share = menu.findItem(R.id.share);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -299,7 +298,7 @@ public class RouteMap extends OpenStreetMapActivity {
 				map.setVisible(false);
 			}
 			if (app.getRoute().getCountry().equals("GB")) {
-				share.setVisible(true);
+				menu.setGroupVisible(R.id.cyclestreets, true);
 			}
 		}
 		return super.onPrepareOptionsMenu(menu);
@@ -318,6 +317,10 @@ public class RouteMap extends OpenStreetMapActivity {
 			target.putExtra(Intent.EXTRA_TEXT, getString(R.string.cs_jump) + app.getRoute().getItineraryId());
 			target.setType("text/plain");
 			intent = Intent.createChooser(target, getString(R.string.share_chooser_title));
+			startActivity(intent);
+			break;
+		case R.id.feedback:
+			intent = new Intent(this, Feedback.class);
 			startActivity(intent);
 			break;
 		case R.id.prefs:

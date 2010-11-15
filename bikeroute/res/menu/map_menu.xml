@@ -47,6 +47,8 @@
     android:title="Elevation"
     android:icon="@drawable/ic_menu_elevation" android:visible="false" ></item>
     <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
-    <item android:id="@+id/share" android:title="Share Route" android:visible="false"></item>
-    
+
+<group android:id="@+id/cyclestreets" android:visible="false">
+<item android:id="@+id/feedback" android:title="@string/feedback_title"></item>
+<item android:id="@+id/share" android:title="Share Route"></item></group>
 </menu>

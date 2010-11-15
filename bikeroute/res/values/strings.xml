@@ -3,31 +3,14 @@
     <string name="minVersion">3</string>
     <string name="version">Beta 1098</string>
     <string name="app_name">BikeRoute</string>
-<string name="park_title">Park</string>
-<string name="unpark_title">Unpark</string>
-<string name="center_title">My Location</string>
-<string name="navigate_title">Navigate</string>
-<string name="back_title">Back to bike</string>
-<string name="showstands_title">Nearby bike stands</string>
-<string name="directions_title">Directions</string>
-<string name="turnbyturn">Show turn by turn</string>
-<string name="map_title">Route map</string>
-<string name="prefs_title">Preferences</string>
 <string name="plan_msg">Planning route...</string>
 <string name="load_stands_msg">Loading stands from OpenStreetMap...</string>
 <string name="planfail_msg">Route planning failed.</string>
-<string name="search">Go</string>
-<string name="start_input">Start Address</string>
-<string name="end_input">End Address</string>
-<string name="start">From</string>
-<string name="end">To</string>
 <string name="ok">OK</string>
 <string name="arg_error_msg">Illegal argument.</string>
 <string name="io_error_msg">Network or service currently unavailable.</string>
 <string name="result_error_msg">Address not found.</string>
 <string name="fix_msg">Waiting for GPS fix...</string>
-<string name="nearstands_title">Nearest stand</string>
-<string name="contacts_title">Navigate to Contact</string>
 
     <string name="app_name_itemizedoverlay">OSMViewer ItemizedOverlay</string>
     
@@ -39,22 +22,12 @@
 <string name="about_message">BikeRoute uses map and parking data provided by OpenStreetMap.org; routing by Google &amp; CycleStreets.net and the OSMDroid &amp; achartengine libraries.</string>
 
 <string name="about_menu">About</string>
-<string name="cs_api">http://bike.nanosheep.net/cs_test.php?</string>
-<string name="us_api">http://maps.google.com/maps/api/directions/json?avoid=highways&amp;</string>
-<string name="elev_api">http://maps.google.com/maps/api/elevation/json?sensor=true&amp;locations=enc:</string>
 <string name="cs_copyright">Route planning by CycleStreets.net</string>
-<string name="stands_api">http://osmxapi.hypercube.telascience.org/api/0.6/node%5Bamenity=bicycle_parking%5D</string>
 <string name="replan_title">Replan</string>
 <string name="gps_msg">Show location options?</string>
 <string name="gps_msg_title">GPS is disabled</string>
 
-<string name="prefs_name">com.nanosheep.bikeroute</string>
-<string name="prefs_renderer">renderer</string>
-<string name="prefs_scrollx">scrollX</string>
-<string name="prefs_scrolly">scrollY</string>
-<string name="prefs_zoomlevel">zoomLevel</string>
-<string name="prefs_showlocation">showLocation</string>
-<string name="prefs_followlocation">followLocation</string>
+
 <string name="debug_tag">OPENSTREETMAP</string>
 <string name="plan_failed_speech">Planning failed.</string>
 <string name="bike_alert_intent">com.nanosheep.bikeroute.BIKE_ALERT</string>
