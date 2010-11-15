@@ -3,19 +3,21 @@
  */
 package com.nanosheep.bikeroute;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.nanosheep.bikeroute.utility.MyHttpClient;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -38,6 +40,7 @@ public class Feedback extends Activity {
 	private TextView emailField;
 	private TextView commentField;
 	private Button submit;
+	private SubmitHandler submitHandler;
 
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -65,6 +68,9 @@ public class Feedback extends Activity {
 	emailField.addTextChangedListener(watcher);
 	commentField.addTextChangedListener(watcher);
 	
+	//Form submit handler
+	submitHandler = new SubmitHandler();
+	submit.setOnClickListener(submitHandler);
 	}
 	
 	@Override
@@ -76,13 +82,80 @@ public class Feedback extends Activity {
 	    return objs;
 	}
 	
-	private class SubmitHandler extends AsyncTask<Object, Object, Object> implements OnClickListener {
+	@Override
+	public Dialog onCreateDialog(final int id) {
+		AlertDialog.Builder builder;
+		ProgressDialog pDialog;
+		Dialog dialog;
+		switch(id) {
+		case R.id.send:
+			pDialog = new ProgressDialog(this);
+			pDialog.setCancelable(true);
+			pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			pDialog.setMessage(getText(R.string.send_msg));
+			pDialog.setOnDismissListener(new OnDismissListener() {
+				@Override
+				public void onDismiss(final DialogInterface arg0) {
+					removeDialog(R.id.send);
+				}
+			});
+			pDialog.setOnCancelListener(new OnCancelListener() {
+
+				@Override
+				public void onCancel(final DialogInterface arg0) {
+						submitHandler.cancel(true);
+				}
+				
+			});
+			dialog = pDialog;
+			break;
+		case R.id.thanks:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.thanks_message)).setCancelable(
+					true).setPositiveButton(getString(R.string.ok),
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+							dialog.dismiss();
+							finish();
+						}
+					});
+			dialog = builder.create();
+			break;
+		case R.id.feedback_fail:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.feedback_fail_message)).setCancelable(
+					true).setPositiveButton(getString(R.string.ok),
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+							dialog.dismiss();
+						}
+					});
+			dialog = builder.create();
+			break;
+		default:
+			dialog = null;
+		}
+		return dialog;
+	}
+	
+	private class SubmitHandler extends AsyncTask<Void, Void, Integer> implements OnClickListener {
+		private static final int OK = 1;
+
 		/* (non-Javadoc)
 		 * @see android.view.View.OnClickListener#onClick(android.view.View)
 		 */
 		@Override
 		public void onClick(View arg0) {
 			this.execute();
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			Feedback.this.showDialog(R.id.send);
 		}
 
 		/**
@@ -93,8 +166,9 @@ public class Feedback extends Activity {
 		 * @param email
 		 * @param comment
 		 */
-		private void doSubmit(final int itineraryId, final String name, final String email,
+		private int doSubmit(final int itineraryId, final String name, final String email,
 				final String comment) {
+			int result = OK;
 			String reqString = getString(R.string.feedback_api);
 			reqString += "itinerary=" + itineraryId;
 			reqString += "&comments=" + URLEncoder.encode(comment);
@@ -102,25 +176,35 @@ public class Feedback extends Activity {
 			reqString += "&email=" + URLEncoder.encode(email);
 			HttpUriRequest request = new HttpPut(reqString);
 	        try {
-				final HttpResponse response = new DefaultHttpClient().execute(request);
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				final HttpResponse response = new MyHttpClient(Feedback.this).execute(request);
+			} catch (Exception e) {
+				result = -1;
 			}
+			return result;
 		}
 
 		/* (non-Javadoc)
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
-		protected Object doInBackground(Object... arg0) {
-			doSubmit(app.getRoute().getItineraryId(), nameField.getText().toString(), 
+		protected Integer doInBackground(Void... arg0) {
+			return doSubmit(app.getRoute().getItineraryId(), nameField.getText().toString(), 
 					emailField.getText().toString(), commentField.getText().toString());
-			return null;
 		}
+		
+		@Override
+        protected void onPostExecute(final Integer msg) {
+			Feedback.this.dismissDialog(R.id.send);
+			if (msg == OK) {
+				Feedback.this.showDialog(R.id.thanks);
+			} else {
+				Feedback.this.showDialog(R.id.feedback_fail);
+			}
+        }
+        
+        @Override
+        protected void onCancelled() {
+        }
 		
 	}
 	

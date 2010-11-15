@@ -11,6 +11,7 @@
 <string name="io_error_msg">Network or service currently unavailable.</string>
 <string name="result_error_msg">Address not found.</string>
 <string name="fix_msg">Waiting for GPS fix...</string>
+<string name="send_msg">Sending...</string>
 
     <string name="app_name_itemizedoverlay">OSMViewer ItemizedOverlay</string>
     
@@ -47,4 +48,6 @@
 <string name="jump_intent">jump</string>
 <string name="share_chooser_title">Share Route Using</string>
 <string name="cs_jump">http://cycle.st/j</string>
+<string name="thanks_message">Thanks for your feedback!</string>
+<string name="feedback_fail_message">Apologies, your feedback could not be submitted.</string>
 </resources>

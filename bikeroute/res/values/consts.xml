@@ -6,10 +6,13 @@
 <item type="id" name="unpark"/>
 <item type="id" name="awaiting_fix"/>
 <item type="id" name="plan"/>
+<item type="id" name="send"/>
 <item type="id" name="plan_fail"/>
 <item type="id" name="about"/>
 <item type="id" name="gps"/>
 <item type="id" name="result_ok"/>
 <item type="id" name="tts_check" />
 <item type="id" name="notifier" />
+<item type="id" name="thanks" />
+<item type="id" name="feedback_fail" />
 </resources>
