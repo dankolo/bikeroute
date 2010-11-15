@@ -39,6 +39,7 @@ public class DirectionsView extends ListActivity {
 	private String unit;
 	private TextView header;
 	private TextView footer;
+	private BikeRouteApp app;
 	
 	@Override
 	public void onCreate(final Bundle in) {
@@ -54,6 +55,7 @@ public class DirectionsView extends ListActivity {
 		//Add the list of directions and set it filterable
 		setListAdapter(new DirectionListAdapter(this, R.layout.direction_item));
 		getListView().setTextFilterEnabled(true);
+		app = (BikeRouteApp) getApplication();
 	}
 	
 	@Override
@@ -62,7 +64,7 @@ public class DirectionsView extends ListActivity {
 		final SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		unit = settings.getString(getString(R.string.prefs_units), getString(R.string.km));
 
-		route = ((BikeRouteApp)getApplication()).getRoute();
+		route = app.getRoute();
 		
 		setTitle(route.getName());
 	  
@@ -101,8 +103,7 @@ public class DirectionsView extends ListActivity {
 	@Override
 	protected void onListItemClick(final ListView l, final View v,
 			final int position, final long id) {
-		((BikeRouteApp)getApplication()).
-		setSegment(route.getSegments().get(position -1));
+		app.setSegment(route.getSegments().get(position -1));
 		final Intent intent = new Intent(this, LiveRouteMap.class);
 
 		intent.putExtra(getString(R.string.jump_intent), true);
@@ -121,6 +122,14 @@ public class DirectionsView extends ListActivity {
 		return true;
 	}
 	
+	@Override
+	public final boolean onPrepareOptionsMenu(final Menu menu) {
+		if (app.getRoute().getCountry().equals("GB")) {
+			menu.setGroupVisible(R.id.cyclestreets, true);
+		}
+		return true;
+	}
+	
 	/**
 	 * Handle option selection.
 	 * @return true if option selected.
@@ -131,6 +140,15 @@ public class DirectionsView extends ListActivity {
 		switch (item.getItemId()) {
 		case R.id.navigate:
 			intentDir = new Intent(this, Navigate.class);
+			break;
+		case R.id.share:
+			Intent target = new Intent(Intent.ACTION_SEND);
+			target.putExtra(Intent.EXTRA_TEXT, getString(R.string.cs_jump) + app.getRoute().getItineraryId());
+			target.setType("text/plain");
+			intentDir = Intent.createChooser(target, getString(R.string.share_chooser_title));
+			break;
+		case R.id.feedback:
+			intentDir = new Intent(this, Feedback.class);
 			break;
 		case R.id.map:
 			intentDir = new Intent(this, LiveRouteMap.class);

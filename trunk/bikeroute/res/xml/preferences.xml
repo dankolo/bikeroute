@@ -29,7 +29,7 @@
         		/>
         	</PreferenceCategory>
         	<PreferenceCategory
-        	android:title="Live Satnav (UK routes only)">
+        	android:title="Live Satnav (Beta, UK routes only)">
         	<CheckBoxPreference
         	android:title="Satnav on"
         	android:defaultValue="false"

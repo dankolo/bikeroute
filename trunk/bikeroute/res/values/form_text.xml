@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+<string name="search">Go</string>
+<string name="start_input">Start Address</string>
+<string name="end_input">End Address</string>
+<string name="start">From</string>
+<string name="end">To</string>
+<string name="email">E-mail</string>
+<string name="name">Name</string>
+<string name="comment">Feeback</string>
+</resources>
