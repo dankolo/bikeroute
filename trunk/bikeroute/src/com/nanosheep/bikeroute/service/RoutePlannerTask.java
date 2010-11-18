@@ -6,10 +6,8 @@ package com.nanosheep.bikeroute.service;
 import org.andnav.osm.util.GeoPoint;
 
 import com.nanosheep.bikeroute.R;
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
-import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.RouteManager;
 
 import android.content.Intent;

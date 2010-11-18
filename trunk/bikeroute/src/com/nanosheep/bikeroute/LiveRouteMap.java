@@ -258,6 +258,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 		case R.id.stop_nav:
 			doUnbindService();
 			this.finish();
+			app.setRoute(null);
 			break;
 		case R.id.turnbyturn:
 			spoken = true;

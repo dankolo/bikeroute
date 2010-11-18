@@ -22,7 +22,7 @@ android:id="@+id/name"
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
 android:text="@string/name"
-android:gravity="center_vertical">
+android:gravity="left|center_vertical">
 </TextView>
 <EditText
 android:id="@+id/name_input"
@@ -37,7 +37,7 @@ android:id="@+id/email"
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
 android:text="@string/email"
-android:gravity="center_vertical">
+android:gravity="left|center_vertical">
 </TextView>
 <EditText
 android:id="@+id/email_input"
@@ -53,14 +53,14 @@ android:id="@+id/comment"
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
 android:text="@string/comment"
-android:gravity="center_vertical">
+android:gravity="left|center_vertical">
 </TextView>
 <EditText
 android:id="@+id/comment_input"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
-android:gravity="center_vertical"
 android:layout_below="@id/comment"
+android:gravity="top|left"
 android:editable="true"
 android:lines="5">
 </EditText>
