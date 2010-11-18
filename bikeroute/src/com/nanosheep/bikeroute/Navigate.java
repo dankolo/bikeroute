@@ -360,6 +360,7 @@ public class Navigate extends Activity implements RouteListener {
 			break;
 		case R.id.map:
 			intent = new Intent(this, LiveRouteMap.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 			startActivity(intent);
 			break;
 		case R.id.bike:
@@ -403,6 +404,7 @@ public class Navigate extends Activity implements RouteListener {
 					db.insert(endAddressField.getText().toString());
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
+				map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 				app.setRoute(route);
 				startActivity(map);
 			} else {

@@ -76,6 +76,7 @@ public class Preferences extends PreferenceActivity {
     			break;
     		case R.id.map:
     			intent = new Intent(this, LiveRouteMap.class);
+    			//intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
     			startActivity(intent);
     			break;
     		case R.id.about:

@@ -80,6 +80,7 @@ public class NavigationService extends Service implements LocationListener{
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         Intent notificationIntent = new Intent(this, LiveRouteMap.class);
         notificationIntent.putExtra(getString(R.string.jump_intent), true);
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
         if (app.getRoute() != null) {

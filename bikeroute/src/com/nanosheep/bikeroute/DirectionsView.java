@@ -107,6 +107,7 @@ public class DirectionsView extends ListActivity {
 		final Intent intent = new Intent(this, LiveRouteMap.class);
 
 		intent.putExtra(getString(R.string.jump_intent), true);
+		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		startActivity(intent);
 	}	
 	
@@ -152,6 +153,7 @@ public class DirectionsView extends ListActivity {
 			break;
 		case R.id.map:
 			intentDir = new Intent(this, LiveRouteMap.class);
+			intentDir.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 			break;
 		case R.id.prefs:
 			intentDir = new Intent(this, Preferences.class);
