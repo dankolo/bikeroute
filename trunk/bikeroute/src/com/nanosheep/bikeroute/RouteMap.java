@@ -325,7 +325,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			break;
 		case R.id.prefs:
 			intent = new Intent(this, Preferences.class);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.unpark:
 			prk.unPark();
@@ -383,7 +383,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.turnbyturn:
 			showStep();
@@ -393,7 +393,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			break;
 		case R.id.navigate:
 			intent = new Intent(this, Navigate.class);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			
 			break;
 		case R.id.elevation:
@@ -406,7 +406,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			}
 			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
 			intent = ChartFactory.getLineChartIntent(this, elevation, renderer);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.about:
 			showDialog(R.id.about);

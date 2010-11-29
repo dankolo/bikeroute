@@ -68,16 +68,21 @@ public class Preferences extends PreferenceActivity {
     		switch(item.getItemId()) {
     		case R.id.navigate:
     			intent = new Intent(this, Navigate.class);
-    			startActivity(intent);
+    			startActivityForResult(intent, R.id.trace);
     			break;
     		case R.id.directions:
     			intent = new Intent(this, DirectionsView.class);
-    			startActivity(intent);
+    			startActivityForResult(intent, R.id.trace);
     			break;
     		case R.id.map:
     			intent = new Intent(this, LiveRouteMap.class);
     			//intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-    			startActivity(intent);
+    			startActivityForResult(intent, R.id.trace);
+    			break;
+    		case R.id.stop_nav:
+    			finishActivity(R.id.trace);
+    			setResult(1);
+    			this.finish();
     			break;
     		case R.id.about:
     			showDialog(R.id.about);
@@ -98,6 +103,11 @@ public class Preferences extends PreferenceActivity {
 		                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
 		            startActivity(installIntent);
 		        }
+		    }
+		   
+		    if ((requestCode == R.id.trace) && (resultCode == 1)) {
+		    	setResult(1);
+		    	finish();
 		    }
 		}
     	
@@ -122,4 +132,6 @@ public class Preferences extends PreferenceActivity {
 					});
 			return builder.create();
     	}
+    	
+    	
 }

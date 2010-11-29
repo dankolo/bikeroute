@@ -257,6 +257,8 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			break;
 		case R.id.stop_nav:
 			doUnbindService();
+			finishActivity(R.id.trace);
+			setResult(1);
 			this.finish();
 			app.setRoute(null);
 			break;
@@ -373,6 +375,17 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			}
 		}
 	}
+	
+	/**
+   	 * Finish cascade passer.
+     */
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if ((requestCode == R.id.trace) && (resultCode == 1)) {
+        	setResult(1);
+        	finish();
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see com.nanosheep.bikeroute.service.RouteListener#searchComplete(java.lang.Integer, com.nanosheep.bikeroute.utility.Route)

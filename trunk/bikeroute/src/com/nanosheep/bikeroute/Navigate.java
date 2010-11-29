@@ -352,16 +352,16 @@ public class Navigate extends Activity implements RouteListener {
 		switch(item.getItemId()) {
 		case R.id.prefs:
 			intent = new Intent(this, Preferences.class);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.directions:
 			intent = new Intent(this, DirectionsView.class);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.map:
 			intent = new Intent(this, LiveRouteMap.class);
 			intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-			startActivity(intent);
+			startActivityForResult(intent, R.id.trace);
 			break;
 		case R.id.bike:
 			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.BIKE_PLAN);
@@ -372,6 +372,12 @@ public class Navigate extends Activity implements RouteListener {
 			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.STANDS_PLAN);
 			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
 			requestRoute();
+			break;
+		case R.id.stop_nav:
+			finishActivity(R.id.trace);
+			setResult(1);
+			this.finish();
+			app.setRoute(null);
 			break;
 		case R.id.about:
 			showDialog(R.id.about);
@@ -406,7 +412,7 @@ public class Navigate extends Activity implements RouteListener {
 				final Intent map = new Intent(this, LiveRouteMap.class);
 				map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 				app.setRoute(route);
-				startActivity(map);
+				startActivityForResult(map, R.id.trace);
 			} else {
 				showDialog(msg);
 			}
@@ -419,8 +425,10 @@ public class Navigate extends Activity implements RouteListener {
      */
     @Override
     protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
-        if (resultCode == RESULT_OK) {
+        if ((resultCode == RESULT_OK) && (requestCode == 0)) {
             loadContactAddress(data.getData());
+        } else if ((requestCode == R.id.trace) && (resultCode == 1)) {
+        	finish();
         }
     }
     

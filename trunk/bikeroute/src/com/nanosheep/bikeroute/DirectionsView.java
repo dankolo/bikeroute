@@ -108,7 +108,7 @@ public class DirectionsView extends ListActivity {
 
 		intent.putExtra(getString(R.string.jump_intent), true);
 		intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-		startActivity(intent);
+		startActivityForResult(intent, R.id.trace);
 	}	
 	
 	/**
@@ -158,6 +158,11 @@ public class DirectionsView extends ListActivity {
 		case R.id.prefs:
 			intentDir = new Intent(this, Preferences.class);
 			break;
+		case R.id.stop_nav:
+			finishActivity(R.id.trace);
+			setResult(1);
+			this.finish();
+			break;
 		case R.id.about:
 			showDialog(R.id.about);
 			return true;
@@ -172,7 +177,7 @@ public class DirectionsView extends ListActivity {
 			renderer.setYAxisMax(elevation.getSeriesAt(0).getMaxY() + 200);
 			intentDir = ChartFactory.getLineChartIntent(this, elevation, renderer);
 		}
-		startActivity(intentDir);
+		startActivityForResult(intentDir, R.id.trace);
 		return true;
 	}
 	
@@ -197,5 +202,16 @@ public class DirectionsView extends ListActivity {
 				});
 		return builder.create();
 	}
+	
+	/**
+   	 * Finish cascade passer.
+     */
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        if ((requestCode == R.id.trace) && (resultCode == 1)) {
+        	setResult(1);
+        	finish();
+        }
+    }
 
 }
