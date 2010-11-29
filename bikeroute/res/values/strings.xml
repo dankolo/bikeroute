@@ -43,7 +43,7 @@
 <string name="notify_title">BikeRoute</string>
 <string name="navigation_intent">com.nanosheep.bikeroute.service.NavigationService</string>
 <string name="replanning">Replanning...</string>
-<string name="stop_nav_title">Stop Navigating</string>
+<string name="stop_nav_title">Quit</string>
 <string name="arrived_speech">You have reached your destination.</string>
 <string name="jump_intent">jump</string>
 <string name="share_chooser_title">Share Route Using</string>
