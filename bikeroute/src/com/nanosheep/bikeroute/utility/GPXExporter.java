@@ -52,7 +52,7 @@ public class GPXExporter {
 				sb.append(Convert.asDegrees(p.getLatitudeE6()));
 				sb.append("\">");
 				sb.append(NAME);
-				sb.append(s.getInstruction());
+				sb.append(s.getName());
 				sb.append(NAME_CLOSE);
 				sb.append("</rtept>");
 			}

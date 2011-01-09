@@ -29,6 +29,12 @@ public class RouteDatabase {
 		private static final int DATABASE_VERSION = 2;
 		private static final String ROUTE_TABLE_NAME = "route";
 		private static final String NAME = "name_string";
+		private static final String CRIGHT = "copyright_string";
+		private static final String WARN = "warning_string";
+		private static final String CC = "country_code_string";
+		private static final String POLY = "polyline_string";
+		private static final String ITIN = "itenerary_id";
+		
 		
 		private static final String POINTS_TABLE_NAME = "points";
 		private static final String LAT = "latitude_e6_int";
@@ -38,17 +44,29 @@ public class RouteDatabase {
 		private static final String SEGMENT_TABLE_NAME = "segments";
 		private static final String INSTRUCTION = "turn_string";
 		private static final String ROUTE_ID = "routeid";
+		private static final String LENGTH = "length_int";
+		private static final String DIST = "distance_dbl";
+		
+		private static final String ELEVATION_TABLE_NAME = "elevations";
+		private static final String ELEV = "elevation_int";
+		private static final String DIST_M = "distance_int";
 		
 		private static final String ROUTE_TABLE_CREATE =
-               "CREATE TABLE " + ROUTE_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + NAME + " TEXT);";
+               "CREATE TABLE " + ROUTE_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + NAME + " TEXT, " +
+               CRIGHT + " TEXT, " + WARN + " TEXT, " + CC + " TEXT, " + POLY + " TEXT, " + ITIN + " INTEGER, "
+               + LENGTH + " INTEGER" + ");";
 		
 		private static final String POINTS_TABLE_CREATE =
 			"CREATE TABLE " + POINTS_TABLE_NAME + " (" + SEG_ID + " INTEGER , " + LAT + 
 			" INTEGER, " + LNG + " INTEGER);";
 		
 		private static final String SEGMENT_TABLE_CREATE = 
-			"CREATE TABLE " + SEGMENT_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + INSTRUCTION + " TEXT, " +
-					ROUTE_ID + "INTEGER);";
+			"CREATE TABLE " + SEGMENT_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + NAME + " TEXT, " + INSTRUCTION + " TEXT, " +
+					ROUTE_ID + "INTEGER, " + DIST + " DOUBLE, " + LENGTH + " INTEGER);";
+		
+		private static final String ELEVATION_TABLE_CREATE = 
+			"CREATE TABLE " + ELEVATION_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + ELEV + " INTEGER, " + DIST_M +
+			" INTEGER, " + ROUTE_ID + " INTEGER);";
 		
 		
 		private static final String DATABASE_NAME = "bikeroute_db";
@@ -58,11 +76,13 @@ public class RouteDatabase {
 
 	   private List<SQLiteStatement> insertStmt;
 	   private static final String INSERT_ROUTE = "insert into " 
-	      + ROUTE_TABLE_NAME + " values (NULL, ?);";
+	      + ROUTE_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?, ?, ?);";
 	   private static final String INSERT_SEGMENT = "insert into "
-		   + SEGMENT_TABLE_NAME + " values (NULL, ?, ?);";
+		   + SEGMENT_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?);";
 	   private static final String INSERT_POINT = "insert into "
 		   + POINTS_TABLE_NAME + " values (?, ?, ?);";
+	   private static final String INSERT_ELEV = "insert into "
+		   + ELEVATION_TABLE_NAME + " values(null, ?, ?, ?);";
 	   
 	   private static final String LIKE_QUERY = NAME + " LIKE ";
 
@@ -70,10 +90,11 @@ public class RouteDatabase {
 	      this.context = context;
 	      AddressDatabaseHelper openHelper = new AddressDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
-	      this.insertStmt = new ArrayList<SQLiteStatement>(3);
+	      this.insertStmt = new ArrayList<SQLiteStatement>(4);
 	      this.insertStmt.add(this.db.compileStatement(INSERT_ROUTE));
 	      this.insertStmt.add(this.db.compileStatement(INSERT_SEGMENT));
 	      this.insertStmt.add(this.db.compileStatement(INSERT_POINT));
+	      this.insertStmt.add(this.db.compileStatement(INSERT_ELEV));
 	   }
 	   
 	   /**
@@ -83,26 +104,51 @@ public class RouteDatabase {
 	    */
 
 	   public void insert(Route route) {
+		   db.beginTransaction();
+		   try {
+			   //Insert the route and get the id back
+			   this.insertStmt.get(0).bindString(1, route.getName()); 
+			   this.insertStmt.get(0).bindString(2, route.getCopyright());
+			   this.insertStmt.get(0).bindString(3, route.getWarning());
+			   this.insertStmt.get(0).bindString(4, route.getCountry());
+			   this.insertStmt.get(0).bindString(5, route.getPolyline()); 
+			   this.insertStmt.get(0).bindLong(6, route.getItineraryId()); 
+			   this.insertStmt.get(0).bindLong(7, route.getLength()); 
+			   final long routeId = this.insertStmt.get(0).executeInsert();
 		   
-		   //Insert the route and get the id back
-		   this.insertStmt.get(0).bindString(1, route.getName()); 
-		   final long routeId = this.insertStmt.get(0).executeInsert();
-		   
-		   //Insert each segment with a ref to the route
-		   for(Segment s : route.getSegments()) {
-			   this.insertStmt.get(1).clearBindings();
-			   this.insertStmt.get(1).bindString(1, s.getInstruction());
-			   this.insertStmt.get(1).bindLong(2, routeId);
-			   final long segId = this.insertStmt.get(1).executeInsert();
-			   //And each point with a ref to the segment
-			   for (GeoPoint p : s.getPoints()) {
-				   this.insertStmt.get(2).clearBindings();
-				   this.insertStmt.get(2).bindLong(1, segId);
-				   this.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
-				   this.insertStmt.get(2).bindLong(3, p.getLongitudeE6());
-				   this.insertStmt.get(2).executeInsert();
+			   //Insert elevation set
+			   for(int i = 0; i < route.getElevationSeries().getItemCount(); i++) {
+				   this.insertStmt.get(3).clearBindings();
+				   //Elevation
+				   this.insertStmt.get(3).bindDouble(1, route.getElevationSeries().getY(i));
+				   //Distance
+				   this.insertStmt.get(3).bindDouble(2, route.getElevationSeries().getX(i));
+				   this.insertStmt.get(3).bindLong(3, routeId);
+				   this.insertStmt.get(3).executeInsert();
 			   }
-		   }
+		   
+			   //Insert each segment with a ref to the route
+			   for(Segment s : route.getSegments()) {
+				   this.insertStmt.get(1).clearBindings();
+				   this.insertStmt.get(1).bindString(1, s.getName());
+				   this.insertStmt.get(1).bindString(2, s.getInstruction());
+				   this.insertStmt.get(1).bindLong(3, routeId);
+				   this.insertStmt.get(1).bindDouble(4, s.getDistance());
+				   this.insertStmt.get(1).bindLong(5, s.getLength());
+				   final long segId = this.insertStmt.get(1).executeInsert();
+				   //And each point with a ref to the segment
+				   for (GeoPoint p : s.getPoints()) {
+					   this.insertStmt.get(2).clearBindings();
+					   this.insertStmt.get(2).bindLong(1, segId);
+					   this.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
+					   this.insertStmt.get(2).bindLong(3, p.getLongitudeE6());
+					   this.insertStmt.get(2).executeInsert();
+				   }
+		   		}
+			   	db.setTransactionSuccessful();
+		   	} finally {
+		   		db.endTransaction();
+		   	}
 	   }
 
 	   /**
@@ -113,6 +159,28 @@ public class RouteDatabase {
 	      this.db.delete(ROUTE_TABLE_NAME, null, null);
 	      this.db.delete(SEGMENT_TABLE_NAME, null, null);
 	      this.db.delete(POINTS_TABLE_NAME, null, null);
+	      this.db.delete(ELEVATION_TABLE_NAME, null, null);
+	   }
+	   
+	   /** Delete a given route and associated data.
+	    * 
+	    */
+	   
+	   public void delete(final int routeId) {
+		   db.delete(ROUTE_TABLE_NAME, "WHERE id = " + routeId, null);
+		   db.delete(ELEVATION_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
+	   }
+	   
+	   /**
+	    * Extract a route previously stored in the database.
+	    * 
+	    * @param routeId The row id of the route to restore.
+	    * @return a new route object.
+	    */
+	   public Route getRoute(final int routeId) {
+		   Route r = null;
+		   
+		   return r;
 	   }
 	   
 	   /**
@@ -176,6 +244,7 @@ public class RouteDatabase {
 	           db.execSQL(ROUTE_TABLE_CREATE);
 	           db.execSQL(POINTS_TABLE_CREATE);
 	           db.execSQL(SEGMENT_TABLE_CREATE);
+	           db.execSQL(ELEVATION_TABLE_NAME);
 	   		}
 
 	       /* (non-Javadoc)
@@ -186,6 +255,7 @@ public class RouteDatabase {
 	    	   db.execSQL("DROP TABLE IF EXISTS " + ROUTE_TABLE_NAME);
 	    	   db.execSQL("DROP TABLE IF EXISTS " + POINTS_TABLE_NAME);
 	    	   db.execSQL("DROP TABLE IF EXISTS " + SEGMENT_TABLE_NAME);
+	    	   db.execSQL("DROP TABLE IF EXISTS " + ELEVATION_TABLE_NAME);
 	    	   onCreate(db);
 	       }
 	   }

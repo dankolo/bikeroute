@@ -212,6 +212,15 @@ public class Route {
 	    return elevationSet;
 	}
 	
+	
+	/**
+	 * Get the xyseries that holds the elevation/distance series.
+	 * @return
+	 */
+	public XYSeries getElevationSeries() {
+		return elevations;
+	}
+	
 	/**
 	 * An an elevation and distance (in metres) to the elevation series for
 	 * this route.
