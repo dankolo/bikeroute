@@ -173,6 +173,21 @@ public class RouteMap extends OpenStreetMapActivity {
 		unit = mSettings.getString("unitsPref", "km");
 		this.mLocationOverlay.enableMyLocation();
         this.mLocationOverlay.followLocation(false);
+        
+        if (app.getRoute() != null) {
+			routeOverlay = new RouteOverlay(Color.BLUE,this);
+			travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
+			for(GeoPoint pt : app.getRoute().getPoints()) {
+				routeOverlay.addPoint(pt);
+			}
+			mOsmv.getOverlays().add(routeOverlay);
+			mOsmv.getOverlays().add(travelledRouteOverlay);
+			traverse(app.getSegment().startPoint());
+			if (getIntent().getBooleanExtra(getString(R.string.jump_intent), false)) {
+				showStep();
+			}
+			mOsmv.getController().setCenter(app.getSegment().startPoint());
+		}
 	}
 	
 	@Override
@@ -331,27 +346,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			prk.unPark();
 			break;
 		case R.id.center:
-			showDialog(R.id.awaiting_fix);
-			RouteMap.this.mLocationOverlay.runOnFirstFix(new Runnable() {
-				@Override
-				public void run() {
-					if (RouteMap.this.dialog.isShowing()) {
-							RouteMap.this.dismissDialog(R.id.awaiting_fix);
-							Location self = mLocationOverlay.getLastFix();
-							
-							if (self == null) {
-								self = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-							}
-							if (self == null) {
-								self = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-							}
-							if (self != null) {
-								RouteMap.this.mOsmv.getController().animateTo(
-									new GeoPoint(self.getLatitude(), self.getLongitude()));
-							}
-					}
-				}
-			});
+			RouteMap.this.mLocationOverlay.followLocation(true);
 			break;
 		case R.id.showstands:
 			Toast.makeText(this, "Getting stands from OpenStreetMap..",

@@ -123,13 +123,13 @@ public class NavigationService extends Service implements LocationListener{
     		
     		//Check we're still on the route.
     		
-    		if (range > accuracy) {
+    		/*if (range > accuracy) {
     			update.putExtra((String) getText(R.string.replan), true);
     			String logMsg = "Range=" + range + ",Self="+self+",near points:" + near + ",near points dist=" + near.get(0).distanceTo(near.get(1)) + ",accuracy=" + accuracy;
     			Log.e("Replanned", logMsg);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.replanning), contentIntent);    	        
-    		} else if (near.get(0).equals(app.getRoute().getEndPoint())) { //If we've arrived, shutdown and signal.
+    		} else*/ if (near.get(0).equals(app.getRoute().getEndPoint())) { //If we've arrived, shutdown and signal.
     			update.putExtra((String) getText(R.string.arrived), true);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.arrived), contentIntent);
