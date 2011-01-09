@@ -71,6 +71,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					  if ("1".equals(walk)) {
 						  sBuf.append("(dismount)");
 					  }
+					  segment.setName(nameString);
 					  segment.setInstruction(sBuf.toString());
 									
 					final String[] pointsArray = pointString.split(" ", -1);

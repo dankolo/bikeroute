@@ -25,6 +25,8 @@ public class Segment implements Parcelable{
 	private int length;
 	/** Distance covered. **/
 	private double distance;
+	/** Name (e.g. street name) of the segment. **/
+	private String name;
 
 	
 	public Segment() {
@@ -45,6 +47,7 @@ public class Segment implements Parcelable{
     @Override
     public void writeToParcel(final Parcel dest, final int flags) {
             dest.writeString(instruction);
+            dest.writeString(name);
             dest.writeInt(length);
             dest.writeTypedList(points);
             dest.writeDouble(distance);
@@ -57,6 +60,7 @@ public class Segment implements Parcelable{
     
     public void readFromParcel(final Parcel in) {
             instruction = in.readString();
+            name = in.readString();
             length = in.readInt();
             points = in.createTypedArrayList(GeoPoint.CREATOR);
             distance = in.readDouble();
@@ -126,6 +130,7 @@ public class Segment implements Parcelable{
 		final Segment copy = new Segment();
 		copy.points = new ArrayList<GeoPoint>(points);
 		copy.instruction = instruction;
+		copy.name = name;
 		copy.length = length;
 		copy.distance = distance;
 		return copy;
@@ -187,6 +192,23 @@ public class Segment implements Parcelable{
 	public int describeContents() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	/**
+	 * Set the name of this segment.
+	 * 
+	 * @param nameString
+	 */
+	public void setName(String nameString) {
+		this.name = nameString;
+	}
+	
+	/**
+	 * Get the streetname of the segment.
+	 * @return the name of the segment, or the instruction if this is a google route.
+	 */
+	public String getName() {
+		return name;
 	}
 
 }
