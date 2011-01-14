@@ -16,4 +16,5 @@
 <item type="id" name="thanks" />
 <item type="id" name="feedback_fail" />
 <item type="id" name="trace" />
+<item type="id" name="export" />
 </resources>

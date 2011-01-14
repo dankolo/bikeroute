@@ -50,4 +50,9 @@
 <string name="cs_jump">http://cycle.st/j</string>
 <string name="thanks_message">Thanks for your feedback!</string>
 <string name="feedback_fail_message">Apologies, your feedback could not be submitted.</string>
+<string name="export_title">Send to another BikeRoute user</string>
+<string name="share_url_title">Share on CycleStreets.net</string>
+<string name="export_gpx_title">Share as GPX</string>
+<string name="sharing_title">Share</string>
+<string name="filename">route.bikeroute</string>
 </resources>
