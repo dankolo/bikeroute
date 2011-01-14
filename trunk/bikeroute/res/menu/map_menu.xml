@@ -46,9 +46,16 @@
     <item android:id="@+id/elevation"
     android:title="Elevation"
     android:icon="@drawable/ic_menu_elevation" android:visible="false" ></item>
-    <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
+    
 
 <group android:id="@+id/cyclestreets" android:visible="false">
 <item android:id="@+id/feedback" android:title="@string/feedback_title"></item>
-<item android:id="@+id/share" android:title="Share Route"></item></group>
+</group><item android:id="@+id/sharing" android:visible="false" android:title="@string/sharing_title">
+<menu>
+<item android:id="@+id/share" android:title="Share Route"></item>
+<item android:title="@string/export_title" android:id="@+id/export"></item>
+<item android:id="@+id/export_gpx" android:title="@string/export_gpx_title"></item>
+</menu>
+</item><item android:id="@+id/about" android:icon="@drawable/ic_menu_about" android:title="@string/about_menu"></item>
+
 </menu>
