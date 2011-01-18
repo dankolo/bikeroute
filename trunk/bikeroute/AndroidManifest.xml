@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionCode="1103" android:versionName="Beta 1103">
+    package="com.nanosheep.bikeroute" android:versionName="Beta 1108" android:versionCode="1108">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -21,7 +21,22 @@
             </intent-filter>
        </activity>
        <activity android:name="com.nanosheep.bikeroute.LiveRouteMap" android:label="Map" 
-       android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTop"></activity>
+       android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask"
+       android:finishOnTaskLaunch="true">
+    	<intent-filter>
+        	<action android:name="android.intent.action.VIEW" />
+        	<category android:name="android.intent.category.DEFAULT" />
+        	<category android:name="android.intent.category.BROWSABLE" />
+        	<data android:scheme="http" /> 
+  			<data android:scheme="https" /> 
+  			<data android:scheme="ftp"  /> 
+  			<data android:scheme="file"  /> 
+  			<data android:scheme="content" /> 
+  			<data android:host="*" />
+  			<data android:pathPattern=".*\\.bikeroute" />
+  			<data android:mimeType="*/*" />
+    	</intent-filter>
+	</activity>
        <activity android:name="com.nanosheep.bikeroute.DirectionsView" android:label="Directions">
        </activity>
        <activity android:name="com.nanosheep.bikeroute.Preferences" android:label="Preferences">
