@@ -9,7 +9,10 @@ import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.StringAddress;
 import com.nanosheep.bikeroute.utility.contacts.AbstractContactAccessor;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.Route;
+
+import com.nanosheep.bikeroute.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -40,6 +43,24 @@ import android.widget.Button;
 
 /**
  * A class for performing A to B navigation and planning routes.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Oct 3, 2010
@@ -73,6 +94,9 @@ public class Navigate extends Activity implements RouteListener {
 	/** Route id generator. **/
 	Random random;
 	
+	/** Geocoding adapter. **/
+	private FindPlaceAdapter adapter;
+	
 	
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -101,7 +125,7 @@ public class Navigate extends Activity implements RouteListener {
 	final Button searchButton = (Button) findViewById(R.id.search_button);
 	
 	//Initialise adapter
-	final FindPlaceAdapter adapter = new FindPlaceAdapter(this,
+	adapter = new FindPlaceAdapter(this,
 			android.R.layout.simple_dropdown_item_1line);
 	startAddressField.setAdapter(adapter);
 	endAddressField.setAdapter(adapter);
@@ -292,17 +316,7 @@ public class Navigate extends Activity implements RouteListener {
 			dialog = builder.create();
 			break;
 		case R.id.about:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.about_message)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getAboutDialog(this);
 			break;
 		default:
 			dialog = null;
@@ -428,6 +442,7 @@ public class Navigate extends Activity implements RouteListener {
         if ((resultCode == RESULT_OK) && (requestCode == 0)) {
             loadContactAddress(data.getData());
         } else if ((requestCode == R.id.trace) && (resultCode == 1)) {
+        	setResult(1);
         	finish();
         }
     }

@@ -13,8 +13,7 @@ import android.database.sqlite.SQLiteStatement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andnav.osm.util.GeoPoint;
-
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
 
@@ -22,11 +21,29 @@ import com.nanosheep.bikeroute.utility.route.Segment;
  * SQLite database helper class for storing and retrieving
  * favourite routes.
  * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * 
  * @author jono@nanosheep.net
  * @version Jan 8, 2011
  */
 public class RouteDatabase {
-		private static final int DATABASE_VERSION = 2;
+		private static final int DATABASE_VERSION = 3;
 		private static final String ROUTE_TABLE_NAME = "route";
 		private static final String NAME = "name_string";
 		private static final String CRIGHT = "copyright_string";
@@ -137,7 +154,7 @@ public class RouteDatabase {
 				   this.insertStmt.get(1).bindLong(5, s.getLength());
 				   final long segId = this.insertStmt.get(1).executeInsert();
 				   //And each point with a ref to the segment
-				   for (GeoPoint p : s.getPoints()) {
+				   for (PGeoPoint p : s.getPoints()) {
 					   this.insertStmt.get(2).clearBindings();
 					   this.insertStmt.get(2).bindLong(1, segId);
 					   this.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
@@ -178,7 +195,35 @@ public class RouteDatabase {
 	    * @return a new route object.
 	    */
 	   public Route getRoute(final int routeId) {
-		   Route r = null;
+		   Route r = new Route();
+		   
+		   Cursor cursor = this.db.query(ROUTE_TABLE_NAME, new String[] { NAME, CRIGHT, WARN, CC, POLY, ITIN, LENGTH}, 
+			        "id = '" + routeId + "'", null, null, null, NAME + " desc", "10");
+		   if (cursor.moveToFirst()) {
+			   r.setName(cursor.getString(0));
+			   r.setCopyright(cursor.getString(1));
+			   r.setWarning(cursor.getString(2));
+			   r.setCountry(cursor.getString(3));
+			   r.setPolyline(cursor.getString(4));
+			   r.setItineraryId(cursor.getInt(5));
+			   r.setLength(cursor.getInt(6));
+		   }
+		   cursor.close();		   
+		   
+		   cursor = this.db.query(SEGMENT_TABLE_NAME, new String[] { "id", NAME, INSTRUCTION, DIST, LENGTH}, 
+			        ROUTE_ID + " = '" + routeId + "'", null, null, null, "id asc", null);
+		   
+		   if (cursor.moveToFirst()) {
+			   Segment s = new Segment();
+			   do {
+				   s.setName(cursor.getString(1));
+				   s.setInstruction(cursor.getString(2));
+				   s.setDistance(cursor.getDouble(3));
+				   s.setLength(cursor.getInt(4));
+				   Cursor pointsCursor = this.db.query(POINTS_TABLE_NAME, new String[] { NAME, CRIGHT, WARN, CC, POLY, ITIN, LENGTH}, 
+					        "id = '" + routeId + "'", null, null, null, NAME + " desc", "10");
+			   } while (cursor.moveToNext());
+		   }
 		   
 		   return r;
 	   }

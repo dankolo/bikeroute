@@ -7,21 +7,39 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.util.Log;
 
-//import com.google.android.maps.GeoPoint;
-import org.andnav.osm.util.GeoPoint;
-
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
 
 /**
  * Parse a google directions json object to a route.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Jun 25, 2010
@@ -44,6 +62,7 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 		final String result = convertStreamToString(this.getInputStream());
 		//Create an empty route
 		final Route route = new Route();
+		route.setRouter(BikeRouteConsts.G);
 		//Create an empty segment
 		final Segment segment = new Segment();
 		try {
@@ -81,10 +100,10 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 				segment.setLength(length);
 				segment.setDistance(distance/1000);
 				//Strip html from google directions and set as turn instruction
-				segment.setInstruction(step.getString("html_instructions").replaceAll("<(.*?)*>", ""));
+				segment.setInstruction(step.getString("html_instructions"));
 				segment.setName(segment.getInstruction());
 				//Retrieve & decode this segment's polyline and add it to the route & segment.
-				List<GeoPoint> points = decodePolyLine(step.getJSONObject("polyline").getString("points"));
+				List<PGeoPoint> points = decodePolyLine(step.getJSONObject("polyline").getString("points"));
 				route.addPoints(points);
 				segment.addPoints(points);
 				//Push a copy of the segment to the route
@@ -126,15 +145,15 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
     }
 	
 	/**
-	 * Decode a polyline string into a list of GeoPoints.
+	 * Decode a polyline string into a list of PGeoPoints.
 	 * @param poly polyline encoded string to decode.
-	 * @return the list of GeoPoints represented by this polystring.
+	 * @return the list of PGeoPoints represented by this polystring.
 	 */
 	
-	private List<GeoPoint> decodePolyLine(final String poly) {
+	private List<PGeoPoint> decodePolyLine(final String poly) {
 		int len = poly.length();
 		int index = 0;
-		List<GeoPoint> decoded = new ArrayList<GeoPoint>();
+		List<PGeoPoint> decoded = new ArrayList<PGeoPoint>();
 		int lat = 0;
 		int lng = 0;
 
@@ -160,7 +179,7 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 			int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
 			lng += dlng;
 
-		decoded.add(new GeoPoint(
+		decoded.add(new PGeoPoint(
 				Convert.asMicroDegrees(lat / 1E5), Convert.asMicroDegrees(lng / 1E5)));
 		}
 

@@ -1,11 +1,13 @@
 package com.nanosheep.bikeroute.parser;
 
-import org.xml.sax.Attributes;
-import org.andnav.osm.util.GeoPoint;
-
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
+
+import org.xml.sax.Attributes;
+
 
 import android.sax.Element;
 import android.sax.EndElementListener;
@@ -16,6 +18,25 @@ import android.util.Xml;
 
 /**
  * An xml parser for the CycleStreets.net journey planner API.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * 
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
@@ -36,7 +57,8 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 	public final Route parse() {
 		final Segment segment = new Segment();
 		final Route route = new Route();
-		route.setCopyright("Route planning by CycleStreets.net");
+		route.setRouter(BikeRouteConsts.CS);
+		route.setCopyright("Route planning by <a href=\"http://cyclestreets.net\">CycleStreets.net</a>");
 		final RootElement root = new RootElement(MARKERS);
 		final Element marker = root.getChild(MARKER);
 		// Listen for start of tag, get attributes and set them
@@ -44,7 +66,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 		marker.setStartElementListener(new StartElementListener() {
 			public void start(final Attributes attributes) {
 				segment.clearPoints();
-				GeoPoint p;
+				PGeoPoint p;
 				
 				final String pointString = attributes.getValue("points");
 				final String nameString = attributes.getValue("name");
@@ -89,7 +111,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 					final int len = pointsArray.length;
 					for (int i = 0; i < len; i++) {
 						final String[] point = pointsArray[i].split(",", -1);
-						p = new GeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
+						p = new PGeoPoint(Convert.asMicroDegrees(Double.parseDouble(point[1])), 
 								Convert.asMicroDegrees(Double.parseDouble(point[0])));
 						route.addPoint(p);
 						segment.addPoint(p);

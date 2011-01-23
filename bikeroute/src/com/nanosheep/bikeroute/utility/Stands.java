@@ -8,15 +8,34 @@ import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 
-import org.andnav.osm.util.GeoPoint;
-import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
-
-import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.parser.OSMParser;
 
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.overlay.OverlayItem;
+
+import com.nanosheep.bikeroute.R;
+
 /**
  * Utility class for querying cycle stands api based on gis data.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
@@ -37,7 +56,7 @@ public final class Stands {
 		double best = 9999999;
 		double dist;
 		
-		for (OpenStreetMapViewOverlayItem o : getMarkers(point, 1, mAct)) {
+		for (OverlayItem o : getMarkers(point, 1, mAct)) {
 			dist = point.distanceTo(o.mGeoPoint);
 		
 			if (best > dist) {
@@ -61,17 +80,17 @@ public final class Stands {
 	 * @return an arraylist of OverlayItems corresponding to markers in range.
 	 */
 
-	public static List<OpenStreetMapViewOverlayItem> getMarkers(final GeoPoint p,
+	public static List<OverlayItem> getMarkers(final GeoPoint p,
 			final double distance, final Context mAct) {
 		final String query = mAct.getString(R.string.stands_api) + getOSMBounds(getBounds(p, distance));
-		final List<OpenStreetMapViewOverlayItem> markers = new ArrayList<OpenStreetMapViewOverlayItem>();
+		final List<OverlayItem> markers = new ArrayList<OverlayItem>();
 		final OSMParser parser = new OSMParser(query);
 		final Point hotspot = new Point(0, 20);
 		final Drawable markerIcon = mAct.getResources().getDrawable(R.drawable.ic_marker_default);
 
 		// Parse XML to overlayitems (cycle stands)
 		for (GeoPoint point : parser.parse()) {
-			OpenStreetMapViewOverlayItem marker = new OpenStreetMapViewOverlayItem("", "", point);
+			OverlayItem marker = new OverlayItem("", "", point);
 			marker.setMarker(markerIcon);
 			marker.setMarkerHotspot(hotspot);
 			markers.add(marker);

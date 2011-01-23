@@ -52,7 +52,7 @@
 <item android:id="@+id/feedback" android:title="@string/feedback_title"></item>
 </group><item android:id="@+id/sharing" android:visible="false" android:title="@string/sharing_title">
 <menu>
-<item android:id="@+id/share" android:title="Share Route"></item>
+<item android:id="@+id/share" android:title="Share Route" android:visible="false"></item>
 <item android:title="@string/export_title" android:id="@+id/export"></item>
 <item android:id="@+id/export_gpx" android:title="@string/export_gpx_title"></item>
 </menu>
