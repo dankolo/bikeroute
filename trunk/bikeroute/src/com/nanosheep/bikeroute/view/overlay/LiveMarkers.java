@@ -3,46 +3,64 @@ package com.nanosheep.bikeroute.view.overlay;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andnav.osm.DefaultResourceProxyImpl;
-import org.andnav.osm.util.GeoPoint;
-import org.andnav.osm.views.OpenStreetMapView;
-import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay;
-import org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemGestureListener;
-import org.andnav.osm.views.overlay.OpenStreetMapViewOverlayItem;
-
 import com.nanosheep.bikeroute.utility.Stands;
+
+import org.osmdroid.DefaultResourceProxyImpl;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlay.OnItemGestureListener;
+import org.osmdroid.views.overlay.OverlayItem;
+
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 
 /**
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * A class to display markers on a map and update them from a remote
  * feed.
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
 
-public class LiveMarkers implements OnItemGestureListener<OpenStreetMapViewOverlayItem> {
+public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 	/** Update thread. **/
 	private Thread update;
 	/** Reference to map view to draw markers over. **/
-	private final OpenStreetMapView mv;
+	private final MapView mv;
 	/** Markers list for use by thread. **/
-	private List<OpenStreetMapViewOverlayItem> markers;
+	private List<OverlayItem> markers;
 	private final Context context;
 	/** Radius to return markers within. **/
 	protected static final double RADIUS = 0.5;
 	/** List of overlay items. **/
-	private final List<OpenStreetMapViewOverlayItem> mOverlays;
+	private final List<OverlayItem> mOverlays;
 	/** Itemized Overlay. **/
-	private OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem> iOverlay;
+	private ItemizedOverlay<OverlayItem> iOverlay;
 
-	public LiveMarkers(final OpenStreetMapView mapview, final Context ctxt) {
-		mv = mapview;
+	public LiveMarkers(final MapView mOsmv, final Context ctxt) {
+		mv = mOsmv;
 		context = ctxt;
-		mOverlays = new ArrayList<OpenStreetMapViewOverlayItem>();
-		iOverlay = new OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem>(ctxt, mOverlays,
+		mOverlays = new ArrayList<OverlayItem>();
+		iOverlay = new ItemizedOverlay<OverlayItem>(ctxt, mOverlays,
 				this, new DefaultResourceProxyImpl(ctxt));
 	}
 
@@ -76,7 +94,7 @@ public class LiveMarkers implements OnItemGestureListener<OpenStreetMapViewOverl
 			}
 			mOverlays.clear();
 			mOverlays.addAll(markers);
-			iOverlay = new OpenStreetMapViewItemizedOverlay<OpenStreetMapViewOverlayItem>(
+			iOverlay = new ItemizedOverlay<OverlayItem>(
 					context, mOverlays, null, new DefaultResourceProxyImpl(context));
 			mv.getOverlays().add(iOverlay);
 			mv.postInvalidate();
@@ -87,7 +105,7 @@ public class LiveMarkers implements OnItemGestureListener<OpenStreetMapViewOverl
 	 * @see org.andnav.osm.views.overlay.OpenStreetMapViewItemizedOverlay.OnItemGestureListener#onItemLongPress(int, java.lang.Object)
 	 */
 	@Override
-	public boolean onItemLongPress(int index, OpenStreetMapViewOverlayItem item) {
+	public boolean onItemLongPress(int index, OverlayItem item) {
 		// TODO Auto-generated method stub
 		return false;
 	}
@@ -97,7 +115,7 @@ public class LiveMarkers implements OnItemGestureListener<OpenStreetMapViewOverl
 	 */
 	@Override
 	public boolean onItemSingleTapUp(int index,
-			OpenStreetMapViewOverlayItem item) {
+			OverlayItem item) {
 		// TODO Auto-generated method stub
 		return false;
 	}

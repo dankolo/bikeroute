@@ -1,10 +1,12 @@
 package com.nanosheep.bikeroute;
 
-import org.andnav.osm.DefaultResourceProxyImpl;
-import org.andnav.osm.ResourceProxy;
-import org.andnav.osm.views.OpenStreetMapView;
-import org.andnav.osm.views.overlay.MyLocationOverlay;
-import org.andnav.osm.views.util.OpenStreetMapRendererFactory;
+import org.osmdroid.DefaultResourceProxyImpl;
+import org.osmdroid.ResourceProxy;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MyLocationOverlay;
+
+import com.nanosheep.bikeroute.R;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
@@ -13,6 +15,24 @@ import android.view.MotionEvent;
 
 /**
  * Based on osmdroid default map view activity.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * Default map view activity.
  * @author Manuel Stahl
@@ -25,7 +45,7 @@ public class OpenStreetMapActivity extends Activity {
         // ===========================================================
 
         protected SharedPreferences mPrefs;
-        protected OpenStreetMapView mOsmv;
+        protected MapView mOsmv;
         protected MyLocationOverlay mLocationOverlay;
         protected ResourceProxy mResourceProxy;
 
@@ -63,7 +83,7 @@ public class OpenStreetMapActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
+        mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
         if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
         }

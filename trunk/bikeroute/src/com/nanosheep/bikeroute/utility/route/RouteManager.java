@@ -3,6 +3,8 @@ package com.nanosheep.bikeroute.utility.route;
 import java.io.IOException;
 import java.net.URLEncoder;
 
+import org.osmdroid.util.GeoPoint;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Address;
@@ -12,18 +14,38 @@ import android.preference.PreferenceManager;
 
 import android.util.Log;
 
-import org.andnav.osm.util.GeoPoint;
-
-import com.nanosheep.bikeroute.R;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.parser.BikeRouteParser;
 import com.nanosheep.bikeroute.parser.CycleStreetsParser;
 import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
 import com.nanosheep.bikeroute.parser.GoogleElevationParser;
+import com.nanosheep.bikeroute.parser.MapQuestParser;
 import com.nanosheep.bikeroute.parser.Parser;
 import com.nanosheep.bikeroute.utility.Convert;
+
+import com.nanosheep.bikeroute.R;
 
 
 /**
  * Plans routes and displays them as overlays on the provided mapview.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Oct 3, 2010
@@ -50,6 +72,18 @@ public class RouteManager {
 		ctxt = context;
 		planned = false;
 		geocoder = new Geocoder(ctxt);
+	}
+	
+	public boolean showRoute(final String routeFile) {
+		clearRoute();
+		Parser parser = new BikeRouteParser(routeFile);
+		route = parser.parse();
+		if ((route == null) || RouteManager.this.route.getPoints().isEmpty()) {
+			return false;
+		}
+		//Build KD tree for the route
+		route.buildTree();
+		return true;
 	}
 	
 	/**
@@ -94,8 +128,11 @@ public class RouteManager {
 
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
 		Parser parser;
-		if ("GB".equals(country)) {
-			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
+		
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
+		String router = settings.getString("router", BikeRouteConsts.CS);
+		
+		if (BikeRouteConsts.CS.equals(router)) {
 			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.cs_api));
 			sBuf.append("start_lat=");
@@ -113,7 +150,7 @@ public class RouteManager {
 
 			parser = new CycleStreetsParser(sBuf
 				.toString());
-		} else {
+		} else if (BikeRouteConsts.G.equals(router)) {
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.us_api));
 			sBuf.append("origin=");
 			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
@@ -129,7 +166,18 @@ public class RouteManager {
 				sBuf.append("&sensor=true&mode=driving");
 			}
 		parser = new GoogleDirectionsParser(sBuf.toString());
-		} 
+		} else {
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.mq_api));
+			sBuf.append(start.getLatitudeE6()/1E6);
+			sBuf.append(',');
+			sBuf.append(start.getLongitudeE6()/1E6);
+			sBuf.append("&to=");
+			sBuf.append(dest.getLatitudeE6()/1E6);
+			sBuf.append(',');
+			sBuf.append(dest.getLongitudeE6()/1E6);
+			sBuf.append("&generalize=0.1&shapeFormat=cmp");
+			parser = new MapQuestParser(sBuf.toString());
+		}
 		Route r =  parser.parse();
 		//Untidy.
 		//If a polyline is set, need to query elevations api for
@@ -222,12 +270,12 @@ public class RouteManager {
 	
 	/**
 	 * Set a destination point which is an address
-	 * @param address
+	 * @param dest2
 	 */
 	
-	public void setDest(final Address address) {
-		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(address.getLatitude()),
-				Convert.asMicroDegrees(address.getLongitude()));
+	public void setDest(final Address dest2) {
+		GeoPoint p = new GeoPoint(Convert.asMicroDegrees(dest2.getLatitude()),
+				Convert.asMicroDegrees(dest2.getLongitude()));
 		setDest(p);
 	}
 	

@@ -4,11 +4,11 @@
 package com.nanosheep.bikeroute.service;
 
 import java.util.List;
-import org.andnav.osm.util.GeoPoint;
 
 import com.nanosheep.bikeroute.BikeRouteApp;
 import com.nanosheep.bikeroute.LiveRouteMap;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 
 import com.nanosheep.bikeroute.R;
 
@@ -24,11 +24,30 @@ import android.location.LocationManager;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.util.Log;
 
 /**
  * Service providing live navigation using GPS and notification updates
  * reflecting current location on route.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Nov 4, 2010
@@ -115,8 +134,8 @@ public class NavigationService extends Service implements LocationListener{
     	if (app.getRoute() != null) {
     		Intent update = new Intent((String) getText(R.string.navigation_intent));
         	//Find the nearest points and unless it is far, assume we're there
-    		GeoPoint self = new GeoPoint(location);
-    		List<GeoPoint> near = app.getRoute().nearest(self, 2);
+    		PGeoPoint self = new PGeoPoint(location);
+    		List<PGeoPoint> near = app.getRoute().nearest(self, 2);
     		
     		double range = range(self, near.get(0), near.get(1)) - 50;
     		double accuracy = location.getAccuracy();
@@ -134,7 +153,7 @@ public class NavigationService extends Service implements LocationListener{
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.arrived), contentIntent);
     		}	else {
-    			update.putExtra((String) getText(R.string.point), near.get(0));
+    			update.putExtra(getString(R.string.point), (Parcelable)near.get(0));
     			app.setSegment(app.getRoute().getSegment(near.get(0)));
     			notification.setLatestEventInfo(app, getText(R.string.notify_title),
         				app.getSegment().getInstruction(), contentIntent);
@@ -180,7 +199,7 @@ public class NavigationService extends Service implements LocationListener{
 	 * @return the distance from p0 to the path in meters as a double.
 	 */
 	
-	private double range(final GeoPoint p0, final GeoPoint p1, final GeoPoint p2) {
+	private double range(final PGeoPoint p0, final PGeoPoint p1, final PGeoPoint p2) {
 		double dist = Math.asin(Math.sin(p1.distanceTo(p0)/BikeRouteConsts.EARTH_RADIUS) * 
 				Math.sin(p1.bearingTo(p0) - p1.bearingTo(p2))) * 
 				BikeRouteConsts.EARTH_RADIUS;

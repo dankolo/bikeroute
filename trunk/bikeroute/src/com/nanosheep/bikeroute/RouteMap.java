@@ -1,16 +1,27 @@
 package com.nanosheep.bikeroute;
 
+import java.io.FileOutputStream;
 import java.util.ListIterator;
+
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.BikeAlert;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.Parking;
+import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Segment;
+import com.nanosheep.bikeroute.view.overlay.LiveMarkers;
+import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
 
 import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
-import org.andnav.osm.util.GeoPoint;
-import org.andnav.osm.views.OpenStreetMapView;
-import org.andnav.osm.views.overlay.MyLocationOverlay;
-import org.andnav.osm.views.overlay.OpenStreetMapViewOverlay;
-import org.andnav.osm.views.overlay.OpenStreetMapViewPathOverlay;
-import org.andnav.osm.views.util.OpenStreetMapRendererFactory;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.MyLocationOverlay;
+import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.PathOverlay;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -24,8 +35,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -38,17 +52,29 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nanosheep.bikeroute.utility.BikeAlert;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
-import com.nanosheep.bikeroute.utility.route.Segment;
-import com.nanosheep.bikeroute.view.overlay.LiveMarkers;
-import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
+import com.nanosheep.bikeroute.R;
 
 /**
  * A class for displaying a route map with overlays for directions and
  * nearby bicycle stands.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * 
@@ -59,9 +85,9 @@ public class RouteMap extends OpenStreetMapActivity {
 	/** Stand markers overlay. */
 	private LiveMarkers stands;
 	/** Route overlay. **/
-	protected OpenStreetMapViewPathOverlay routeOverlay;
+	protected PathOverlay routeOverlay;
 	/** Travelled route overlay. **/
-	protected OpenStreetMapViewPathOverlay travelledRouteOverlay;
+	protected PathOverlay travelledRouteOverlay;
 	/** Location manager. **/
 	protected LocationManager mLocationManager;
 	
@@ -110,9 +136,9 @@ public class RouteMap extends OpenStreetMapActivity {
 		
 		// Initialize map, view & controller
 		setContentView(R.layout.main);
-		this.mOsmv = (OpenStreetMapView) findViewById(R.id.mapview);
+		this.mOsmv = (MapView) findViewById(R.id.mapview);
         this.mOsmv.setResourceProxy(mResourceProxy);
-        mOsmv.setRenderer(OpenStreetMapRendererFactory.CYCLEMAP);
+        mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
         this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
         this.mOsmv.setBuiltInZoomControls(true);
         this.mOsmv.setMultiTouchControls(true);
@@ -151,18 +177,18 @@ public class RouteMap extends OpenStreetMapActivity {
 		}
 		
 		if (app.getRoute() != null) {
-			routeOverlay = new RouteOverlay(Color.BLUE,this);
-			travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
-			for(GeoPoint pt : app.getRoute().getPoints()) {
-				routeOverlay.addPoint(pt);
-			}
-			mOsmv.getOverlays().add(routeOverlay);
-			mOsmv.getOverlays().add(travelledRouteOverlay);
-			traverse(app.getSegment().startPoint());
-			if (getIntent().getBooleanExtra(getString(R.string.jump_intent), false)) {
-				showStep();
-			}
-			mOsmv.getController().setCenter(app.getSegment().startPoint());
+			viewRoute();
+		}
+	}
+	
+	/**
+	 * Handle jump intents from directionsview.
+	 */
+	
+	@Override
+	public void onNewIntent(final Intent intent) {
+		if (intent.getBooleanExtra(getString(R.string.jump_intent), false)) {
+			showStep();
 		}
 	}
 	
@@ -174,26 +200,33 @@ public class RouteMap extends OpenStreetMapActivity {
 		this.mLocationOverlay.enableMyLocation();
         this.mLocationOverlay.followLocation(false);
         
-        if (app.getRoute() != null) {
-			routeOverlay = new RouteOverlay(Color.BLUE,this);
-			travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
-			for(GeoPoint pt : app.getRoute().getPoints()) {
-				routeOverlay.addPoint(pt);
-			}
-			mOsmv.getOverlays().add(routeOverlay);
-			mOsmv.getOverlays().add(travelledRouteOverlay);
-			traverse(app.getSegment().startPoint());
-			if (getIntent().getBooleanExtra(getString(R.string.jump_intent), false)) {
-				showStep();
-			}
-			mOsmv.getController().setCenter(app.getSegment().startPoint());
-		}
+        if(app.getRoute() != null) {
+        	traverse(app.getSegment().startPoint());
+    		mOsmv.getController().setCenter(app.getSegment().startPoint());
+        }
 	}
 	
 	@Override
 	public void onStop() {
 		super.onStop();
 		this.mLocationOverlay.disableMyLocation();
+	}
+	
+	/**
+	 * Draw the route to the map.
+	 */
+	
+	protected void viewRoute() {
+		if (routeOverlay == null) {
+			routeOverlay = new RouteOverlay(Color.BLUE,this);
+			travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
+			for(PGeoPoint pt : app.getRoute().getPoints()) {
+				routeOverlay.addPoint(pt);
+			}
+			mOsmv.getOverlays().add(routeOverlay);
+			mOsmv.getOverlays().add(travelledRouteOverlay);
+		}
+		mOsmv.invalidate();
 	}
 	
 	/**
@@ -251,17 +284,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			dialog = pDialog;
 			break;
 		case R.id.about:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.about_message)).setCancelable(
-					true).setPositiveButton("OK",
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getAboutDialog(this);
 			break;
 		default:
 			dialog = null;
@@ -295,6 +318,8 @@ public class RouteMap extends OpenStreetMapActivity {
 		final MenuItem turnByTurn = menu.findItem(R.id.turnbyturn);
 		final MenuItem map = menu.findItem(R.id.map);
 		final MenuItem elev = menu.findItem(R.id.elevation);
+		final MenuItem share = menu.findItem(R.id.sharing);
+		final MenuItem csShare = menu.findItem(R.id.share);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -305,6 +330,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		if (app.getRoute() != null) {
 			steps.setVisible(true);
 			elev.setVisible(true);
+			share.setVisible(true);
 			if (directionsVisible) {
 				turnByTurn.setVisible(false);
 				map.setVisible(true);
@@ -312,7 +338,8 @@ public class RouteMap extends OpenStreetMapActivity {
 				turnByTurn.setVisible(true);
 				map.setVisible(false);
 			}
-			if (app.getRoute().getCountry().equals("GB")) {
+			if (app.getRoute().getRouter().equals(BikeRouteConsts.CS)) {
+				csShare.setVisible(true);
 				menu.setGroupVisible(R.id.cyclestreets, true);
 			}
 		}
@@ -326,6 +353,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		Intent intent;
+		FileOutputStream fos;
 		switch (item.getItemId()) {
 		case R.id.share:
 			Intent target = new Intent(Intent.ACTION_SEND);
@@ -353,6 +381,14 @@ public class RouteMap extends OpenStreetMapActivity {
 					Toast.LENGTH_LONG).show();
 			stands.refresh(mOsmv.getMapCenter());
 			return true;
+		case R.id.export:
+			String xml = app.getRoute().toXml();
+			export(xml, R.string.filename);
+			break;
+		case R.id.export_gpx:
+			String gpx = app.getRoute().toGPX();
+			export(gpx, R.string.filename_gpx);
+			break;
 		case R.id.park:
 			showDialog(R.id.awaiting_fix);
 			RouteMap.this.mLocationOverlay.runOnFirstFix(new Runnable() {
@@ -370,7 +406,7 @@ public class RouteMap extends OpenStreetMapActivity {
 							}
 							if (self != null) {
 								prk.park(
-									new GeoPoint(self.getLatitude(), self.getLongitude()));
+									new PGeoPoint(self.getLatitude(), self.getLongitude()));
 							}
 					}
 				}
@@ -389,7 +425,6 @@ public class RouteMap extends OpenStreetMapActivity {
 		case R.id.navigate:
 			intent = new Intent(this, Navigate.class);
 			startActivityForResult(intent, R.id.trace);
-			
 			break;
 		case R.id.elevation:
 			XYMultipleSeriesDataset elevation = app.getRoute().getElevations();
@@ -414,6 +449,28 @@ public class RouteMap extends OpenStreetMapActivity {
 	}
 	
 	/**
+	 * Helper for sharing xml'd route files.
+	 * @param content
+	 * @param fileNameId
+	 */
+	
+	private void export(final String content, int fileNameId) {
+		Intent t;
+		FileOutputStream fos;
+		try {
+			fos = openFileOutput(getString(fileNameId), Context.MODE_WORLD_READABLE);
+			fos.write(content.getBytes());
+			fos.close();
+		} catch (Exception e) {
+			Log.e("File export", e.getMessage());
+		}
+		t = new Intent(Intent.ACTION_SEND);
+		t.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(getFileStreamPath(getString(fileNameId))));
+		t.setType("text/xml");
+		startActivity(Intent.createChooser(t, getString(R.string.share_chooser_title)));
+	}
+	
+	/**
 	 * Retain any route data if the screen is rotated.
 	 */
 	
@@ -430,7 +487,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	 * @param point
 	 */
 	
-	protected void traverse(final GeoPoint point) {
+	protected void traverse(final PGeoPoint point) {
 		travelledRouteOverlay.clearPath();
 		routeOverlay.clearPath();
 		int index = app.getRoute().getPoints().indexOf(point);
@@ -531,7 +588,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		final TextView turn = (TextView) overlay.findViewById(R.id.turn);
 		final TextView distance = (TextView) overlay.findViewById(R.id.distance);
 		final TextView num = (TextView) overlay.findViewById(R.id.step_no);
-		turn.setText(app.getSegment().getInstruction());
+		turn.setText(Html.fromHtml(app.getSegment().getInstruction()), TextView.BufferType.SPANNABLE);
 		
 		final String distanceString = "km".equals(unit) ? Convert.asMeterString(app.getSegment().getLength()) + " ("
 				+ Convert.asKilometerString(app.getSegment().getDistance()) + ")" : 
@@ -548,7 +605,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	 * 
 	 */
 	
-	private class OSDOverlay extends OpenStreetMapViewOverlay {
+	private class OSDOverlay extends Overlay {
 
 		/**
 		 * @param ctx
@@ -573,7 +630,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		 */
 		
 		@Override
-		public boolean onTouchEvent(final MotionEvent event, final OpenStreetMapView mv) {
+		public boolean onTouchEvent(final MotionEvent event, final MapView mv) {
 			if (RouteMap.this.directionsVisible) {
 				RouteMap.this.gestureDetector.onTouchEvent(event);
 				return true;
@@ -583,18 +640,18 @@ public class RouteMap extends OpenStreetMapActivity {
 		}
 
 		/* (non-Javadoc)
-		 * @see org.andnav.osm.views.overlay.OpenStreetMapViewOverlay#onDraw(android.graphics.Canvas, org.andnav.osm.views.OpenStreetMapView)
+		 * @see org.andnav.osm.views.overlay.MapViewOverlay#onDraw(android.graphics.Canvas, org.andnav.osm.views.MapView)
 		 */
 		@Override
-		protected void onDraw(final Canvas arg0, final OpenStreetMapView arg1) {
+		protected void onDraw(final Canvas arg0, final MapView arg1) {
 			
 		}
 
 		/* (non-Javadoc)
-		 * @see org.andnav.osm.views.overlay.OpenStreetMapViewOverlay#onDrawFinished(android.graphics.Canvas, org.andnav.osm.views.OpenStreetMapView)
+		 * @see org.andnav.osm.views.overlay.MapViewOverlay#onDrawFinished(android.graphics.Canvas, org.andnav.osm.views.MapView)
 		 */
 		@Override
-		protected void onDrawFinished(final Canvas arg0, final OpenStreetMapView arg1) {			
+		protected void onDrawFinished(final Canvas arg0, final MapView arg1) {			
 		}
 		
 	}

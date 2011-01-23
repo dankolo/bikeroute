@@ -20,7 +20,7 @@
 <string name="my_location">My location</string>
 <string name="samples">Samples</string>
 <string name="about">About</string>
-<string name="about_message">BikeRoute uses map and parking data provided by OpenStreetMap.org; routing by Google &amp; CycleStreets.net and the OSMDroid &amp; achartengine libraries.</string>
+<string name="about_message">BikeRoute uses map and parking data provided by &lt;a href=&quot;http://openstreetmap.org&quot;&gt;OpenStreetMap.org&lt;/a&gt;; routing by &lt;a href=&quot;http://google.com&quot;&gt;Google&lt;/a&gt;, &lt;a href=&quot;http://open.mapquest.com&quot;&gt;MapQuest&lt;/a&gt; &amp; &lt;a href=&quot;http://cyclestreets.net&quot;&gt;CycleStreets.net&lt;/a&gt; and the &lt;a href=&quot;http://osmdroid.googlecode.com&quot;&gt;OSMDroid&lt;/a&gt; &amp; &lt;a href=&quot;http://achartengine.googlecode.com&quot;&gt;achartengine&lt;/a&gt; libraries.</string>
 
 <string name="about_menu">About</string>
 <string name="cs_copyright">Route planning by CycleStreets.net</string>
@@ -43,7 +43,7 @@
 <string name="notify_title">BikeRoute</string>
 <string name="navigation_intent">com.nanosheep.bikeroute.service.NavigationService</string>
 <string name="replanning">Replanning...</string>
-<string name="stop_nav_title">Quit</string>
+<string name="stop_nav_title">Stop Navigating</string>
 <string name="arrived_speech">You have reached your destination.</string>
 <string name="jump_intent">jump</string>
 <string name="share_chooser_title">Share Route Using</string>
@@ -55,4 +55,5 @@
 <string name="export_gpx_title">Share as GPX</string>
 <string name="sharing_title">Share</string>
 <string name="filename">route.bikeroute</string>
+<string name="filename_gpx">route.gpx</string>
 </resources>

@@ -4,8 +4,15 @@
 package com.nanosheep.bikeroute;
 
 import java.util.ListIterator;
+import java.util.Random;
 
-import org.andnav.osm.util.GeoPoint;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.service.NavigationService;
+import com.nanosheep.bikeroute.service.RouteListener;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -21,23 +28,38 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.nanosheep.bikeroute.service.NavigationService;
-import com.nanosheep.bikeroute.service.RouteListener;
-import com.nanosheep.bikeroute.service.RoutePlannerTask;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
 import com.nanosheep.bikeroute.R;
 
 /**
  * Extends RouteMap providing live/satnav features - turn guidance advancing with location,
  * route replanning.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Oct 4, 2010
@@ -80,6 +102,20 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
+		
+		Uri uri = getIntent().getData();
+		
+		if (uri != null) {
+			searchIntent = new Intent();
+			searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, (new Random()).nextInt(2147483647));
+			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.FILE_PLAN);
+			searchIntent.putExtra(RoutePlannerTask.FILE, uri.getPath());
+			LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
+			LiveRouteMap.this.search.execute();
+			//Set the launching intent to one without file data now route is loaded.
+			setIntent(getIntent().setData(null));
+		}
+		
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
 		arrived = false;
@@ -94,6 +130,21 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 		}
 		registerReceiver(mBroadcastReceiver, 
 				new IntentFilter(getString(R.string.navigation_intent)));
+	}
+	
+	@Override
+	public void onNewIntent(final Intent intent) {
+		super.onNewIntent(intent);
+		Uri uri = intent.getData();
+		//Handle loading routes into already loaded app
+		if (uri != null) {
+			searchIntent = new Intent();
+			searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, (new Random()).nextInt(2147483647));
+			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.FILE_PLAN);
+			searchIntent.putExtra(RoutePlannerTask.FILE, uri.getPath());
+			LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
+			LiveRouteMap.this.search.execute();
+		}
 	}
 	
 	/**
@@ -168,7 +219,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.REPLAN_PLAN);
 			searchIntent.putExtra(RoutePlannerTask.START_LOCATION, self);
 			searchIntent.putExtra(RoutePlannerTask.END_POINT,
-					app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
+					(Parcelable) app.getRoute().getPoints().get(app.getRoute().getPoints().size() - 1));
 			LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
 			LiveRouteMap.this.search.execute();
 		} else {
@@ -275,9 +326,10 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	 */
 	
 	private void doBindService() {
-	    bindService(new Intent(LiveRouteMap.this, 
-	            NavigationService.class), mConnection, Context.BIND_AUTO_CREATE);
-	    mIsBound = true;
+		if (!mIsBound) {
+			bindService(new Intent(LiveRouteMap.this, NavigationService.class), mConnection, Context.BIND_AUTO_CREATE);
+			mIsBound = true;
+		}
 	}
 
 	/**
@@ -298,9 +350,9 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	
 	@Override
 	public void onDestroy() {
-	    super.onDestroy();
-	    doUnbindService();
+		doUnbindService();
 	    unregisterReceiver(mBroadcastReceiver);
+	    super.onDestroy();
 	}
 	
 	/**
@@ -311,10 +363,20 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	@Override
 	public void onStart() {
 		super.onStart();
+		startNavigation();
+	}
+	
+	/**
+	 * Unbind & rebind nav service if needed, start up navigation if we have
+	 * a route.
+	 */
+	
+	private void startNavigation() {
+		doUnbindService();
 		liveNavigation = mSettings.getBoolean("gps", false);
 		if (app.getRoute() != null) {
-			//Disable live navigation for non GB routes to comply with Google tos
-			liveNavigation = !"GB".equals(app.getRoute().getCountry()) ? false : liveNavigation;
+			//Disable live navigation for Google routes to comply with Google tos
+			liveNavigation = app.getRoute().getRouter().equals(BikeRouteConsts.G) ? false : liveNavigation;
 			if (tts && directionsVisible && !isSearching) {
 				speak(app.getSegment());
 				lastSegment = app.getSegment();
@@ -324,8 +386,6 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 					showDialog(R.id.gps);
 				}
 				doBindService();
-			} else {
-				doUnbindService();
 			}
 		}
 	}
@@ -352,16 +412,16 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 					arrive();
 					spoken = true;
 				} else {
-					GeoPoint current = (GeoPoint) intent.getExtras().get(getString(R.string.point));
+					PGeoPoint current = (PGeoPoint) intent.getExtras().get(getString(R.string.point));
 					if (!app.getSegment().equals(lastSegment)) {
 						lastSegment = app.getSegment();
 						spoken = false;
 					}
 					
 					//Get next point
-					ListIterator<GeoPoint> it = app.getRoute().getPoints().listIterator(
+					ListIterator<PGeoPoint> it = app.getRoute().getPoints().listIterator(
 							app.getRoute().getPoints().indexOf(current) + 1);
-					GeoPoint next = it.hasNext() ? it.next() : current;
+					PGeoPoint next = it.hasNext() ? it.next() : current;
 					
 					//Speak directions if the next point is a new segment
 					//and have not spoken already
@@ -402,8 +462,10 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 		if (msg != null) {
 			
 			if (msg == R.id.result_ok) {
+				doUnbindService();
 				app.setRoute(route);
 				app.setSegment(app.getRoute().getSegments().get(0));
+				viewRoute();
 				mOsmv.getController().setCenter(app.getSegment().startPoint());
 				traverse(app.getSegment().startPoint());
 				arrived = false;
@@ -413,6 +475,9 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 						speak(app.getSegment());
 						spoken = true;
 					}
+				}
+				if(liveNavigation) {
+					doBindService();
 				}
 			} else {
 				showDialog(msg);

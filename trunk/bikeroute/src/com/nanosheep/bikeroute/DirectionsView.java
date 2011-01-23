@@ -3,12 +3,16 @@
  */
 package com.nanosheep.bikeroute;
 
+import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
+import com.nanosheep.bikeroute.utility.route.Route;
+
 import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
-import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.route.Route;
+
+import com.nanosheep.bikeroute.R;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,6 +22,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -28,6 +34,24 @@ import android.widget.TextView;
 
 /**
  * A class for displaying a list of directions.
+ * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  * 
  * @author jono@nanosheep.net
  * @version Jun 24, 2010
@@ -91,7 +115,8 @@ public class DirectionsView extends ListActivity {
 		if (route.getCopyright() != null) {
 			sBuf.append(route.getCopyright());
 		}
-		footer.setText(sBuf.toString());
+		footer.setText(Html.fromHtml(sBuf.toString()), TextView.BufferType.SPANNABLE);
+		footer.setMovementMethod(LinkMovementMethod.getInstance());
 		((DirectionListAdapter) getListAdapter()).populate();
 	}
 	
@@ -190,17 +215,7 @@ public class DirectionsView extends ListActivity {
 	
 	@Override
 	public Dialog onCreateDialog(final int id) {
-		final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(getText(R.string.about_message)).setCancelable(
-				true).setPositiveButton(getString(R.string.ok),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog,
-							final int id) {
-						dialog.dismiss();
-					}
-				});
-		return builder.create();
+		return DialogFactory.getAboutDialog(this);
 	}
 	
 	/**

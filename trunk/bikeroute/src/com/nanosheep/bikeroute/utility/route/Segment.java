@@ -1,9 +1,8 @@
 package com.nanosheep.bikeroute.utility.route;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-
-import org.andnav.osm.util.GeoPoint;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -13,12 +12,30 @@ import android.os.Parcelable;
  * that make it up and the turn to be taken to reach the
  * next segment.
  * 
+ * This file is part of BikeRoute.
+ * 
+ * Copyright (C) 2011  Jonathan Gray
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * 
  * @author jono@nanosheep.net
  * @version Jun 21, 2010
  */
 public class Segment implements Parcelable{
 	/** Points in this segment. **/
-	private List<GeoPoint> points;
+	private List<PGeoPoint> points;
 	/** Turn instruction to reach next segment. **/
 	private String instruction;
 	/** Length of segment. **/
@@ -30,7 +47,7 @@ public class Segment implements Parcelable{
 
 	
 	public Segment() {
-		points = new ArrayList<GeoPoint>();
+		points = new ArrayList<PGeoPoint>();
 	}
 	
 	/**
@@ -62,7 +79,7 @@ public class Segment implements Parcelable{
             instruction = in.readString();
             name = in.readString();
             length = in.readInt();
-            points = in.createTypedArrayList(GeoPoint.CREATOR);
+            points = in.createTypedArrayList(PGeoPoint.CREATOR);
             distance = in.readDouble();
     }
 
@@ -94,10 +111,10 @@ public class Segment implements Parcelable{
 	
 	/**
 	 * Add a point to this segment.
-	 * @param point GeoPoint to add.
+	 * @param point PGeoPoint to add.
 	 */
 	
-	public void addPoint(final GeoPoint point) {
+	public void addPoint(final PGeoPoint point) {
 		points.add(point);
 	}
 	
@@ -105,20 +122,20 @@ public class Segment implements Parcelable{
 	 * 
 	 */
 	
-	public void addPoints(final List<GeoPoint> points) {
+	public void addPoints(final List<PGeoPoint> points) {
 		this.points.addAll(points);
 	}
 	
 	/** Get the starting point of this 
 	 * segment.
-	 * @return a GeoPoint
+	 * @return a PGeoPoint
 	 */
 	
-	public GeoPoint startPoint() {
+	public PGeoPoint startPoint() {
 		return points.get(0);
 	}
 	
-	public List<GeoPoint> getPoints() {
+	public List<PGeoPoint> getPoints() {
 		return points;
 	}
 	
@@ -128,7 +145,7 @@ public class Segment implements Parcelable{
 	
 	public Segment copy() {
 		final Segment copy = new Segment();
-		copy.points = new ArrayList<GeoPoint>(points);
+		copy.points = new ArrayList<PGeoPoint>(points);
 		copy.instruction = instruction;
 		copy.name = name;
 		copy.length = length;
@@ -209,6 +226,30 @@ public class Segment implements Parcelable{
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	public String toXml() {
+		StringBuilder sb = new StringBuilder("<marker type=\"segment\" turn=\"");
+		sb.append(getInstruction());
+		sb.append("\" name=\"");
+		sb.append(getName());
+		sb.append("\" length=\"");
+		sb.append(getLength());
+		sb.append("\" distance=\"");
+		sb.append(getDistance());
+		sb.append("\" points=\"");
+		Iterator<PGeoPoint> it = points.iterator();
+		while (it.hasNext()) {
+			PGeoPoint p = it.next();
+			sb.append(p.getLatitudeE6());
+			sb.append(",");
+			sb.append(p.getLongitudeE6());
+			if (it.hasNext()) {
+				sb.append(" ");
+			}
+		}
+		sb.append("\" />");
+		return sb.toString();
 	}
 
 }

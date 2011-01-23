@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
         <PreferenceCategory
+                android:title="Routing Engine">
+                <ListPreference
+                        android:title="Route Provider"
+                        android:summary="Select route provider"
+                        android:key="router"
+                        android:defaultValue="cs"
+                        android:entries="@array/routerArray"
+                        android:entryValues="@array/routerValues" />
+        </PreferenceCategory>
+        
+        <PreferenceCategory
                 android:title="Distance Units">
                 <ListPreference
                         android:title="Units"
@@ -28,8 +39,7 @@
         		android:key="tts"
         		/>
         	</PreferenceCategory>
-        	<PreferenceCategory
-        	android:title="Live Satnav (Beta, UK routes only)">
+        	<PreferenceCategory android:title="Live Satnav (Beta, CycleStreets &amp; MapQuest routes only)">
         	<CheckBoxPreference
         	android:title="Satnav on"
         	android:defaultValue="false"
