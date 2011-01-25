@@ -39,10 +39,9 @@ import java.util.List;
  * @version Jul 2, 2010
  */
 public class AddressDatabase {
-		private static final int DATABASE_VERSION = 2;
+		private static final int DATABASE_VERSION = 5;
 		private static final String ADDRESS_TABLE_NAME = "address";
 		private static final String ADDRESS = "address_string";
-		private static final String ID = "id";
 		private static final String ADDRESS_TABLE_CREATE =
                "CREATE TABLE " + ADDRESS_TABLE_NAME + " (" + ADDRESS + " TEXT PRIMARY KEY);";
 		private static final String DATABASE_NAME = "bikeroute_db";
@@ -54,10 +53,11 @@ public class AddressDatabase {
 	   private static final String INSERT = "insert or ignore into " 
 	      + ADDRESS_TABLE_NAME + "(" + ADDRESS + ") values (?);";
 	   private static final String LIKE_QUERY = ADDRESS + " LIKE ";
+	   private AddressDatabaseHelper openHelper;
 
 	   public AddressDatabase(Context context) {
 	      this.context = context;
-	      AddressDatabaseHelper openHelper = new AddressDatabaseHelper(this.context);
+	      openHelper = new AddressDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
 	      this.insertStmt = this.db.compileStatement(INSERT);
 	   }
@@ -78,7 +78,19 @@ public class AddressDatabase {
 	    */
 	   
 	   public void deleteAll() {
-	      this.db.delete(ADDRESS_TABLE_NAME, null, null);
+		   this.db.delete(ADDRESS_TABLE_NAME, null, null);
+	   }
+	   
+	   public void open() {
+		   if (!this.db.isOpen()) {
+			   this.db = openHelper.getWritableDatabase();
+		   }
+	   }
+	   
+	   public void close() {
+		   if (this.db.isOpen()) {
+			   this.db.close();
+		   }
 	   }
 	   
 	   /**

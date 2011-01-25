@@ -10,6 +10,7 @@ import com.nanosheep.bikeroute.utility.route.Segment;
 
 import com.nanosheep.bikeroute.R;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
@@ -49,6 +50,18 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	@Override
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
+	}
+	
+	/**
+	 * Handle jump intents from directionsview.
+	 */
+	
+	@Override
+	public void onNewIntent(final Intent intent) {
+		super.onNewIntent(intent);
+		if (intent.getBooleanExtra(getString(R.string.jump_intent), false)) {
+			speak(app.getSegment());
+		}
 	}
 	
 	@Override
@@ -111,7 +124,7 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 		if (tts) {
 			Iterator<Segment> it = app.getRoute().getSegments().listIterator(
 					app.getRoute().getSegments().indexOf(segment) + 1);
-			StringBuffer sb = new StringBuffer(segment.getInstruction());
+			StringBuffer sb = new StringBuffer(segment.getInstruction().replaceAll("<(.*?)*>", ""));
 			if (it.hasNext()) {
 				sb.append(" then after ");
 				if (unit.equals(getString(R.string.km))) {
@@ -121,7 +134,7 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 					sb.append(Convert.asFeet(segment.getLength()));
 					sb.append("feet ");
 				}
-				sb.append(it.next().getInstruction());
+				sb.append(it.next().getInstruction().replaceAll("<(.*?)*>", ""));
 			}
 			if (directionsTts.isSpeaking()) {
 				sb.insert(0, " then");

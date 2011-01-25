@@ -183,7 +183,8 @@ public class Segment implements Parcelable{
 	
 	@Override
 	public boolean equals(Object o) {
-		if ((o instanceof Segment) && ((Segment)o).getInstruction().equals(instruction)) {
+		if ((o instanceof Segment) && ((Segment)o).getInstruction().equals(instruction)
+				&& ((Segment)o).getDistance() == distance) {
 			return true;
 		}
 		return false;
@@ -191,7 +192,8 @@ public class Segment implements Parcelable{
 	
 	 public static final Parcelable.Creator CREATOR =
 	        new Parcelable.Creator() {
-	            public Segment createFromParcel(final Parcel in) {
+	            @Override
+				public Segment createFromParcel(final Parcel in) {
 	                return new Segment(in);
 	            }
 

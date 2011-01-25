@@ -7,6 +7,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Contacts;
 
@@ -54,7 +55,7 @@ public class ContactAccessorSdk5 extends AbstractContactAccessor {
 
         // Load the id for the specified person
         final Cursor cursor = contentResolver.query(contactUri,
-                new String[]{Contacts._ID, Contacts.DISPLAY_NAME}, null, null, null);
+                new String[]{BaseColumns._ID, Contacts.DISPLAY_NAME}, null, null, null);
         try {
             if (cursor.moveToFirst()) {
                 contactId = cursor.getLong(0);

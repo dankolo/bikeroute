@@ -9,6 +9,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,14 +44,16 @@ import com.nanosheep.bikeroute.utility.route.Segment;
  * @version Jan 8, 2011
  */
 public class RouteDatabase {
-		private static final int DATABASE_VERSION = 3;
+		private static final int DATABASE_VERSION = 5;
 		private static final String ROUTE_TABLE_NAME = "route";
-		private static final String NAME = "name_string";
+		public static final String NAME = "name_string";
+		public static final String FRIENDLY_NAME =  "friendly_name_string";
 		private static final String CRIGHT = "copyright_string";
 		private static final String WARN = "warning_string";
 		private static final String CC = "country_code_string";
 		private static final String POLY = "polyline_string";
 		private static final String ITIN = "itenerary_id";
+		public static final String ROUTER = "router";
 		
 		
 		private static final String POINTS_TABLE_NAME = "points";
@@ -61,7 +64,7 @@ public class RouteDatabase {
 		private static final String SEGMENT_TABLE_NAME = "segments";
 		private static final String INSTRUCTION = "turn_string";
 		private static final String ROUTE_ID = "routeid";
-		private static final String LENGTH = "length_int";
+		public static final String LENGTH = "length_int";
 		private static final String DIST = "distance_dbl";
 		
 		private static final String ELEVATION_TABLE_NAME = "elevations";
@@ -69,20 +72,20 @@ public class RouteDatabase {
 		private static final String DIST_M = "distance_int";
 		
 		private static final String ROUTE_TABLE_CREATE =
-               "CREATE TABLE " + ROUTE_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + NAME + " TEXT, " +
+               "CREATE TABLE " + ROUTE_TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY, " + NAME + " TEXT, " +
                CRIGHT + " TEXT, " + WARN + " TEXT, " + CC + " TEXT, " + POLY + " TEXT, " + ITIN + " INTEGER, "
-               + LENGTH + " INTEGER" + ");";
+               + LENGTH + " INTEGER, " + ROUTER + " TEXT, " + FRIENDLY_NAME +" TEXT);";
 		
 		private static final String POINTS_TABLE_CREATE =
-			"CREATE TABLE " + POINTS_TABLE_NAME + " (" + SEG_ID + " INTEGER , " + LAT + 
-			" INTEGER, " + LNG + " INTEGER);";
+			"CREATE TABLE " + POINTS_TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY, " + SEG_ID + " INTEGER , " + LAT + 
+			" INTEGER, " + LNG + " INTEGER, " + ROUTE_ID + " INTEGER);";
 		
 		private static final String SEGMENT_TABLE_CREATE = 
-			"CREATE TABLE " + SEGMENT_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + NAME + " TEXT, " + INSTRUCTION + " TEXT, " +
-					ROUTE_ID + "INTEGER, " + DIST + " DOUBLE, " + LENGTH + " INTEGER);";
+			"CREATE TABLE " + SEGMENT_TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY, " + NAME + " TEXT, " + INSTRUCTION + " TEXT, " +
+					ROUTE_ID + " INTEGER, " + DIST + " DOUBLE, " + LENGTH + " INTEGER);";
 		
 		private static final String ELEVATION_TABLE_CREATE = 
-			"CREATE TABLE " + ELEVATION_TABLE_NAME + " (id INTEGER PRIMARY KEY, " + ELEV + " INTEGER, " + DIST_M +
+			"CREATE TABLE " + ELEVATION_TABLE_NAME + " (" + BaseColumns._ID + " INTEGER PRIMARY KEY, " + ELEV + " INTEGER, " + DIST_M +
 			" INTEGER, " + ROUTE_ID + " INTEGER);";
 		
 		
@@ -93,19 +96,21 @@ public class RouteDatabase {
 
 	   private List<SQLiteStatement> insertStmt;
 	   private static final String INSERT_ROUTE = "insert into " 
-	      + ROUTE_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?, ?, ?);";
+	      + ROUTE_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	   private static final String INSERT_SEGMENT = "insert into "
 		   + SEGMENT_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?);";
 	   private static final String INSERT_POINT = "insert into "
-		   + POINTS_TABLE_NAME + " values (?, ?, ?);";
+		   + POINTS_TABLE_NAME + " values (NULL, ?, ?, ?, ?);";
 	   private static final String INSERT_ELEV = "insert into "
 		   + ELEVATION_TABLE_NAME + " values(null, ?, ?, ?);";
 	   
 	   private static final String LIKE_QUERY = NAME + " LIKE ";
+	   
+	   private static RouteDatabaseHelper openHelper;
 
 	   public RouteDatabase(Context context) {
 	      this.context = context;
-	      AddressDatabaseHelper openHelper = new AddressDatabaseHelper(this.context);
+	      openHelper = new RouteDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
 	      this.insertStmt = new ArrayList<SQLiteStatement>(4);
 	      this.insertStmt.add(this.db.compileStatement(INSERT_ROUTE));
@@ -120,10 +125,10 @@ public class RouteDatabase {
 	    * @return
 	    */
 
-	   public void insert(Route route) {
+	   public void insert(final String name, final Route route) {
 		   db.beginTransaction();
 		   try {
-			   //Insert the route and get the id back
+			   //Insert the route and get the " + BaseColumns._ID + " back
 			   this.insertStmt.get(0).bindString(1, route.getName()); 
 			   this.insertStmt.get(0).bindString(2, route.getCopyright());
 			   this.insertStmt.get(0).bindString(3, route.getWarning());
@@ -131,6 +136,8 @@ public class RouteDatabase {
 			   this.insertStmt.get(0).bindString(5, route.getPolyline()); 
 			   this.insertStmt.get(0).bindLong(6, route.getItineraryId()); 
 			   this.insertStmt.get(0).bindLong(7, route.getLength()); 
+			   this.insertStmt.get(0).bindString(8, route.getRouter());
+			   this.insertStmt.get(0).bindString(9, name);
 			   final long routeId = this.insertStmt.get(0).executeInsert();
 		   
 			   //Insert elevation set
@@ -159,6 +166,7 @@ public class RouteDatabase {
 					   this.insertStmt.get(2).bindLong(1, segId);
 					   this.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
 					   this.insertStmt.get(2).bindLong(3, p.getLongitudeE6());
+					   this.insertStmt.get(2).bindLong(4, routeId);
 					   this.insertStmt.get(2).executeInsert();
 				   }
 		   		}
@@ -184,21 +192,35 @@ public class RouteDatabase {
 	    */
 	   
 	   public void delete(final int routeId) {
-		   db.delete(ROUTE_TABLE_NAME, "WHERE id = " + routeId, null);
+		   db.delete(ROUTE_TABLE_NAME, "WHERE " + BaseColumns._ID + " = " + routeId, null);
+		   db.delete(POINTS_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
+		   db.delete(SEGMENT_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
 		   db.delete(ELEVATION_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
+	   }
+	   
+	   public void open() {
+		   if (!this.db.isOpen()) {
+			   this.db = openHelper.getWritableDatabase();
+		   }
+	   }
+	   
+	   public void close() {
+		   if (this.db.isOpen()) {
+			   this.db.close();
+		   }
 	   }
 	   
 	   /**
 	    * Extract a route previously stored in the database.
 	    * 
-	    * @param routeId The row id of the route to restore.
+	    * @param id The row " + BaseColumns._ID + " of the route to restore.
 	    * @return a new route object.
 	    */
-	   public Route getRoute(final int routeId) {
+	   public Route getRoute(final long id) {
 		   Route r = new Route();
-		   
-		   Cursor cursor = this.db.query(ROUTE_TABLE_NAME, new String[] { NAME, CRIGHT, WARN, CC, POLY, ITIN, LENGTH}, 
-			        "id = '" + routeId + "'", null, null, null, NAME + " desc", "10");
+		   //Get the route
+		   Cursor cursor = this.db.query(ROUTE_TABLE_NAME, new String[] { NAME, CRIGHT, WARN, CC, POLY, ITIN, LENGTH, ROUTER}, 
+			        "" + BaseColumns._ID + " = '" + id + "'", null, null, null, NAME + " desc", "10");
 		   if (cursor.moveToFirst()) {
 			   r.setName(cursor.getString(0));
 			   r.setCopyright(cursor.getString(1));
@@ -207,11 +229,24 @@ public class RouteDatabase {
 			   r.setPolyline(cursor.getString(4));
 			   r.setItineraryId(cursor.getInt(5));
 			   r.setLength(cursor.getInt(6));
+			   r.setRouter(cursor.getString(7));
 		   }
-		   cursor.close();		   
+		   cursor.close();	
 		   
-		   cursor = this.db.query(SEGMENT_TABLE_NAME, new String[] { "id", NAME, INSTRUCTION, DIST, LENGTH}, 
-			        ROUTE_ID + " = '" + routeId + "'", null, null, null, "id asc", null);
+		 //Get elevation map for this segment
+		   cursor = this.db.query(ELEVATION_TABLE_NAME, new String[] { ELEV, DIST_M}, 
+			        ROUTE_ID + " = '" + id + "'", null, null, null, "" + BaseColumns._ID + " ASC", null);
+		  
+		   if (cursor.moveToFirst()) {
+			   do {
+				   r.addElevation(cursor.getDouble(0), cursor.getDouble(1));
+			   } while (cursor.moveToNext());
+		   }
+		   cursor.close();
+		   
+		   //Get segments for the route
+		   cursor = this.db.query(SEGMENT_TABLE_NAME, new String[] { "" + BaseColumns._ID + "", NAME, INSTRUCTION, DIST, LENGTH}, 
+			        ROUTE_ID + " = '" + id + "'", null, null, null, "" + BaseColumns._ID + " asc", null);
 		   
 		   if (cursor.moveToFirst()) {
 			   Segment s = new Segment();
@@ -220,11 +255,24 @@ public class RouteDatabase {
 				   s.setInstruction(cursor.getString(2));
 				   s.setDistance(cursor.getDouble(3));
 				   s.setLength(cursor.getInt(4));
-				   Cursor pointsCursor = this.db.query(POINTS_TABLE_NAME, new String[] { NAME, CRIGHT, WARN, CC, POLY, ITIN, LENGTH}, 
-					        "id = '" + routeId + "'", null, null, null, NAME + " desc", "10");
+				   //Get points for this segment
+				   Cursor pointsCursor = this.db.query(POINTS_TABLE_NAME, new String[] { LAT, LNG}, 
+					        SEG_ID + " = '" + cursor.getInt(0) + "'", null, null, null, "" + BaseColumns._ID + " ASC", null);
+				  
+				   if (pointsCursor.moveToFirst()) {
+					   PGeoPoint p;
+					   do {
+						   //Add point to segment & route
+						   p = new PGeoPoint(pointsCursor.getInt(0), pointsCursor.getInt(1));
+						   s.addPoint(p);
+						   r.addPoint(p);
+					   } while (pointsCursor.moveToNext());
+					   pointsCursor.close();
+				   }
+				   r.addSegment(s.copy());
 			   } while (cursor.moveToNext());
+			   cursor.close();
 		   }
-		   
 		   return r;
 	   }
 	   
@@ -272,15 +320,21 @@ public class RouteDatabase {
 	      return list;
 	   }
 	   
+	   public Cursor getRoutes() {
+		   Cursor cursor = this.db.query(ROUTE_TABLE_NAME, new String[] { BaseColumns._ID, FRIENDLY_NAME, LENGTH, ROUTER }, 
+			        null, null, null, null, NAME + " desc");
+		   return cursor;
+	   }
+	   
 	   /**
 	    * 
 	    * @author jono@nanosheep.net
 	    * @version Jul 2, 2010
 	    */
 
-	   public static class AddressDatabaseHelper extends SQLiteOpenHelper {
+	   public static class RouteDatabaseHelper extends SQLiteOpenHelper {
 
-	       AddressDatabaseHelper(Context context) {
+	       RouteDatabaseHelper(Context context) {
 	           super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	       }
 
@@ -289,7 +343,7 @@ public class RouteDatabase {
 	           db.execSQL(ROUTE_TABLE_CREATE);
 	           db.execSQL(POINTS_TABLE_CREATE);
 	           db.execSQL(SEGMENT_TABLE_CREATE);
-	           db.execSQL(ELEVATION_TABLE_NAME);
+	           db.execSQL(ELEVATION_TABLE_CREATE);
 	   		}
 
 	       /* (non-Javadoc)

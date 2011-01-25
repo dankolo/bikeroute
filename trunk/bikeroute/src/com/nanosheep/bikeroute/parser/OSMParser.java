@@ -58,6 +58,7 @@ public class OSMParser extends XMLParser {
 			// Listen for start of tag, get attributes and set them
 			// on current marker.
 			node.setStartElementListener(new StartElementListener() {
+				@Override
 				public void start(final Attributes attributes) {
 					marks.add(new PGeoPoint(
 							Double.parseDouble(attributes.getValue("lat")),
@@ -66,6 +67,7 @@ public class OSMParser extends XMLParser {
 
 			});
 			node.setEndElementListener(new EndElementListener() {
+				@Override
 				public void end() {
 				}
 			});

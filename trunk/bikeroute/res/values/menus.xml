@@ -13,4 +13,6 @@
 <string name="nearstands_title">Nearest stand</string>
 <string name="contacts_title">Navigate to Contact</string>
 <string name="feedback_title">Feedback on this route</string>
+<string name="save_title">Save</string>
+<string name="favourites">Favourites</string>
 </resources>

@@ -150,9 +150,11 @@ public class Navigate extends Activity implements RouteListener {
 	}
 	}
 	
+	@Override
 	public void onStart() {
 		super.onStart();
 		Thread t = new Thread() {
+			@Override
 			public void run() {
 				//Initialise geocoder
 				final Geocoder geocoder = new Geocoder(Navigate.this);
@@ -267,6 +269,18 @@ public class Navigate extends Activity implements RouteListener {
 		case R.id.plan_fail:
 			builder = new AlertDialog.Builder(this);
 			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
+					true).setPositiveButton(getString(R.string.ok),
+					new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(final DialogInterface dialog,
+								final int id) {
+						}
+					});
+			dialog = builder.create();
+			break;
+		case R.id.network_error:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(getText(R.string.planfail_network_msg)).setCancelable(
 					true).setPositiveButton(getString(R.string.ok),
 					new DialogInterface.OnClickListener() {
 						@Override
@@ -396,6 +410,10 @@ public class Navigate extends Activity implements RouteListener {
 		case R.id.about:
 			showDialog(R.id.about);
 			break;
+		case R.id.favourites:
+			intent = new Intent(this, SavedRoutes.class);
+			startActivityForResult(intent, R.id.trace);
+			break;
 		case R.id.contacts:
 			startActivityForResult(mContactAccessor.getPickContactIntent(), 0);
 		}
@@ -419,10 +437,12 @@ public class Navigate extends Activity implements RouteListener {
 				Log.e("Navigate", e.getMessage());
 			}
 			if (msg == R.id.result_ok) {
+				db.open();
 				db.insert(startAddressField.getText().toString());
 				if (!"".equals(endAddressField.getText().toString())) {
 					db.insert(endAddressField.getText().toString());
 				}
+				db.close();
 				final Intent map = new Intent(this, LiveRouteMap.class);
 				map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 				app.setRoute(route);

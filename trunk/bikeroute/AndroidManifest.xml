@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionName="Beta 1111" android:versionCode="1111">
+    package="com.nanosheep.bikeroute" android:versionName="Beta 1111" android:versionCode="1113">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -38,6 +38,8 @@
     	</intent-filter>
 	</activity>
        <activity android:name="com.nanosheep.bikeroute.DirectionsView" android:label="Directions">
+       </activity>
+       <activity android:name="com.nanosheep.bikeroute.SavedRoutes" android:label="Favourites">
        </activity>
        <activity android:name="com.nanosheep.bikeroute.Preferences" android:label="Preferences">
        </activity>

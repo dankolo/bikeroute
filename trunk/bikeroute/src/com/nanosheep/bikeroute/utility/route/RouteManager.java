@@ -74,16 +74,16 @@ public class RouteManager {
 		geocoder = new Geocoder(ctxt);
 	}
 	
-	public boolean showRoute(final String routeFile) {
+	public int showRoute(final String routeFile) {
 		clearRoute();
 		Parser parser = new BikeRouteParser(routeFile);
 		route = parser.parse();
 		if ((route == null) || RouteManager.this.route.getPoints().isEmpty()) {
-			return false;
+			return R.id.plan_fail;
 		}
 		//Build KD tree for the route
 		route.buildTree();
-		return true;
+		return R.id.result_ok;
 	}
 	
 	/**
@@ -93,7 +93,7 @@ public class RouteManager {
 	 * dialog while planning.
 	 */
 
-	public boolean showRoute() {
+	public int showRoute() {
 		clearRoute();
 		try {
 			country = geocoder
@@ -107,11 +107,14 @@ public class RouteManager {
 			}
 			//Build KD tree for the route
 			route.buildTree();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			Log.e(e.getMessage(), "Planner");
-			return false;
+			return R.id.plan_fail;
 		}
-		return true;
+		catch (PlanException e) {
+			return R.id.network_error;
+		}
+		return R.id.result_ok;
 	}
 
 	public void setRouteId(int routeId) {

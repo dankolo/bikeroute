@@ -69,6 +69,7 @@ public class MapQuestParser extends XMLParser implements Parser {
 	 * @return a Route object based on the JSON object.
 	 */
 	
+	@Override
 	public Route parse() {
 		// turn the stream into a string
 		final String result = convertStreamToString(this.getInputStream());
@@ -99,6 +100,8 @@ public class MapQuestParser extends XMLParser implements Parser {
 			
 			List<PGeoPoint> points = decodePolyLine(polyline, 5);
 			route.addPoints(points);
+			
+			String name = steps.getJSONObject(0).getJSONArray("streets").getString(0);
 			/* Loop through the steps, creating a segment for each one.
 			 * Ignore the last step.
 			 */
@@ -128,10 +131,13 @@ public class MapQuestParser extends XMLParser implements Parser {
 				//Push a copy of the segment to the route
 				route.addSegment(segment.copy());
 			}
+			name += " to " + segment.getName();
+			route.setName(name);
 			//Keep a copy of the overview polyline for the route for elevation service query.
 			route.setPolyline(polyline);
 		} catch (JSONException e) {
 			Log.e(e.getMessage(), "MQ JSON Parser - " + feedUrl);
+			return null;
 		}
 		return route;
 	}

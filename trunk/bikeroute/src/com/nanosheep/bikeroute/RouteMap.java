@@ -7,6 +7,7 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.BikeAlert;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
+import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
@@ -120,7 +121,6 @@ public class RouteMap extends OpenStreetMapActivity {
 	
 	/** Preferences manager. **/
 	protected SharedPreferences mSettings;
-	
 
 	@Override
 	public void onCreate(final Bundle savedState) {
@@ -189,6 +189,8 @@ public class RouteMap extends OpenStreetMapActivity {
 	public void onNewIntent(final Intent intent) {
 		if (intent.getBooleanExtra(getString(R.string.jump_intent), false)) {
 			showStep();
+			traverse(app.getSegment().startPoint());
+			mOsmv.getController().setCenter(app.getSegment().startPoint());
 		}
 	}
 	
@@ -286,6 +288,9 @@ public class RouteMap extends OpenStreetMapActivity {
 		case R.id.about:
 			dialog = DialogFactory.getAboutDialog(this);
 			break;
+		case R.id.save:
+			dialog = DialogFactory.getSaveDialog(this, app.getRoute());
+			break;
 		default:
 			dialog = null;
 		}
@@ -320,6 +325,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		final MenuItem elev = menu.findItem(R.id.elevation);
 		final MenuItem share = menu.findItem(R.id.sharing);
 		final MenuItem csShare = menu.findItem(R.id.share);
+		final MenuItem save = menu.findItem(R.id.save);
 		if (prk.isParked()) {
 			park.setVisible(false);
 			unPark.setVisible(true);
@@ -328,6 +334,7 @@ public class RouteMap extends OpenStreetMapActivity {
 			unPark.setVisible(false);
 		}
 		if (app.getRoute() != null) {
+			save.setVisible(true);
 			steps.setVisible(true);
 			elev.setVisible(true);
 			share.setVisible(true);
@@ -353,7 +360,6 @@ public class RouteMap extends OpenStreetMapActivity {
 	@Override
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		Intent intent;
-		FileOutputStream fos;
 		switch (item.getItemId()) {
 		case R.id.share:
 			Intent target = new Intent(Intent.ACTION_SEND);
@@ -440,6 +446,9 @@ public class RouteMap extends OpenStreetMapActivity {
 			break;
 		case R.id.about:
 			showDialog(R.id.about);
+			break;
+		case R.id.save:
+			showDialog(R.id.save);
 			break;
 		default:
 			return false;

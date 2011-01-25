@@ -72,6 +72,7 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 	public void refresh(final GeoPoint p) {
 		update = new Thread() {
 			private static final int MSG = 0;
+			@Override
 			public void run() {
 				markers = Stands.getMarkers(p, RADIUS, context);
 				LiveMarkers.this.messageHandler.sendEmptyMessage(MSG);

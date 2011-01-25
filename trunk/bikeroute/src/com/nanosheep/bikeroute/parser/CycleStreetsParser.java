@@ -54,6 +54,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 	 * @return a list of geopoints corresponding to the routeplan.
 	 */
 	
+	@Override
 	public final Route parse() {
 		final Segment segment = new Segment();
 		final Route route = new Route();
@@ -64,6 +65,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 		// Listen for start of tag, get attributes and set them
 		// on current marker.
 		marker.setStartElementListener(new StartElementListener() {
+			@Override
 			public void start(final Attributes attributes) {
 				segment.clearPoints();
 				PGeoPoint p;
@@ -129,6 +131,7 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 			}
 		});
 		marker.setEndElementListener(new EndElementListener() {
+			@Override
 			public void end() {
 				if (segment.getInstruction() != null) {
 					route.addSegment(segment.copy());

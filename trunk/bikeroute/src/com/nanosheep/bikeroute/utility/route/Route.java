@@ -68,6 +68,9 @@ public class Route {
 		segments = new ArrayList<Segment>();
 		elevations = new XYSeries("Elevation");
 		segmentMap = new Bundle(Segment.class.getClassLoader());
+		country = "";
+		warning = "";
+		polyline = "";
 		//kd = new KDTree<PGeoPoint>(2);
 		kd = new KDTree();
 	}

@@ -57,6 +57,7 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 	 * @return a Route object based on the JSON object.
 	 */
 	
+	@Override
 	public Route parse() {
 		// turn the stream into a string
 		final String result = convertStreamToString(this.getInputStream());
@@ -113,6 +114,7 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
 			route.setPolyline(jsonRoute.getJSONObject("overview_polyline").getString("points"));
 		} catch (JSONException e) {
 			Log.e(e.getMessage(), "Google JSON Parser - " + feedUrl);
+			return null;
 		}
 		return route;
 	}

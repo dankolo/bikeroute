@@ -52,7 +52,7 @@ public class BikeRouteApp extends Application {
 	 */
 	public void setRoute(final Route route) {
 		this.route = route;
-		segment = route != null ? route.getSegments().get(0) : null;
+		segment = !route.getSegments().isEmpty() ? route.getSegments().get(0) : null;
 	}
 
 	/**
