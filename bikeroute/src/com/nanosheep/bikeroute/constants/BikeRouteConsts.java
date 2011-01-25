@@ -45,11 +45,11 @@ public final class BikeRouteConsts {
 	
 	/** Router Consts. **/
 	/** Google. **/
-	public static final String G = "goog";
+	public static final String G = "Google";
 	/** MapQuest. **/
-	public static final String MQ = "mapquest";
+	public static final String MQ = "MapQuest";
 	/** CycleStreets. **/
-	public static final String CS = "cyclestreets";
+	public static final String CS = "CycleStreets";
 	
 	private BikeRouteConsts() { }
 }
