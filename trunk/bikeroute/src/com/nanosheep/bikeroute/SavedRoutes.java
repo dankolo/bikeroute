@@ -9,7 +9,11 @@ import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
@@ -43,6 +47,8 @@ public class SavedRoutes extends ListActivity {
     private CursorAdapter dataSource;
     
     private RouteDatabase db;
+    
+    private Cursor data;
 
     private static final String fields[] = {RouteDatabase.FRIENDLY_NAME, RouteDatabase.ROUTER };
  
@@ -51,11 +57,14 @@ public class SavedRoutes extends ListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         db = new RouteDatabase(this);
-        Cursor data = db.getRoutes();
+        data = db.getRoutes();
         
         dataSource = new SimpleCursorAdapter(this, R.layout.row, data, fields, new int[] {R.id.routename, R.id.routeby });
         setListAdapter(dataSource);
-    }
+        
+        //Context menu for deleting saved routes
+        registerForContextMenu(getListView());
+	}
     
     @Override
     public void onListItemClick(final ListView l, final View v, final int position, final long id) {
@@ -65,5 +74,18 @@ public class SavedRoutes extends ListActivity {
     	final Intent map = new Intent(this, LiveRouteMap.class);
 		map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
 		startActivityForResult(map, R.id.trace);
+    }
+    
+    @Override
+    public void onCreateContextMenu(final ContextMenu menu, final View view, final ContextMenuInfo info) {
+    	menu.add("Delete");
+    }
+    
+    @Override
+    public boolean onContextItemSelected(final MenuItem item) {
+    	AdapterView.AdapterContextMenuInfo menuInfo = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+    	db.delete(menuInfo.id);
+    	data.requery();
+    	return true;
     }
 }
