@@ -6,7 +6,7 @@
                         android:title="Route Provider"
                         android:summary="Select route provider"
                         android:key="router"
-                        android:defaultValue="cs"
+                        android:defaultValue="CycleStreets"
                         android:entries="@array/routerArray"
                         android:entryValues="@array/routerValues" />
         </PreferenceCategory>

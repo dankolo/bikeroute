@@ -7,6 +7,7 @@
 <item type="id" name="awaiting_fix"/>
 <item type="id" name="plan"/>
 <item type="id" name="send"/>
+<item type="id" name="load" />
 <item type="id" name="plan_fail"/>
 <item type="id" name="network_error" />
 <item type="id" name="about"/>
