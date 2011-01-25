@@ -191,11 +191,11 @@ public class RouteDatabase {
 	    * 
 	    */
 	   
-	   public void delete(final int routeId) {
-		   db.delete(ROUTE_TABLE_NAME, "WHERE " + BaseColumns._ID + " = " + routeId, null);
-		   db.delete(POINTS_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
-		   db.delete(SEGMENT_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
-		   db.delete(ELEVATION_TABLE_NAME, "WHERE " + ROUTE_ID + " = " + routeId, null);
+	   public void delete(final long id) {
+		   db.delete(ROUTE_TABLE_NAME, BaseColumns._ID + " = '" + id + "'", null);
+		   db.delete(POINTS_TABLE_NAME, ROUTE_ID + " = " + id, null);
+		   db.delete(SEGMENT_TABLE_NAME, ROUTE_ID + " = " + id, null);
+		   db.delete(ELEVATION_TABLE_NAME, ROUTE_ID + " = " + id, null);
 	   }
 	   
 	   public void open() {

@@ -159,7 +159,6 @@ public class AddressDatabase {
 	        */
 	       @Override
 	       public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	    	   db.execSQL("DROP TABLE IF EXISTS " + ADDRESS_TABLE_NAME);
 	    	   onCreate(db);
 	       }
 	   }
