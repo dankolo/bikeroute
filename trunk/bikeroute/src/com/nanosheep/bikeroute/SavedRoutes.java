@@ -5,8 +5,13 @@ package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.utility.RouteDatabase;
 
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.DialogInterface.OnCancelListener;
+import android.content.DialogInterface.OnDismissListener;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -56,7 +61,11 @@ public class SavedRoutes extends ListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        db = new RouteDatabase(this);
+	}
+    
+    @Override 
+    public void onStart() {
+    	db = new RouteDatabase(this);
         data = db.getRoutes();
         
         dataSource = new SimpleCursorAdapter(this, R.layout.row, data, fields, new int[] {R.id.routename, R.id.routeby });
@@ -64,16 +73,39 @@ public class SavedRoutes extends ListActivity {
         
         //Context menu for deleting saved routes
         registerForContextMenu(getListView());
-	}
+    	super.onStart();
+    }
     
     @Override
     public void onListItemClick(final ListView l, final View v, final int position, final long id) {
-    	BikeRouteApp app = (BikeRouteApp) getApplicationContext();
-    	app.setRoute(db.getRoute(id));
-    	db.close();
-    	final Intent map = new Intent(this, LiveRouteMap.class);
-		map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-		startActivityForResult(map, R.id.trace);
+    	showDialog(R.id.load);
+    	Thread t = new Thread() {
+    		public void run() {
+    			BikeRouteApp app = (BikeRouteApp) getApplicationContext();
+    	    	app.setRoute(db.getRoute(id));
+    	    	db.close();
+    	    	final Intent map = new Intent(SavedRoutes.this, LiveRouteMap.class);
+    			map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+    			dismissDialog(R.id.load);
+    			startActivityForResult(map, R.id.trace);	
+    		}
+    	};
+    	t.start();
+    }
+    
+    @Override
+    public Dialog onCreateDialog(final int id) {
+    	ProgressDialog pDialog = new ProgressDialog(this);
+		pDialog.setCancelable(false);
+		pDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		pDialog.setMessage(getText(R.string.load_msg));
+		pDialog.setOnDismissListener(new OnDismissListener() {
+			@Override
+			public void onDismiss(final DialogInterface arg0) {
+				removeDialog(R.id.load);
+			}
+			});
+		return pDialog;
     }
     
     @Override

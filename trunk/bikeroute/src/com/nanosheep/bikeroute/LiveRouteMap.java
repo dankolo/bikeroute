@@ -303,7 +303,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	public boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.replan:
-			if (!mIsBound) {
+			if (!mIsBound && liveNavigation) {
 				doBindService();
 			}
 			replan();
