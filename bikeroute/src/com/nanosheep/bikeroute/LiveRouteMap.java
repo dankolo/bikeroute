@@ -88,11 +88,13 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	private NavigationReceiver mBroadcastReceiver = new NavigationReceiver();
 	/** Connection to navigation service. **/
 	private ServiceConnection mConnection = new ServiceConnection() {
-	    public void onServiceConnected(ComponentName className, IBinder service) {
+	    @Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
 	        mBoundService = ((NavigationService.LocalBinder)service).getService();
 	    }
 
-	    public void onServiceDisconnected(ComponentName className) {
+	    @Override
+		public void onServiceDisconnected(ComponentName className) {
 	        mBoundService = null;
 	    }
 	};

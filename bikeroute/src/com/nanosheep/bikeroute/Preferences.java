@@ -6,9 +6,7 @@ package com.nanosheep.bikeroute;
 import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;

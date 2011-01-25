@@ -146,8 +146,8 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         		default:
         			msg = R.id.plan_fail;
         		}
-              	if ((msg == R.id.result_ok) && !planner.showRoute() && !planner.showRoute(routeFile)) {
-                	msg = R.id.plan_fail;
+              	if ((msg == R.id.result_ok)) {
+                	msg = routeFile != null ? planner.showRoute(routeFile) : planner.showRoute();
                 }
         		return msg;
         }

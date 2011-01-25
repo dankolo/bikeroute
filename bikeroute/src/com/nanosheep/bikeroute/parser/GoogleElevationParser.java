@@ -55,6 +55,7 @@ public class GoogleElevationParser extends XMLParser implements Parser {
 	 * @return a Route object based on the JSON object.
 	 */
 	
+	@Override
 	public Route parse() {
 		// turn the stream into a string
 		final String result = convertStreamToString(this.getInputStream());
@@ -79,7 +80,7 @@ public class GoogleElevationParser extends XMLParser implements Parser {
 				route.addElevation(elevation, distance);
 			}
 		} catch (JSONException e) {
-			Log.e(e.getMessage(), "Google JSON Parser - " + feedUrl);
+			Log.e(e.getMessage(), "Google Elevation Parser - " + feedUrl);
 		}
 		return route;
 	}

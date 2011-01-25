@@ -4,6 +4,7 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.Route;
@@ -14,10 +15,8 @@ import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
 import com.nanosheep.bikeroute.R;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -150,7 +149,7 @@ public class DirectionsView extends ListActivity {
 	
 	@Override
 	public final boolean onPrepareOptionsMenu(final Menu menu) {
-		if (app.getRoute().getCountry().equals("GB")) {
+		if (app.getRoute().getRouter().equals(BikeRouteConsts.CS)) {
 			menu.setGroupVisible(R.id.cyclestreets, true);
 		}
 		return true;

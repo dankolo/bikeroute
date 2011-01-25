@@ -8,6 +8,7 @@
 <item type="id" name="plan"/>
 <item type="id" name="send"/>
 <item type="id" name="plan_fail"/>
+<item type="id" name="network_error" />
 <item type="id" name="about"/>
 <item type="id" name="gps"/>
 <item type="id" name="result_ok"/>
@@ -17,4 +18,5 @@
 <item type="id" name="feedback_fail" />
 <item type="id" name="trace" />
 <item type="id" name="export" />
+<item type="id" name="save" />
 </resources>

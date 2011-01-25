@@ -3,13 +3,18 @@
  */
 package com.nanosheep.bikeroute.utility.dialog;
 
+import com.nanosheep.bikeroute.BikeRouteApp;
 import com.nanosheep.bikeroute.R;
+import com.nanosheep.bikeroute.utility.RouteDatabase;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.text.Html;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.widget.EditText;
 import android.widget.TextView;
 
 /**
@@ -53,6 +58,35 @@ public class DialogFactory {
 		   .setIcon(android.R.drawable.ic_dialog_info)
 		   .setPositiveButton(R.string.ok, null)
 		   .setView(message)
+		   .create();
+	}
+	
+	/**
+	 * Make a dialog that takes a text entry and saves a route.
+	 * @param context
+	 * @param the route to save to the database
+	 * @return
+	 */
+	
+	public static AlertDialog getSaveDialog( final Context context, final Route route) {
+		final EditText name = new EditText(context);
+		final RouteDatabase routeDB = new RouteDatabase(context);
+		
+		name.setHint(R.string.save_hint);
+		
+		return new AlertDialog.Builder(context)
+		   .setCancelable(true)
+		   .setIcon(android.R.drawable.ic_dialog_info)
+		   .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() { 
+			   public void onClick(DialogInterface dialog, int whichButton) {  
+			   String value = name.getText().toString();  
+			   //Save the route to the db.
+			   routeDB.insert(value, route);
+			   routeDB.close();
+			   }
+		   })
+		   .setView(name)
+		   .setTitle(context.getString(R.string.save_title))
 		   .create();
 	}
 }

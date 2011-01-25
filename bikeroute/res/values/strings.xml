@@ -56,4 +56,6 @@
 <string name="sharing_title">Share</string>
 <string name="filename">route.bikeroute</string>
 <string name="filename_gpx">route.gpx</string>
+<string name="planfail_network_msg">No response from routing service.</string>
+<string name="save_hint">Nickname</string>
 </resources>

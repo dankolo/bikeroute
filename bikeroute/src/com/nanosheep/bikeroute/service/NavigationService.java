@@ -52,7 +52,7 @@ import android.util.Log;
  * @author jono@nanosheep.net
  * @version Nov 4, 2010
  */
-public class NavigationService extends Service implements LocationListener{
+public class NavigationService extends Service implements LocationListener {
 	/** Local binder. **/
     private final IBinder mBinder = new LocalBinder();
     /** Notification manager. **/

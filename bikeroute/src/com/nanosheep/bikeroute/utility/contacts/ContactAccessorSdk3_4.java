@@ -7,9 +7,12 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.provider.BaseColumns;
 import android.provider.Contacts;
+import android.provider.Contacts.ContactMethodsColumns;
 import android.provider.Contacts.People;
 import android.provider.Contacts.People.Phones;
+import android.provider.Contacts.PhonesColumns;
 
 /**
  * A contactaccessor to older android devices (pre 2.0), modified from
@@ -55,13 +58,13 @@ public class ContactAccessorSdk3_4 extends AbstractContactAccessor {
 
         final Uri phoneUri = Uri.withAppendedPath(contactUri, Phones.CONTENT_DIRECTORY);
         final Cursor cursor = contentResolver.query(phoneUri,
-                new String[]{Phones.NUMBER}, null, null, Phones.ISPRIMARY + " DESC");
+                new String[]{PhonesColumns.NUMBER}, null, null, PhonesColumns.ISPRIMARY + " DESC");
 
         try {
             if (cursor.moveToFirst()) {
-            	final String personId = cursor.getString(cursor.getColumnIndex(People._ID));
+            	final String personId = cursor.getString(cursor.getColumnIndex(BaseColumns._ID));
             	final String addrWhere = Contacts.ContactMethods.PERSON_ID 
-                + " = ? AND " + Contacts.ContactMethods.KIND + " = ?"; 
+                + " = ? AND " + ContactMethodsColumns.KIND + " = ?"; 
                 final String[] addrWhereParams = new String[]{personId, 
                 		Contacts.ContactMethods.CONTENT_POSTAL_ITEM_TYPE}; 		
                 final Cursor addrCur = contentResolver.query(Contacts.ContactMethods.CONTENT_URI, 
