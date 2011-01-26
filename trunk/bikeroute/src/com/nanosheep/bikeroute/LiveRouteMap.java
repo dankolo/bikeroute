@@ -10,6 +10,7 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.NavigationService;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
@@ -277,17 +278,10 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			dialog = pDialog;
 			break;
 		case R.id.plan_fail:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(R.string.planfail_msg);
-			builder.setCancelable(
-				true).setPositiveButton(getString(R.string.ok),
-				new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(final DialogInterface dialog,
-							final int id) {
-					}
-				});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
+			break;
+		case R.id.network_error:
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		default:
 			dialog = super.onCreateDialog(id);

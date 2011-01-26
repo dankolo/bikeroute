@@ -44,7 +44,7 @@ import com.nanosheep.bikeroute.utility.route.Segment;
  * @version Jan 8, 2011
  */
 public class RouteDatabase {
-		private static final int DATABASE_VERSION = 5;
+		private static final int DATABASE_VERSION = 6;
 		private static final String ROUTE_TABLE_NAME = "route";
 		public static final String NAME = "name_string";
 		public static final String FRIENDLY_NAME =  "friendly_name_string";
@@ -89,20 +89,12 @@ public class RouteDatabase {
 			" INTEGER, " + ROUTE_ID + " INTEGER);";
 		
 		
-		private static final String DATABASE_NAME = "bikeroute_db";
+		private static final String DATABASE_NAME = "bikeroute_routes_db";
 
 	   private Context context;
 	   private SQLiteDatabase db;
 
-	   private List<SQLiteStatement> insertStmt;
-	   private static final String INSERT_ROUTE = "insert into " 
-	      + ROUTE_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-	   private static final String INSERT_SEGMENT = "insert into "
-		   + SEGMENT_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?);";
-	   private static final String INSERT_POINT = "insert into "
-		   + POINTS_TABLE_NAME + " values (NULL, ?, ?, ?, ?);";
-	   private static final String INSERT_ELEV = "insert into "
-		   + ELEVATION_TABLE_NAME + " values(null, ?, ?, ?);";
+	   private static List<SQLiteStatement> insertStmt;
 	   
 	   private static final String LIKE_QUERY = NAME + " LIKE ";
 	   
@@ -112,11 +104,6 @@ public class RouteDatabase {
 	      this.context = context;
 	      openHelper = new RouteDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
-	      this.insertStmt = new ArrayList<SQLiteStatement>(4);
-	      this.insertStmt.add(this.db.compileStatement(INSERT_ROUTE));
-	      this.insertStmt.add(this.db.compileStatement(INSERT_SEGMENT));
-	      this.insertStmt.add(this.db.compileStatement(INSERT_POINT));
-	      this.insertStmt.add(this.db.compileStatement(INSERT_ELEV));
 	   }
 	   
 	   /**
@@ -129,45 +116,45 @@ public class RouteDatabase {
 		   db.beginTransaction();
 		   try {
 			   //Insert the route and get the " + BaseColumns._ID + " back
-			   this.insertStmt.get(0).bindString(1, route.getName()); 
-			   this.insertStmt.get(0).bindString(2, route.getCopyright());
-			   this.insertStmt.get(0).bindString(3, route.getWarning());
-			   this.insertStmt.get(0).bindString(4, route.getCountry());
-			   this.insertStmt.get(0).bindString(5, route.getPolyline()); 
-			   this.insertStmt.get(0).bindLong(6, route.getItineraryId()); 
-			   this.insertStmt.get(0).bindLong(7, route.getLength()); 
-			   this.insertStmt.get(0).bindString(8, route.getRouter());
-			   this.insertStmt.get(0).bindString(9, name);
-			   final long routeId = this.insertStmt.get(0).executeInsert();
+			   RouteDatabase.insertStmt.get(0).bindString(1, route.getName()); 
+			   RouteDatabase.insertStmt.get(0).bindString(2, route.getCopyright());
+			   RouteDatabase.insertStmt.get(0).bindString(3, route.getWarning());
+			   RouteDatabase.insertStmt.get(0).bindString(4, route.getCountry());
+			   RouteDatabase.insertStmt.get(0).bindString(5, route.getPolyline()); 
+			   RouteDatabase.insertStmt.get(0).bindLong(6, route.getItineraryId()); 
+			   RouteDatabase.insertStmt.get(0).bindLong(7, route.getLength()); 
+			   RouteDatabase.insertStmt.get(0).bindString(8, route.getRouter());
+			   RouteDatabase.insertStmt.get(0).bindString(9, name);
+			   final long routeId = RouteDatabase.insertStmt.get(0).executeInsert();
 		   
 			   //Insert elevation set
 			   for(int i = 0; i < route.getElevationSeries().getItemCount(); i++) {
-				   this.insertStmt.get(3).clearBindings();
+				   RouteDatabase.insertStmt.get(3).clearBindings();
 				   //Elevation
-				   this.insertStmt.get(3).bindDouble(1, route.getElevationSeries().getY(i));
+				   RouteDatabase.insertStmt.get(3).bindDouble(1, route.getElevationSeries().getY(i));
 				   //Distance
-				   this.insertStmt.get(3).bindDouble(2, route.getElevationSeries().getX(i));
-				   this.insertStmt.get(3).bindLong(3, routeId);
-				   this.insertStmt.get(3).executeInsert();
+				   RouteDatabase.insertStmt.get(3).bindDouble(2, route.getElevationSeries().getX(i));
+				   RouteDatabase.insertStmt.get(3).bindLong(3, routeId);
+				   RouteDatabase.insertStmt.get(3).executeInsert();
 			   }
 		   
 			   //Insert each segment with a ref to the route
 			   for(Segment s : route.getSegments()) {
-				   this.insertStmt.get(1).clearBindings();
-				   this.insertStmt.get(1).bindString(1, s.getName());
-				   this.insertStmt.get(1).bindString(2, s.getInstruction());
-				   this.insertStmt.get(1).bindLong(3, routeId);
-				   this.insertStmt.get(1).bindDouble(4, s.getDistance());
-				   this.insertStmt.get(1).bindLong(5, s.getLength());
-				   final long segId = this.insertStmt.get(1).executeInsert();
+				   RouteDatabase.insertStmt.get(1).clearBindings();
+				   RouteDatabase.insertStmt.get(1).bindString(1, s.getName());
+				   RouteDatabase.insertStmt.get(1).bindString(2, s.getInstruction());
+				   RouteDatabase.insertStmt.get(1).bindLong(3, routeId);
+				   RouteDatabase.insertStmt.get(1).bindDouble(4, s.getDistance());
+				   RouteDatabase.insertStmt.get(1).bindLong(5, s.getLength());
+				   final long segId = RouteDatabase.insertStmt.get(1).executeInsert();
 				   //And each point with a ref to the segment
 				   for (PGeoPoint p : s.getPoints()) {
-					   this.insertStmt.get(2).clearBindings();
-					   this.insertStmt.get(2).bindLong(1, segId);
-					   this.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
-					   this.insertStmt.get(2).bindLong(3, p.getLongitudeE6());
-					   this.insertStmt.get(2).bindLong(4, routeId);
-					   this.insertStmt.get(2).executeInsert();
+					   RouteDatabase.insertStmt.get(2).clearBindings();
+					   RouteDatabase.insertStmt.get(2).bindLong(1, segId);
+					   RouteDatabase.insertStmt.get(2).bindLong(2, p.getLatitudeE6());
+					   RouteDatabase.insertStmt.get(2).bindLong(3, p.getLongitudeE6());
+					   RouteDatabase.insertStmt.get(2).bindLong(4, routeId);
+					   RouteDatabase.insertStmt.get(2).executeInsert();
 				   }
 		   		}
 			   	db.setTransactionSuccessful();
@@ -332,8 +319,16 @@ public class RouteDatabase {
 	    * @version Jul 2, 2010
 	    */
 
-	   public static class RouteDatabaseHelper extends SQLiteOpenHelper {
-
+	   private static class RouteDatabaseHelper extends SQLiteOpenHelper {
+		   private static final String INSERT_ROUTE = "insert into " 
+			      + ROUTE_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+		   private static final String INSERT_SEGMENT = "insert into "
+				   + SEGMENT_TABLE_NAME + " values (NULL, ?, ?, ?, ?, ?);";
+		   private static final String INSERT_POINT = "insert into "
+				   + POINTS_TABLE_NAME + " values (NULL, ?, ?, ?, ?);";
+		   private static final String INSERT_ELEV = "insert into "
+				   + ELEVATION_TABLE_NAME + " values(null, ?, ?, ?);";
+		   
 	       RouteDatabaseHelper(Context context) {
 	           super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	       }
@@ -345,6 +340,15 @@ public class RouteDatabase {
 	           db.execSQL(SEGMENT_TABLE_CREATE);
 	           db.execSQL(ELEVATION_TABLE_CREATE);
 	   		}
+	       
+	       @Override
+	       public void onOpen(SQLiteDatabase db) {
+	    	   insertStmt = new ArrayList<SQLiteStatement>(4);
+			   insertStmt.add(db.compileStatement(INSERT_ROUTE));
+			   insertStmt.add(db.compileStatement(INSERT_SEGMENT));
+			   insertStmt.add(db.compileStatement(INSERT_POINT));
+			   insertStmt.add(db.compileStatement(INSERT_ELEV));
+	       }
 
 	       /* (non-Javadoc)
 	        * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)

@@ -238,7 +238,6 @@ public class Navigate extends Activity implements RouteListener {
 	
 	@Override
 	public Dialog onCreateDialog(final int id) {
-		AlertDialog.Builder builder;
 		ProgressDialog pDialog;
 		Dialog dialog;
 		switch(id) {
@@ -267,67 +266,19 @@ public class Navigate extends Activity implements RouteListener {
 			dialog = pDialog;
 			break;
 		case R.id.plan_fail:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.planfail_msg)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.network_error:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.planfail_network_msg)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.ioerror:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.io_error_msg)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.argerror:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.arg_error_msg)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.reserror:
-			builder = new AlertDialog.Builder(this);
-			builder.setMessage(getText(R.string.result_error_msg)).setCancelable(
-					true).setPositiveButton(getString(R.string.ok),
-					new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(final DialogInterface dialog,
-								final int id) {
-							dialog.dismiss();
-						}
-					});
-			dialog = builder.create();
+			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.about:
 			dialog = DialogFactory.getAboutDialog(this);

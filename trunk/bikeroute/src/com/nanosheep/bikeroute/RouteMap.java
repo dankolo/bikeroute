@@ -7,7 +7,6 @@ import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.BikeAlert;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.TurnByTurnGestureListener;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
