@@ -56,16 +56,19 @@ public class SavedRoutes extends ListActivity {
     private Cursor data;
 
     private static final String fields[] = {RouteDatabase.FRIENDLY_NAME, RouteDatabase.ROUTER };
+    
+    private BikeRouteApp app;
  
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        app = (BikeRouteApp) getApplicationContext();
 	}
     
     @Override 
     public void onStart() {
-    	db = new RouteDatabase(this);
+    	db = app.getRouteDB();
         data = db.getRoutes();
         
         dataSource = new SimpleCursorAdapter(this, R.layout.row, data, fields, new int[] {R.id.routename, R.id.routeby });
@@ -81,7 +84,6 @@ public class SavedRoutes extends ListActivity {
     	showDialog(R.id.load);
     	Thread t = new Thread() {
     		public void run() {
-    			BikeRouteApp app = (BikeRouteApp) getApplicationContext();
     	    	app.setRoute(db.getRoute(id));
     	    	db.close();
     	    	final Intent map = new Intent(SavedRoutes.this, LiveRouteMap.class);

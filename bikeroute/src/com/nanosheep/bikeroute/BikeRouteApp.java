@@ -4,6 +4,7 @@
 package com.nanosheep.bikeroute;
 
 import com.nanosheep.bikeroute.utility.AddressDatabase;
+import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
 
@@ -36,7 +37,9 @@ public class BikeRouteApp extends Application {
 	/** The current segment. **/
 	private Segment segment;
 	/** Previous addresses db. **/
-	private AddressDatabase db;
+	private AddressDatabase addressDB;
+	/** Favourite routes db. **/
+	private RouteDatabase routeDB;
 
 	public BikeRouteApp () {
 		super();
@@ -44,7 +47,14 @@ public class BikeRouteApp extends Application {
 	
 	@Override
 	public void onCreate() {
-		db = new AddressDatabase(this);
+		Thread t = new Thread() {
+			@Override
+			public void run () {
+				addressDB = new AddressDatabase(BikeRouteApp.this);
+				setRouteDB(new RouteDatabase(BikeRouteApp.this));
+			}
+		};
+		t.start();
 	}
 	
 	/**
@@ -80,6 +90,20 @@ public class BikeRouteApp extends Application {
 	 * @return the db
 	 */
 	public AddressDatabase getDb() {
-		return db;
+		return addressDB;
+	}
+
+	/**
+	 * @param routeDB the routeDB to set
+	 */
+	public void setRouteDB(RouteDatabase routeDB) {
+		this.routeDB = routeDB;
+	}
+
+	/**
+	 * @return the routeDB
+	 */
+	public RouteDatabase getRouteDB() {
+		return routeDB;
 	}
 }

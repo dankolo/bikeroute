@@ -39,7 +39,7 @@ import java.util.List;
  * @version Jul 2, 2010
  */
 public class AddressDatabase {
-		private static final int DATABASE_VERSION = 5;
+		private static final int DATABASE_VERSION = 6;
 		private static final String ADDRESS_TABLE_NAME = "address";
 		private static final String ADDRESS = "address_string";
 		private static final String ADDRESS_TABLE_CREATE =
@@ -49,7 +49,7 @@ public class AddressDatabase {
 	   private Context context;
 	   private SQLiteDatabase db;
 
-	   private SQLiteStatement insertStmt;
+	   private static SQLiteStatement insertStmt;
 	   private static final String INSERT = "insert or ignore into " 
 	      + ADDRESS_TABLE_NAME + "(" + ADDRESS + ") values (?);";
 	   private static final String LIKE_QUERY = ADDRESS + " LIKE ";
@@ -59,7 +59,6 @@ public class AddressDatabase {
 	      this.context = context;
 	      openHelper = new AddressDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
-	      this.insertStmt = this.db.compileStatement(INSERT);
 	   }
 	   
 	   /**
@@ -153,13 +152,17 @@ public class AddressDatabase {
 	       public void onCreate(SQLiteDatabase db) {
 	           db.execSQL(ADDRESS_TABLE_CREATE);
 	   		}
+	       
+	       @Override
+	       public void onOpen(SQLiteDatabase db) {
+	    	   insertStmt = db.compileStatement(INSERT);
+	       }
 
 	       /* (non-Javadoc)
 	        * @see android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database.sqlite.SQLiteDatabase, int, int)
 	        */
 	       @Override
 	       public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-	    	   onCreate(db);
 	       }
 	   }
 }

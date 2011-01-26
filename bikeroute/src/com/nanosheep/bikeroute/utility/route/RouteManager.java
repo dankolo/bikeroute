@@ -183,9 +183,9 @@ public class RouteManager {
 		}
 		Route r =  parser.parse();
 		//Untidy.
-		//If a polyline is set, need to query elevations api for
+		//If not using cyclestreets, need to query elevations api for
 		//this route.
-		if (r.getPolyline() != null) {
+		if (!BikeRouteConsts.CS.equals(router)) {
 			final StringBuffer elev = new StringBuffer(ctxt.getString(R.string.elev_api));
 			elev.append(URLEncoder.encode(r.getPolyline()));
 			parser = new GoogleElevationParser(elev.toString(), r);

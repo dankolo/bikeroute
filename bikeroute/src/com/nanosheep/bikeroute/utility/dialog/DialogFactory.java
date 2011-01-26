@@ -9,6 +9,7 @@ import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.route.Route;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.Html;
@@ -41,6 +42,56 @@ import android.widget.TextView;
 public class DialogFactory {
 	
 	/**
+	 * Get some common dialogs by id.
+	 * @param id
+	 * @param context
+	 * @return
+	 */
+	
+	public static Dialog getDialog(final int id, final Context context) {
+		Dialog d = null;
+		switch(id) {
+		case R.id.network_error:
+			d = getAlert(context, R.string.planfail_network_msg);
+			break;
+		case R.id.plan_fail:
+			d = getAlert(context, R.string.planfail_msg);
+			break;
+		case R.id.ioerror:
+			d = getAlert(context, R.string.io_error_msg);
+			break;
+		case R.id.argerror:
+			d = getAlert(context, R.string.arg_error_msg);
+			break;
+		case R.id.reserror:
+			d = getAlert(context, R.string.result_error_msg);
+			break;
+		}
+		
+		return d;
+	}
+	
+	/**
+	 * Get a generic alert with the message specified by R.string id.
+	 * @param context
+	 * @param msg
+	 * @return
+	 */
+	
+	public static AlertDialog getAlert(Context context, final int msg) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setMessage(context.getText(msg)).setCancelable(
+				true).setPositiveButton(context.getString(R.string.ok),
+				new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(final DialogInterface dialog,
+							final int id) {
+					}
+				});
+		return builder.create();
+	}
+	
+	/**
 	 * Return an about dialog with clickable links.
 	 * @param context
 	 * @return
@@ -70,7 +121,7 @@ public class DialogFactory {
 	
 	public static AlertDialog getSaveDialog( final Context context, final Route route) {
 		final EditText name = new EditText(context);
-		final RouteDatabase routeDB = new RouteDatabase(context);
+		final RouteDatabase routeDB = ((BikeRouteApp)context.getApplicationContext()).getRouteDB();
 		
 		name.setHint(R.string.save_hint);
 		
