@@ -19,8 +19,8 @@
     android:title="@string/prefs_title"
     android:icon="@drawable/ic_menu_preferences"></item>
     <item android:id="@+id/contacts"
-    android:title="@string/contacts_title"
-    android:icon="@drawable/ic_menu_contacts"></item>
-<item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
-<item android:id="@+id/favourites" android:title="@string/favourites"></item>
+    android:title="@string/contacts_title" android:icon="@drawable/ic_menu_friendslist"></item>
+<item android:id="@+id/favourites" android:title="@string/favourites" android:icon="@drawable/ic_menu_star">
+</item>
+<item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_info_details"></item>
 </menu>

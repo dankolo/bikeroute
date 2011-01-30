@@ -12,6 +12,6 @@
           android:title="@string/directions_title"
           android:icon="@drawable/ic_menu_directions" >
     </item>
-    <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_about"></item>
+    <item android:id="@+id/about" android:title="@string/about_menu" android:icon="@drawable/ic_menu_info_details"></item>
     
 </menu>

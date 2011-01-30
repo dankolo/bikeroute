@@ -139,6 +139,7 @@ public class RouteMap extends OpenStreetMapActivity {
         this.mOsmv.setResourceProxy(mResourceProxy);
         mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
         this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
+        this.mLocationOverlay.enableCompass();
         this.mOsmv.setBuiltInZoomControls(true);
         this.mOsmv.setMultiTouchControls(true);
         this.mOsmv.getOverlays().add(this.mLocationOverlay);

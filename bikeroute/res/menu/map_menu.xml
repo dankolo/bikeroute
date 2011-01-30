@@ -56,7 +56,7 @@
 <item android:title="@string/export_title" android:id="@+id/export"></item>
 <item android:id="@+id/export_gpx" android:title="@string/export_gpx_title"></item>
 </menu>
-</item><item android:id="@+id/save" android:title="@string/save_title" android:visible="false"></item><item android:id="@+id/about" android:icon="@drawable/ic_menu_about" android:title="@string/about_menu"></item>
+</item><item android:id="@+id/save" android:title="@string/save_title" android:visible="false"></item><item android:id="@+id/about" android:icon="@drawable/ic_menu_info_details" android:title="@string/about_menu"></item>
 
 
 </menu>

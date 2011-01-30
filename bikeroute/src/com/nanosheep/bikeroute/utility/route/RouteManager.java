@@ -97,10 +97,7 @@ public class RouteManager {
 	public int showRoute() {
 		clearRoute();
 		try {
-			country = geocoder
-					.getFromLocation(Convert.asDegrees(dest.getLatitudeE6()),
-							Convert.asDegrees(dest.getLongitudeE6()), 1)
-					.get(0).getCountryCode();
+			country = geocoder.getFromLocation(Convert.asDegrees(dest.getLatitudeE6()),Convert.asDegrees(dest.getLongitudeE6()), 1).get(0).getCountryCode();
 			route = plan(start, dest);
 			route.setCountry(country);
 			if (RouteManager.this.route.getPoints().isEmpty()) {
@@ -111,9 +108,10 @@ public class RouteManager {
 		} catch (IOException e) {
 			Log.e(e.getMessage(), "Planner");
 			return R.id.plan_fail;
-		}
-		catch (PlanException e) {
+		} catch (PlanException e) {
 			return R.id.network_error;
+		} catch (Exception e) {
+			return R.id.plan_fail;
 		}
 		return R.id.result_ok;
 	}
