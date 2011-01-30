@@ -238,6 +238,7 @@ public class RouteDatabase {
 		   if (cursor.moveToFirst()) {
 			   Segment s = new Segment();
 			   do {
+				   s.clearPoints();
 				   s.setName(cursor.getString(1));
 				   s.setInstruction(cursor.getString(2));
 				   s.setDistance(cursor.getDouble(3));
@@ -260,6 +261,7 @@ public class RouteDatabase {
 			   } while (cursor.moveToNext());
 			   cursor.close();
 		   }
+		   r.buildTree();
 		   return r;
 	   }
 	   
