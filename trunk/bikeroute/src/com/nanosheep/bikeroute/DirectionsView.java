@@ -147,13 +147,13 @@ public class DirectionsView extends ListActivity {
 		return true;
 	}
 	
-	@Override
+	/*@Override
 	public final boolean onPrepareOptionsMenu(final Menu menu) {
 		if (app.getRoute().getRouter().equals(BikeRouteConsts.CS)) {
 			menu.setGroupVisible(R.id.cyclestreets, true);
 		}
 		return true;
-	}
+	}*/
 	
 	/**
 	 * Handle option selection.
