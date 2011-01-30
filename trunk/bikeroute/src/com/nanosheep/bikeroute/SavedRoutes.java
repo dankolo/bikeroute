@@ -10,7 +10,6 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -85,7 +84,6 @@ public class SavedRoutes extends ListActivity {
     	Thread t = new Thread() {
     		public void run() {
     	    	app.setRoute(db.getRoute(id));
-    	    	db.close();
     	    	final Intent map = new Intent(SavedRoutes.this, LiveRouteMap.class);
     			map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
     			dismissDialog(R.id.load);

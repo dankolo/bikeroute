@@ -389,14 +389,12 @@ public class Navigate extends Activity implements RouteListener {
 			}
 			if (msg == R.id.result_ok) {
 				try {
-					db.open();
 					db.insert(startAddressField.getText().toString());
 					if (!"".equals(endAddressField.getText().toString())) {
 						db.insert(endAddressField.getText().toString());
 					}
-					db.close();
 				} catch (Exception e) {
-					Log.e("ADB", e.getMessage());
+					Log.e("ADB", "DB hiccup.");
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
 				map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
