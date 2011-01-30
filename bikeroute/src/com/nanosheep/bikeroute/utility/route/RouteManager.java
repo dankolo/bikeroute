@@ -2,6 +2,7 @@ package com.nanosheep.bikeroute.utility.route;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.Locale;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -133,7 +134,9 @@ public class RouteManager {
 		Parser parser;
 		
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
-		String router = settings.getString("router", BikeRouteConsts.CS);
+		//Default router is cyclestreets in UK, MapQuest elsewhere.
+		String defaultRouter = Locale.getDefault().equals(Locale.UK) ? BikeRouteConsts.CS : BikeRouteConsts.MQ;
+		String router = settings.getString("router", defaultRouter);
 		
 		if (BikeRouteConsts.CS.equals(router)) {
 			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
