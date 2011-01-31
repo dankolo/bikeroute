@@ -113,6 +113,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         				msg = R.id.argerror;
         			} else {
         				try {
+        					msg = R.id.result_ok;
         					planner.setStart(startAddressInput);
         					planner.setDest(prk.getLocation());	
         				} catch (Exception e) {

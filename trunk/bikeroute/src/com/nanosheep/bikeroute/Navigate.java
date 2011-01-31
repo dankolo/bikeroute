@@ -398,6 +398,7 @@ public class Navigate extends Activity implements RouteListener {
 				}
 				final Intent map = new Intent(this, LiveRouteMap.class);
 				map.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+				map.putExtras(searchIntent);
 				app.setRoute(route);
 				startActivityForResult(map, R.id.trace);
 			} else {

@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.util.ListIterator;
 
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.BikeAlert;
 import com.nanosheep.bikeroute.utility.Convert;
 import com.nanosheep.bikeroute.utility.Parking;
@@ -179,6 +180,10 @@ public class RouteMap extends OpenStreetMapActivity {
 		if (app.getRoute() != null) {
 			viewRoute();
 		}
+		
+		if (getIntent().getIntExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN) == RoutePlannerTask.BIKE_PLAN) {
+			bikeAlert.setBikeAlert(prk.getLocation());
+		}
 	}
 	
 	/**
@@ -191,6 +196,9 @@ public class RouteMap extends OpenStreetMapActivity {
 			showStep();
 			traverse(app.getSegment().startPoint());
 			mOsmv.getController().setCenter(app.getSegment().startPoint());
+		}
+		if (intent.getIntExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN) == RoutePlannerTask.BIKE_PLAN) {
+			bikeAlert.setBikeAlert(prk.getLocation());
 		}
 	}
 	
@@ -254,9 +262,7 @@ public class RouteMap extends OpenStreetMapActivity {
 										final DialogInterface dialog,
 										final int id) {
 									prk.unPark();
-									RouteMap.this.mOsmv.getOverlays().remove(routeOverlay);
 									RouteMap.this.hideStep();
-									RouteMap.this.app.setRoute(null);
 									bikeAlert.unsetAlert();
 									dialog.dismiss();
 								}
