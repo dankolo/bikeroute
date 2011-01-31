@@ -3,8 +3,6 @@
  */
 package com.nanosheep.bikeroute.utility;
 
-import java.text.DecimalFormat;
-
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 
@@ -41,8 +39,6 @@ public final class Convert {
 	private static final double FEET_CONVERT = 3.2808399;
 	/** Conversion factor for degrees/mdegrees. **/
 	public static final double CNV = 1E6;
-	/** Decimal formatter. **/
-	private static final DecimalFormat TWO_D_FORM = new DecimalFormat("#.##");
 	
 	private Convert() { }
 	
@@ -53,11 +49,11 @@ public final class Convert {
 	 */
 	
 	public static double asMiles(final double km) {
-		return Double.valueOf(TWO_D_FORM.format(km * MILES_CONVERT));
+		return round2(km * MILES_CONVERT);
 	}
 	
 	public static double asMiles(final int meters) {
-		return Double.valueOf(TWO_D_FORM.format(asMiles(meters / 1000.0)));
+		return meters > 0 ? round2(asMiles(meters / 1000.0)) : 0;
 	}
 	
 	/**
@@ -67,11 +63,11 @@ public final class Convert {
 	 */
 	
 	public static double asFeet(final double meters) {
-		return Double.valueOf(TWO_D_FORM.format(meters * FEET_CONVERT));
+		return meters > 0 ? round2(meters * FEET_CONVERT) : 0;
 	}
 	
 	public static String asFeetString(final double meters) {
-		return asFeet(meters) + "ft";
+		return round2(meters * FEET_CONVERT) + "ft";
 	}
 	
 	public static String asMilesString(final double km) {
@@ -87,7 +83,7 @@ public final class Convert {
 	}
 	
 	public static String asKilometerString(final int meters) {
-		return meters/1000.00 + "km";
+		return meters > 0 ? meters/1000.00 + "km": "0km";
 	}
 	
 	public static String asMeterString(final int meters) {
@@ -124,6 +120,13 @@ public final class Convert {
 	public static double asDegrees(final int mDegrees) {
 		return mDegrees / CNV;
 	}
+	
+	private static double round2(double num) {
+		double result = num * 100;
+		result = Math.round(result);
+		result = result / 100;
+		return result;
+		}
 	
 	
 }
