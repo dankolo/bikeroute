@@ -204,6 +204,7 @@ public class RouteManager {
 	public void clearRoute() {
 	//	routeOverlay = null;
 		planned = false;
+		route = null;
 	}
 
 	/**

@@ -15,7 +15,6 @@ import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.R;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -162,8 +161,11 @@ public class Navigate extends Activity implements RouteListener {
 				final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
 				
 				Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-				if (self == null) {
-					self = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				Location selfNet= lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+				
+				//Only use GPS if more recent fix 
+				if (self != null) {
+					self =  (selfNet == null) || (selfNet.getTime() < self.getTime() + 600000) ? self : selfNet;
 				}
 				
 				/* Autofill starting location by reverse geocoding current

@@ -89,6 +89,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         @Override
         protected Integer doInBackground(Void... arg0) {
         	int msg = R.id.plan_fail; 
+        	planner.clearRoute();
         	String routeFile = mIntent.getStringExtra(FILE);
         	planner.setRouteId(mIntent.getIntExtra(ROUTE_ID, 0));
     		final String startAddressInput = mIntent.getStringExtra(START_ADDRESS);
