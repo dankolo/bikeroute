@@ -3,6 +3,9 @@
  */
 package com.nanosheep.bikeroute;
 
+import org.acra.*;
+import org.acra.annotation.*;
+
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.route.Route;
@@ -31,6 +34,7 @@ import android.app.Application;
  * @author jono@nanosheep.net
  * @version Jul 2, 2010
  */
+@ReportsCrashes(formKey = "dGF2OV9Cd3VsOWtLMjRnWG9FRG5mZEE6MQ")
 public class BikeRouteApp extends Application {
 	/** Route object. **/
 	private Route route;
@@ -55,6 +59,8 @@ public class BikeRouteApp extends Application {
 			}
 		};
 		t.start();
+		ACRA.init(this);
+		super.onCreate();
 	}
 	
 	/**
