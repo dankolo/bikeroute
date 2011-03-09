@@ -18,6 +18,7 @@ import com.nanosheep.bikeroute.view.overlay.RouteOverlay;
 import org.achartengine.ChartFactory;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.acra.ErrorReporter;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MyLocationOverlay;
@@ -211,6 +212,8 @@ public class RouteMap extends OpenStreetMapActivity {
         this.mLocationOverlay.followLocation(false);
         
         if(app.getRoute() != null) {
+        	ErrorReporter.getInstance().putCustomData("Route", app.getRoute().getName());
+        	ErrorReporter.getInstance().putCustomData("Router", app.getRoute().getRouter());
         	traverse(app.getSegment().startPoint());
     		mOsmv.getController().setCenter(app.getSegment().startPoint());
         }

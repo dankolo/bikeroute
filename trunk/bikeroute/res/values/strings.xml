@@ -8,7 +8,7 @@
 <string name="planfail_msg">Route planning failed.</string>
 <string name="ok">OK</string>
 <string name="arg_error_msg">Illegal argument.</string>
-<string name="io_error_msg">Network or service currently unavailable.</string>
+<string name="io_error_msg">Failed to connect to routing service.</string>
 <string name="result_error_msg">Address not found.</string>
 <string name="fix_msg">Waiting for GPS fix...</string>
 <string name="send_msg">Sending...</string>
@@ -59,4 +59,5 @@
 <string name="planfail_network_msg">No response from routing service.</string>
 <string name="save_hint">Nickname</string>
 <string name="load_msg">Loading...</string>
+<string name="pref_disable_acra">Disable Error Reporting</string>
 </resources>
