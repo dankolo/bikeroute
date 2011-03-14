@@ -214,6 +214,7 @@ public class RouteMap extends OpenStreetMapActivity {
         if(app.getRoute() != null) {
         	ErrorReporter.getInstance().putCustomData("Route", app.getRoute().getName());
         	ErrorReporter.getInstance().putCustomData("Router", app.getRoute().getRouter());
+        	ErrorReporter.getInstance().putCustomData("Route Length", app.getRoute().getSegments().toString());
         	traverse(app.getSegment().startPoint());
     		mOsmv.getController().setCenter(app.getSegment().startPoint());
         }
