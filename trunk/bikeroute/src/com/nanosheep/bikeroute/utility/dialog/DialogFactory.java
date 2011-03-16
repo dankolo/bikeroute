@@ -133,7 +133,6 @@ public class DialogFactory {
 			   String value = name.getText().toString();  
 			   //Save the route to the db.
 			   routeDB.insert(value, route);
-			   routeDB.close();
 			   }
 		   })
 		   .setView(name)
