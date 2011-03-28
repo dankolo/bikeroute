@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 
@@ -13,7 +12,6 @@ import com.nanosheep.bikeroute.parser.OSMParser;
 
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.OverlayItem;
-
 import com.nanosheep.bikeroute.R;
 
 /**
@@ -85,14 +83,14 @@ public final class Stands {
 		final String query = mAct.getString(R.string.stands_api) + getOSMBounds(getBounds(p, distance));
 		final List<OverlayItem> markers = new ArrayList<OverlayItem>();
 		final OSMParser parser = new OSMParser(query);
-		final Point hotspot = new Point(0, 20);
+		//final HotspotPlace hotspot = new HotspotPlace(0, 20);
 		final Drawable markerIcon = mAct.getResources().getDrawable(R.drawable.ic_marker_default);
 
 		// Parse XML to overlayitems (cycle stands)
 		for (GeoPoint point : parser.parse()) {
 			OverlayItem marker = new OverlayItem("", "", point);
 			marker.setMarker(markerIcon);
-			marker.setMarkerHotspot(hotspot);
+			marker.setMarkerHotspot(OverlayItem.HotspotPlace.BOTTOM_CENTER);
 			markers.add(marker);
 		}
 

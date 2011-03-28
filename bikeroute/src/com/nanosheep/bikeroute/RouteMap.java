@@ -138,7 +138,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		// Initialize map, view & controller
 		setContentView(R.layout.main);
 		this.mOsmv = (MapView) findViewById(R.id.mapview);
-        this.mOsmv.setResourceProxy(mResourceProxy);
+        //this.mOsmv.setResourceProxy(mResourceProxy);
         mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
         this.mLocationOverlay = new MyLocationOverlay(this.getBaseContext(), this.mOsmv);
         this.mLocationOverlay.enableCompass();
@@ -146,6 +146,12 @@ public class RouteMap extends OpenStreetMapActivity {
         this.mOsmv.setMultiTouchControls(true);
         this.mOsmv.getOverlays().add(this.mLocationOverlay);
         this.mOsmv.getOverlays().add(new OSDOverlay(this));
+        
+        /* Route paths. **/
+		routeOverlay = new RouteOverlay(Color.BLUE,this);
+		travelledRouteOverlay = new RouteOverlay(Color.GREEN,this);
+		mOsmv.getOverlays().add(routeOverlay);
+		mOsmv.getOverlays().add(travelledRouteOverlay);
         
 
         mOsmv.getController().setZoom(mPrefs.getInt(getString(R.string.prefs_zoomlevel), 1));
@@ -178,10 +184,6 @@ public class RouteMap extends OpenStreetMapActivity {
 			showStep();
 		}
 		
-		if (app.getRoute() != null) {
-			viewRoute();
-		}
-		
 		if (getIntent().getIntExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN) == RoutePlannerTask.BIKE_PLAN) {
 			bikeAlert.setBikeAlert(prk.getLocation());
 		}
@@ -209,7 +211,7 @@ public class RouteMap extends OpenStreetMapActivity {
 		/* Units preferences. */
 		unit = mSettings.getString("unitsPref", "km");
 		this.mLocationOverlay.enableMyLocation();
-        this.mLocationOverlay.followLocation(false);
+        this.mLocationOverlay.disableFollowLocation();
         
         if(app.getRoute() != null) {
         	ErrorReporter.getInstance().putCustomData("Route", app.getRoute().getName());
@@ -229,7 +231,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	/**
 	 * Draw the route to the map.
 	 */
-	
+	@Deprecated
 	protected void viewRoute() {
 		if (routeOverlay == null) {
 			routeOverlay = new RouteOverlay(Color.BLUE,this);
@@ -507,6 +509,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	 */
 	
 	protected void traverse(final PGeoPoint point) {
+		ErrorReporter.getInstance().putCustomData("CrashPoint", point.toString());
 		travelledRouteOverlay.clearPath();
 		routeOverlay.clearPath();
 		int index = app.getRoute().getPoints().indexOf(point);
@@ -658,19 +661,14 @@ public class RouteMap extends OpenStreetMapActivity {
 			}
 		}
 
-		/* (non-Javadoc)
-		 * @see org.andnav.osm.views.overlay.MapViewOverlay#onDraw(android.graphics.Canvas, org.andnav.osm.views.MapView)
-		 */
-		@Override
-		protected void onDraw(final Canvas arg0, final MapView arg1) {
-			
-		}
 
 		/* (non-Javadoc)
-		 * @see org.andnav.osm.views.overlay.MapViewOverlay#onDrawFinished(android.graphics.Canvas, org.andnav.osm.views.MapView)
+		 * @see org.osmdroid.views.overlay.Overlay#draw(android.graphics.Canvas, org.osmdroid.views.MapView, boolean)
 		 */
 		@Override
-		protected void onDrawFinished(final Canvas arg0, final MapView arg1) {			
+		protected void draw(Canvas arg0, MapView arg1, boolean arg2) {
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}

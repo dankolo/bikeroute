@@ -8,8 +8,9 @@ import com.nanosheep.bikeroute.utility.Stands;
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener;
 import org.osmdroid.views.overlay.ItemizedOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlay.OnItemGestureListener;
 import org.osmdroid.views.overlay.OverlayItem;
 
 
@@ -60,8 +61,8 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 		mv = mOsmv;
 		context = ctxt;
 		mOverlays = new ArrayList<OverlayItem>();
-		iOverlay = new ItemizedOverlay<OverlayItem>(ctxt, mOverlays,
-				this, new DefaultResourceProxyImpl(ctxt));
+		iOverlay = new ItemizedIconOverlay<OverlayItem>(ctxt, mOverlays,
+				this);
 	}
 
 	/**
@@ -95,8 +96,8 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 			}
 			mOverlays.clear();
 			mOverlays.addAll(markers);
-			iOverlay = new ItemizedOverlay<OverlayItem>(
-					context, mOverlays, null, new DefaultResourceProxyImpl(context));
+			iOverlay = new ItemizedIconOverlay<OverlayItem>(
+					context, mOverlays, LiveMarkers.this);
 			mv.getOverlays().add(iOverlay);
 			mv.postInvalidate();
 		}
