@@ -72,7 +72,7 @@ public class OpenStreetMapActivity extends Activity {
         edit.putInt(getString(R.string.prefs_scrolly), mOsmv.getScrollY());
         edit.putInt(getString(R.string.prefs_zoomlevel), mOsmv.getZoomLevel());
         edit.putBoolean(getString(R.string.prefs_showlocation), mLocationOverlay.isMyLocationEnabled());
-        edit.putBoolean(getString(R.string.prefs_followlocation), mLocationOverlay.isLocationFollowEnabled());
+        edit.putBoolean(getString(R.string.prefs_followlocation), mLocationOverlay.isFollowLocationEnabled());
         edit.commit();
 
         this.mLocationOverlay.disableMyLocation();
@@ -87,7 +87,11 @@ public class OpenStreetMapActivity extends Activity {
         if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
         }
-        this.mLocationOverlay.followLocation(mPrefs.getBoolean(getString(R.string.prefs_followlocation), true));
+        if(mPrefs.getBoolean(getString(R.string.prefs_followlocation), true)) {
+        	this.mLocationOverlay.enableFollowLocation();
+        } else {
+        	this.mLocationOverlay.disableFollowLocation();
+        }
     }
 
 
