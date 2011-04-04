@@ -195,7 +195,7 @@ public class RouteMap extends OpenStreetMapActivity {
 	
 	@Override
 	public void onNewIntent(final Intent intent) {
-		if (intent.getBooleanExtra(getString(R.string.jump_intent), false)) {
+		if (intent.getBooleanExtra(getString(R.string.jump_intent), false) && app.getRoute() != null) {
 			showStep();
 			traverse(app.getSegment().startPoint());
 			mOsmv.getController().setCenter(app.getSegment().startPoint());

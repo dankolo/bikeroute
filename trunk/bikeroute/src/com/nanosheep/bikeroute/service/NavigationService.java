@@ -106,6 +106,8 @@ public class NavigationService extends Service implements LocationListener {
         	notification.setLatestEventInfo(app, getText(R.string.notify_title),
 				app.getSegment().getInstruction(), contentIntent);
         	mNM.notify(R.id.notifier, notification);
+        } else {
+        	stopSelf();
         }
     }
 
@@ -161,6 +163,8 @@ public class NavigationService extends Service implements LocationListener {
     		sendBroadcast(update);
     		
     		mNM.notify(R.id.notifier, notification);
+    	} else {
+    		stopSelf();
     	}
 	}
 
