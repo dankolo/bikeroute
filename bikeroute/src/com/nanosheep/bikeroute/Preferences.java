@@ -7,6 +7,7 @@ import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -47,12 +48,16 @@ public class Preferences extends PreferenceActivity {
                 super.onCreate(savedState);
                 
                 //Check for TTS
-                Intent checkIntent = new Intent();
-				checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
-				startActivityForResult(checkIntent, R.id.tts_check);
+                try {
+                	Intent checkIntent = new Intent();
+                	checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
+                	startActivityForResult(checkIntent, R.id.tts_check); //This can fail if TTS not installed at all
 				
-                addPreferencesFromResource(R.xml.preferences);
-                tts = findPreference("tts");
+                	addPreferencesFromResource(R.xml.preferences);
+                	tts = findPreference("tts");
+                } catch (ActivityNotFoundException e) {
+                	tts.setEnabled(false);
+                }
         }
         
         @Override
