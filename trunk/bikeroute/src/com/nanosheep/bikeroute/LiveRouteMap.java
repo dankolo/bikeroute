@@ -106,18 +106,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	public void onCreate(final Bundle savedState) {
 		super.onCreate(savedState);
 		
-		Uri uri = getIntent().getData();
-		
-		if (uri != null) {
-			searchIntent = new Intent();
-			searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, (new Random()).nextInt(2147483647));
-			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.FILE_PLAN);
-			searchIntent.putExtra(RoutePlannerTask.FILE, uri.getPath());
-			LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
-			LiveRouteMap.this.search.execute();
-			//Set the launching intent to one without file data now route is loaded.
-			setIntent(getIntent().setData(null));
-		}
+		loadRouteFile();
 		
 		//Handle rotations
 		final Object[] data = (Object[]) getLastNonConfigurationInstance();
@@ -138,8 +127,15 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	@Override
 	public void onNewIntent(final Intent intent) {
 		super.onNewIntent(intent);
-		Uri uri = intent.getData();
-		//Handle loading routes into already loaded app
+		loadRouteFile();
+	}
+	
+	/**
+	 * Load a route from a file if given one in launching intent.
+	 */
+	
+	private void loadRouteFile() {
+		Uri uri = getIntent().getData();
 		if (uri != null) {
 			searchIntent = new Intent();
 			searchIntent.putExtra(RoutePlannerTask.ROUTE_ID, (new Random()).nextInt(2147483647));
@@ -147,6 +143,8 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 			searchIntent.putExtra(RoutePlannerTask.FILE, uri.getPath());
 			LiveRouteMap.this.search = new RoutePlannerTask(LiveRouteMap.this, searchIntent);
 			LiveRouteMap.this.search.execute();
+			//Set the launching intent to one without file data now route is loaded.
+			setIntent(getIntent().setData(null));
 		}
 	}
 	
@@ -182,16 +180,16 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	public void showStep() {
 		super.showStep();
 		if(mSettings.getBoolean("gps", false)) {
-			mLocationOverlay.followLocation(true);
+			mLocationOverlay.enableFollowLocation();
 		} else {
-			mLocationOverlay.followLocation(false);
+			mLocationOverlay.disableFollowLocation();
 		}
 	}
 	
 	@Override
 	public void hideStep() {
 		super.hideStep();
-		mLocationOverlay.followLocation(false);
+		mLocationOverlay.disableFollowLocation();
 	}
 	
 	/**
