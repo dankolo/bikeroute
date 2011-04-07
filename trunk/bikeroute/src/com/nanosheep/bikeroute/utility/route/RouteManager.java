@@ -315,16 +315,31 @@ public class RouteManager {
 		this.dest = end;
 	}
 	
-	public void setDest(final String name) throws IOException {
-		Address address = geocoder.getFromLocationName(
-				name, 1).get(0);
-		setDest(address);
+	public void setDest(final String name) throws GeocodeException, GeocodeConnectException {
+		Address address;
+		try {
+			address = geocoder.getFromLocationName(
+					name, 1).get(0);
+			if(address == null) {
+				throw new GeocodeException();
+			}
+			setDest(address);
+		} catch (IOException e) {
+			throw new GeocodeConnectException(e.getMessage());
+		}
 	}
 	
-	public void setStart(final String name) throws IOException {
-		Address address = geocoder.getFromLocationName(
+	public void setStart(final String name) throws GeocodeException, GeocodeConnectException {
+		try {
+			Address address = geocoder.getFromLocationName(
 				name, 1).get(0);
-		setStart(address);
+			if(address == null) {
+				throw new GeocodeException();
+			}
+			setStart(address);
+		} catch (IOException e) {
+			throw new GeocodeConnectException(e.getMessage());
+		}
 	}
 
 	/**
@@ -363,6 +378,30 @@ public class RouteManager {
 			super(detailMessage);
 		}
 
+	}
+	
+	/**
+	 * Exception for failed (i.e. null result) geocodes.
+	 * @author jono@nanosheep.net
+	 * @version Apr 7, 2011
+	 */
+	
+	public class GeocodeException extends Exception {
+		public GeocodeException() {}
+		public GeocodeException(String detailMessage) {
+			super(detailMessage);
+		}
+	}
+	/**
+	 * Exception for geocode service connection failures.
+	 * @author jono@nanosheep.net
+	 * @version Apr 7, 2011
+	 */
+	public class GeocodeConnectException extends Exception {
+		public GeocodeConnectException() {}
+		public GeocodeConnectException(String detailMessage) {
+			super(detailMessage);
+		}
 	}
 
 }
