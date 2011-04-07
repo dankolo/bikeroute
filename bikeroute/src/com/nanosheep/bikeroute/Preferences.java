@@ -47,13 +47,14 @@ public class Preferences extends PreferenceActivity {
         protected void onCreate(final Bundle savedState) {
                 super.onCreate(savedState);
                 
+                addPreferencesFromResource(R.xml.preferences);
+                
                 //Check for TTS
                 try {
                 	Intent checkIntent = new Intent();
                 	checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
                 	startActivityForResult(checkIntent, R.id.tts_check); //This can fail if TTS not installed at all
 				
-                	addPreferencesFromResource(R.xml.preferences);
                 	tts = findPreference("tts");
                 } catch (ActivityNotFoundException e) {
                 	tts.setEnabled(false);

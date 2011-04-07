@@ -20,4 +20,6 @@
 <item type="id" name="trace" />
 <item type="id" name="export" />
 <item type="id" name="save" />
+<item type="id" name="geocodeerror" />
+<item type="id" name="geocodeconnecterror" />
 </resources>

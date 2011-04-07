@@ -7,6 +7,8 @@ import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.RouteManager;
+import com.nanosheep.bikeroute.utility.route.RouteManager.GeocodeConnectException;
+import com.nanosheep.bikeroute.utility.route.RouteManager.GeocodeException;
 
 import com.nanosheep.bikeroute.R;
 
@@ -103,9 +105,11 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         				try {
         					planner.setStart(startAddressInput);
         					planner.setDest(endAddressInput);		
-        				} catch (Exception e) {
-        					msg = R.id.ioerror;
-        				}
+        				} catch (GeocodeException e) {
+							msg = R.id.geocodeerror;
+						} catch (GeocodeConnectException e) {
+							msg = R.id.geocodeconnecterror;
+						}
         			}
         			break;
         		case BIKE_PLAN:
@@ -117,9 +121,11 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         					msg = R.id.result_ok;
         					planner.setStart(startAddressInput);
         					planner.setDest(prk.getLocation());	
-        				} catch (Exception e) {
-        					msg = R.id.ioerror;
-        				}
+        				} catch (GeocodeException e) {
+							msg = R.id.geocodeerror;
+        				}  catch (GeocodeConnectException e) {
+							msg = R.id.geocodeconnecterror;
+						}
         			}
         			break;
         		case STANDS_PLAN:
@@ -130,9 +136,11 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         				try {
         					planner.setStart(startAddressInput);
         					planner.setDest(Stands.getNearest(planner.getStart(), mAct.getContext()));	
-        				} catch (Exception e) {
-        					msg = R.id.ioerror;
-        				}
+        				} catch (GeocodeException e) {
+							msg = R.id.geocodeerror;
+        				}  catch (GeocodeConnectException e) {
+							msg = R.id.geocodeconnecterror;
+						}
         			}
         			break;
         		case REPLAN_PLAN:
