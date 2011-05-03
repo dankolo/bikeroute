@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string name="cs_api">http://bike.nanosheep.net/cs_test.php?</string>
+<string name="cs_api">http://bike-route.appspot.com/?</string>
 <string name="us_api">http://maps.google.com/maps/api/directions/json?avoid=highways&amp;</string>
 <string name="elev_api">http://maps.google.com/maps/api/elevation/json?sensor=true&amp;locations=enc:</string>
 <string name="stands_api">http://jxapi.openstreetmap.org/xapi/api/0.6/node%5Bamenity=bicycle_parking%5D</string>

@@ -268,18 +268,12 @@ public class Navigate extends Activity implements RouteListener {
 			dialog = pDialog;
 			break;
 		case R.id.plan_fail:
-			dialog = DialogFactory.getDialog(id, this);
-			break;
 		case R.id.network_error:
-			dialog = DialogFactory.getDialog(id, this);
-			break;
 		case R.id.ioerror:
-			dialog = DialogFactory.getDialog(id, this);
-			break;
 		case R.id.argerror:
-			dialog = DialogFactory.getDialog(id, this);
-			break;
 		case R.id.reserror:
+		case R.id.geocodeerror:
+		case R.id.geocodeconnecterror:
 			dialog = DialogFactory.getDialog(id, this);
 			break;
 		case R.id.about:

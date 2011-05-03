@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionName="Beta 1126" android:versionCode="1126">
+    package="com.nanosheep.bikeroute" android:versionCode="1132" android:versionName="Beta 1132">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -22,7 +22,7 @@
        </activity>
        <activity android:name="com.nanosheep.bikeroute.LiveRouteMap" android:label="Map" 
        android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask"
-       android:finishOnTaskLaunch="true">
+       android:finishOnTaskLaunch="true" android:screenOrientation="portrait" android:configChanges="orientation">
     	<intent-filter>
         	<action android:name="android.intent.action.VIEW" />
         	<category android:name="android.intent.category.DEFAULT" />
@@ -46,6 +46,11 @@
        <activity android:name="org.achartengine.GraphicalActivity" android:label="Elevations" />
        <activity android:name="com.nanosheep.bikeroute.Feedback" android:label="Feedback">
        </activity>
+       <activity android:name="org.acra.CrashReportDialog"
+        android:theme="@android:style/Theme.Dialog"
+        android:launchMode="singleInstance"
+        android:excludeFromRecents="true"
+        android:finishOnTaskLaunch="true" />
    <service android:exported="false" android:name=".service.NavigationService" android:enabled="true" android:label="Router"></service>
 </application>
 

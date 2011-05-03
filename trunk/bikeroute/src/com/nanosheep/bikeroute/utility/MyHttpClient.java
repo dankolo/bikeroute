@@ -45,7 +45,7 @@ public class MyHttpClient extends DefaultHttpClient {
   final Context context;
 
   public MyHttpClient(Context context) {
-    this.context = context;
+    this.context = context.getApplicationContext();
   }
 
   @Override protected ClientConnectionManager createClientConnectionManager() {

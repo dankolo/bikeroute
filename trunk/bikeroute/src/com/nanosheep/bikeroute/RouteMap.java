@@ -33,6 +33,7 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.location.Location;
@@ -187,6 +188,11 @@ public class RouteMap extends OpenStreetMapActivity {
 		if (getIntent().getIntExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN) == RoutePlannerTask.BIKE_PLAN) {
 			bikeAlert.setBikeAlert(prk.getLocation());
 		}
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+	  
 	}
 	
 	/**
