@@ -6,8 +6,10 @@ package com.nanosheep.bikeroute;
 import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -49,13 +51,13 @@ public class Preferences extends PreferenceActivity {
                 
                 addPreferencesFromResource(R.xml.preferences);
                 
+                tts = findPreference("tts");
+                
                 //Check for TTS
                 try {
                 	Intent checkIntent = new Intent();
                 	checkIntent.setAction(TextToSpeech.Engine.ACTION_CHECK_TTS_DATA);
                 	startActivityForResult(checkIntent, R.id.tts_check); //This can fail if TTS not installed at all
-				
-                	tts = findPreference("tts");
                 } catch (ActivityNotFoundException e) {
                 	tts.setEnabled(false);
                 }
@@ -124,10 +126,7 @@ public class Preferences extends PreferenceActivity {
 		        if (resultCode == TextToSpeech.Engine.CHECK_VOICE_DATA_PASS) {
 		        	tts.setEnabled(true);
 		        } else {
-		            final Intent installIntent = new Intent();
-		            installIntent.setAction(
-		                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
-		            startActivity(installIntent);
+		           showDialog(R.id.tts_check);
 		        }
 		    }
 		   
@@ -146,8 +145,40 @@ public class Preferences extends PreferenceActivity {
     	
     	@Override
 		public Dialog onCreateDialog(final int id) {
-    		return DialogFactory.getAboutDialog(this);
+    		Dialog dialog;
+    		AlertDialog.Builder builder;
+    		switch(id) {
+    		case R.id.tts_check:
+    			builder = new AlertDialog.Builder(this);
+    			builder.setMessage(R.string.tts_msg);
+    			builder.setCancelable(false);
+    			builder.setPositiveButton(getString(R.string.ok),
+    				new DialogInterface.OnClickListener() {
+    					@Override
+    					public void onClick(final DialogInterface dialog,
+    							final int id) {
+    						ttsInstall();
+    					}
+    				});
+    			builder.setTitle(R.string.tts_msg_title);
+    			dialog = builder.create();
+    			break;
+    		default:
+    			dialog = DialogFactory.getAboutDialog(this);
+    			break;
+    		}
+    		return dialog;
     	}
     	
+    	/** Show GPS options if GPS provider is disabled.
+    	 * 
+    	 */
+    	
+    	private void ttsInstall() { 
+    		final Intent installIntent = new Intent();
+            installIntent.setAction(
+                TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA);
+            startActivity(installIntent); 
+    	}
     	
 }
