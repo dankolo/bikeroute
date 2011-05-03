@@ -69,6 +69,9 @@ public class DialogFactory {
 		case R.id.geocodeerror:
 			d = getAlert(context, R.string.geocodeerror);
 			break;
+		case R.id.geocodeconnecterror:
+			d = getAlert(context, R.string.geocodeconnecterror);
+			break;
 		}
 		
 		return d;

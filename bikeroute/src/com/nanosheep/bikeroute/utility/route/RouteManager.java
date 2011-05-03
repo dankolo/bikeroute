@@ -2,6 +2,7 @@ package com.nanosheep.bikeroute.utility.route;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.List;
 import java.util.Locale;
 
 import org.osmdroid.util.GeoPoint;
@@ -70,7 +71,7 @@ public class RouteManager {
 	
 	public RouteManager(final Context context) {
 		super();
-		ctxt = context;
+		ctxt = context.getApplicationContext();
 		planned = false;
 		geocoder = new Geocoder(ctxt);
 	}
@@ -316,30 +317,32 @@ public class RouteManager {
 	}
 	
 	public void setDest(final String name) throws GeocodeException, GeocodeConnectException {
-		Address address;
+		setDest(addressFromName(name));
+	}
+	
+	/**
+	 * Get an address from a name string.
+	 * @param name
+	 * @return
+	 * @throws GeocodeException
+	 * @throws GeocodeConnectException
+	 */
+	
+	private Address addressFromName(final String name) throws GeocodeException, GeocodeConnectException {
 		try {
-			address = geocoder.getFromLocationName(
-					name, 1).get(0);
-			if(address == null) {
+			List<Address> addresses = geocoder.getFromLocationName(
+					name, 1);
+			if(addresses == null || addresses.size() == 0) {
 				throw new GeocodeException();
 			}
-			setDest(address);
+			return addresses.get(0);
 		} catch (IOException e) {
 			throw new GeocodeConnectException(e.getMessage());
 		}
 	}
 	
 	public void setStart(final String name) throws GeocodeException, GeocodeConnectException {
-		try {
-			Address address = geocoder.getFromLocationName(
-				name, 1).get(0);
-			if(address == null) {
-				throw new GeocodeException();
-			}
-			setStart(address);
-		} catch (IOException e) {
-			throw new GeocodeConnectException(e.getMessage());
-		}
+		setStart(addressFromName(name));
 	}
 
 	/**

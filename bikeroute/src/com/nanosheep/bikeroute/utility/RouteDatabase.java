@@ -101,7 +101,7 @@ public class RouteDatabase {
 	   private static RouteDatabaseHelper openHelper;
 
 	   public RouteDatabase(Context context) {
-	      this.context = context;
+	      this.context = context.getApplicationContext();
 	      openHelper = new RouteDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
 	   }

@@ -76,13 +76,13 @@ public class OpenStreetMapActivity extends Activity {
         edit.commit();
 
         this.mLocationOverlay.disableMyLocation();
-
+        System.gc();
         super.onPause();
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
+    	System.gc();
         mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
         if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
@@ -92,6 +92,7 @@ public class OpenStreetMapActivity extends Activity {
         } else {
         	this.mLocationOverlay.disableFollowLocation();
         }
+        super.onResume();
     }
 
 

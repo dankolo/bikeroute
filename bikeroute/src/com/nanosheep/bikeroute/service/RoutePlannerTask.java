@@ -164,11 +164,13 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         @Override
         protected void onPostExecute(final Integer msg) {
         	mAct.searchComplete(msg,  planner.getRoute());
+        	mAct = null;
         }
         
         @Override
         protected void onCancelled() {
         	mAct.searchCancelled();
+        	mAct = null;
         	super.onCancelled();
         }
 }

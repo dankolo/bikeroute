@@ -59,7 +59,7 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 
 	public LiveMarkers(final MapView mOsmv, final Context ctxt) {
 		mv = mOsmv;
-		context = ctxt;
+		context = ctxt.getApplicationContext();
 		mOverlays = new ArrayList<OverlayItem>();
 		iOverlay = new ItemizedIconOverlay<OverlayItem>(ctxt, mOverlays,
 				this);
