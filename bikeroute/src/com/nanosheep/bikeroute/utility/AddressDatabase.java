@@ -56,7 +56,7 @@ public class AddressDatabase {
 	   private AddressDatabaseHelper openHelper;
 
 	   public AddressDatabase(Context context) {
-	      this.context = context;
+	      this.context = context.getApplicationContext();
 	      openHelper = new AddressDatabaseHelper(this.context);
 	      this.db = openHelper.getWritableDatabase();
 	   }

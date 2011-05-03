@@ -83,7 +83,7 @@ public class OpenStreetMapActivity extends Activity {
     @Override
     protected void onResume() {
     	System.gc();
-        mOsmv.setTileSource(TileSourceFactory.CYCLEMAP);
+        mOsmv.setTileSource(TileSourceFactory.MAPNIK);
         if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
         }
