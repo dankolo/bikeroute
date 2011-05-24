@@ -3,11 +3,6 @@
  */
 package com.nanosheep.bikeroute.utility.dialog;
 
-import com.nanosheep.bikeroute.BikeRouteApp;
-import com.nanosheep.bikeroute.R;
-import com.nanosheep.bikeroute.utility.RouteDatabase;
-import com.nanosheep.bikeroute.utility.route.Route;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -17,6 +12,10 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.widget.EditText;
 import android.widget.TextView;
+import com.nanosheep.bikeroute.BikeRouteApp;
+import com.nanosheep.bikeroute.R;
+import com.nanosheep.bikeroute.utility.RouteDatabase;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 /**
  * This file is part of BikeRoute.

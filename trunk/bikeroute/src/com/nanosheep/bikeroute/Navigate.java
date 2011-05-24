@@ -1,19 +1,5 @@
 package com.nanosheep.bikeroute;
 
-import java.util.Random;
-
-import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
-import com.nanosheep.bikeroute.service.RouteListener;
-import com.nanosheep.bikeroute.service.RoutePlannerTask;
-import com.nanosheep.bikeroute.utility.AddressDatabase;
-import com.nanosheep.bikeroute.utility.Parking;
-import com.nanosheep.bikeroute.utility.StringAddress;
-import com.nanosheep.bikeroute.utility.contacts.AbstractContactAccessor;
-import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
-import com.nanosheep.bikeroute.utility.route.Route;
-
-import com.nanosheep.bikeroute.R;
-
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -31,14 +17,21 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.view.View.OnClickListener;
-import android.view.Window;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
+import com.nanosheep.bikeroute.service.RouteListener;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
+import com.nanosheep.bikeroute.utility.AddressDatabase;
+import com.nanosheep.bikeroute.utility.Parking;
+import com.nanosheep.bikeroute.utility.StringAddress;
+import com.nanosheep.bikeroute.utility.contacts.AbstractContactAccessor;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
+import com.nanosheep.bikeroute.utility.route.Route;
+
+import java.util.Random;
 
 /**
  * A class for performing A to B navigation and planning routes.
@@ -93,9 +86,6 @@ public class Navigate extends Activity implements RouteListener {
 	/** Route id generator. **/
 	Random random;
 	
-	/** Geocoding adapter. **/
-	private FindPlaceAdapter adapter;
-	
 	
 	@Override
 	public final void onCreate(final Bundle savedInstanceState) {
@@ -124,7 +114,7 @@ public class Navigate extends Activity implements RouteListener {
 	final Button searchButton = (Button) findViewById(R.id.search_button);
 	
 	//Initialise adapter
-	adapter = new FindPlaceAdapter(this,
+	FindPlaceAdapter adapter = new FindPlaceAdapter(this,
 			android.R.layout.simple_dropdown_item_1line);
 	startAddressField.setAdapter(adapter);
 	endAddressField.setAdapter(adapter);
@@ -159,7 +149,7 @@ public class Navigate extends Activity implements RouteListener {
 				final Geocoder geocoder = new Geocoder(Navigate.this);
 				/* Get current lat & lng if available. */
 				final LocationManager lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-				
+				try {
 				Location self = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				Location selfNet= lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
 				
@@ -180,6 +170,9 @@ public class Navigate extends Activity implements RouteListener {
 					} catch (Exception e) {
 						Log.e(e.getMessage(), "FindPlace - location: " + self);
 					}
+				}
+				} catch (IllegalArgumentException e) {
+					Log.e("Location Service", "No Location provider.");
 				}
 			}
 		};

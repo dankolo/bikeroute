@@ -10,13 +10,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * SQLite database helper class for storing and retrieving
@@ -91,7 +90,6 @@ public class RouteDatabase {
 		
 		private static final String DATABASE_NAME = "bikeroute_routes_db";
 
-	   private Context context;
 	   private SQLiteDatabase db;
 
 	   private static List<SQLiteStatement> insertStmt;
@@ -101,8 +99,7 @@ public class RouteDatabase {
 	   private static RouteDatabaseHelper openHelper;
 
 	   public RouteDatabase(Context context) {
-	      this.context = context.getApplicationContext();
-	      openHelper = new RouteDatabaseHelper(this.context);
+	      openHelper = new RouteDatabaseHelper(context.getApplicationContext());
 	      this.db = openHelper.getWritableDatabase();
 	   }
 	   
@@ -310,9 +307,8 @@ public class RouteDatabase {
 	   }
 	   
 	   public Cursor getRoutes() {
-		   Cursor cursor = this.db.query(ROUTE_TABLE_NAME, new String[] { BaseColumns._ID, FRIENDLY_NAME, LENGTH, ROUTER }, 
+		   return this.db.query(ROUTE_TABLE_NAME, new String[] { BaseColumns._ID, FRIENDLY_NAME, LENGTH, ROUTER },
 			        null, null, null, null, NAME + " desc");
-		   return cursor;
 	   }
 	   
 	   /**

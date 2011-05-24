@@ -1,23 +1,21 @@
 package com.nanosheep.bikeroute.parser;
 
+import android.util.Log;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.util.Log;
 
 
 /**
@@ -129,7 +127,7 @@ public class GoogleDirectionsParser extends XMLParser implements Parser {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
         final StringBuilder sBuf = new StringBuilder();
  
-        String line = null;
+        String line;
         try {
             while ((line = reader.readLine()) != null) {
                 sBuf.append(line);

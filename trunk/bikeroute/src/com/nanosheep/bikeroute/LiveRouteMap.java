@@ -3,30 +3,12 @@
  */
 package com.nanosheep.bikeroute;
 
-import java.util.ListIterator;
-import java.util.Random;
-
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.service.NavigationService;
-import com.nanosheep.bikeroute.service.RouteListener;
-import com.nanosheep.bikeroute.service.RoutePlannerTask;
-import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.*;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -37,8 +19,17 @@ import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.service.NavigationService;
+import com.nanosheep.bikeroute.service.RouteListener;
+import com.nanosheep.bikeroute.service.RoutePlannerTask;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
 
-import com.nanosheep.bikeroute.R;
+import java.util.ListIterator;
+import java.util.Random;
 
 /**
  * Extends RouteMap providing live/satnav features - turn guidance advancing with location,
@@ -355,8 +346,8 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 	 */
 	
 	@Override
-	public void onStart() {
-		super.onStart();
+	public void onResume() {
+		super.onResume();
 		startNavigation();
 	}
 	
@@ -405,7 +396,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 				} else if (intent.getBooleanExtra(getString(R.string.arrived), false)) {
 					arrive();
 					spoken = true;
-				} else {
+				} else if (app.getRoute() != null) {
 					PGeoPoint current = (PGeoPoint) intent.getExtras().get(getString(R.string.point));
 					if (!app.getSegment().equals(lastSegment)) {
 						lastSegment = app.getSegment();
@@ -459,7 +450,7 @@ public class LiveRouteMap extends SpeechRouteMap implements RouteListener {
 				doUnbindService();
 				app.setRoute(route);
 				app.setSegment(app.getRoute().getSegments().get(0));
-				viewRoute();
+				//viewRoute();
 				mOsmv.getController().setCenter(app.getSegment().startPoint());
 				traverse(app.getSegment().startPoint());
 				arrived = false;

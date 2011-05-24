@@ -3,15 +3,6 @@
  */
 package com.nanosheep.bikeroute.service;
 
-import java.util.List;
-
-import com.nanosheep.bikeroute.BikeRouteApp;
-import com.nanosheep.bikeroute.LiveRouteMap;
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-
-import com.nanosheep.bikeroute.R;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -26,6 +17,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import com.nanosheep.bikeroute.BikeRouteApp;
+import com.nanosheep.bikeroute.LiveRouteMap;
+import com.nanosheep.bikeroute.R;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+
+import java.util.List;
 
 /**
  * Service providing live navigation using GPS and notification updates
@@ -107,6 +105,7 @@ public class NavigationService extends Service implements LocationListener {
 				app.getSegment().getInstruction(), contentIntent);
         	mNM.notify(R.id.notifier, notification);
         } else {
+        	shutdown();
         	stopSelf();
         }
     }
@@ -121,8 +120,8 @@ public class NavigationService extends Service implements LocationListener {
 
     @Override
     public void onDestroy() {
-    	mLocationManager.removeUpdates(this);
-    	mNM.cancelAll();
+    	super.onDestroy();
+    	shutdown();
     }
     
     /**
@@ -165,8 +164,14 @@ public class NavigationService extends Service implements LocationListener {
     		mNM.notify(R.id.notifier, notification);
     	} else {
     		stopSelf();
+    		shutdown();
     	}
 	}
+    
+    private void shutdown() {
+    	mLocationManager.removeUpdates(this);
+    	mNM.cancelAll();
+    }
 
 	/* (non-Javadoc)
 	 * @see android.location.LocationListener#onProviderDisabled(java.lang.String)

@@ -3,9 +3,8 @@
  */
 package com.nanosheep.bikeroute.view.overlay;
 
-import org.osmdroid.views.overlay.PathOverlay;
-
 import android.content.Context;
+import org.osmdroid.views.overlay.PathOverlay;
 
 /**
  * This file is part of BikeRoute.

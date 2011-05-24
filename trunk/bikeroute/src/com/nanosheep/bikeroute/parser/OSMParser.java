@@ -3,21 +3,19 @@
  */
 package com.nanosheep.bikeroute.parser;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This file is part of BikeRoute.

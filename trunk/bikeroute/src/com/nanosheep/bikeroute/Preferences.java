@@ -3,9 +3,6 @@
  */
 package com.nanosheep.bikeroute;
 
-import com.nanosheep.bikeroute.R;
-import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
@@ -18,6 +15,7 @@ import android.speech.tts.TextToSpeech;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 
 /**
  * 

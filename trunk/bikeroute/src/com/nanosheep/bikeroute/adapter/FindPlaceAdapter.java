@@ -1,21 +1,19 @@
 package com.nanosheep.bikeroute.adapter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.nanosheep.bikeroute.BikeRouteApp;
-import com.nanosheep.bikeroute.utility.AddressDatabase;
-import com.nanosheep.bikeroute.utility.StringAddress;
-
-
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import com.nanosheep.bikeroute.BikeRouteApp;
+import com.nanosheep.bikeroute.utility.AddressDatabase;
+import com.nanosheep.bikeroute.utility.StringAddress;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Overrides the arrayadapter to display a list of suggestions retrieved

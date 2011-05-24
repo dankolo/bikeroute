@@ -3,11 +3,10 @@
  */
 package com.nanosheep.bikeroute.utility;
 
-import com.nanosheep.bikeroute.RouteMap;
-
 import android.view.GestureDetector.OnGestureListener;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
+import com.nanosheep.bikeroute.RouteMap;
 
 /**
  * Detect gestures to control the onscreen directions display in a routemap.

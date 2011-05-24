@@ -3,15 +3,14 @@
  */
 package com.nanosheep.bikeroute;
 
-import org.acra.*;
-import org.acra.annotation.*;
-
+import android.app.Application;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
 import com.nanosheep.bikeroute.utility.RouteDatabase;
 import com.nanosheep.bikeroute.utility.route.Route;
 import com.nanosheep.bikeroute.utility.route.Segment;
-
-import android.app.Application;
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
 
 /**
  * This file is part of BikeRoute.
