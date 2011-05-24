@@ -3,17 +3,6 @@
  */
 package com.nanosheep.bikeroute;
 
-import java.net.URLEncoder;
-import java.util.regex.Pattern;
-
-import com.nanosheep.bikeroute.utility.MyHttpClient;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
-
-import com.nanosheep.bikeroute.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -30,6 +19,13 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+import com.nanosheep.bikeroute.utility.MyHttpClient;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpUriRequest;
+
+import java.net.URLEncoder;
+import java.util.regex.Pattern;
 
 /**
  * Activity for sending feedback on a route to CycleStreets.net.

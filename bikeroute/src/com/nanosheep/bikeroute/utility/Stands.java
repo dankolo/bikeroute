@@ -1,18 +1,16 @@
 package com.nanosheep.bikeroute.utility;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
-
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.parser.OSMParser;
-
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.overlay.OverlayItem;
-import com.nanosheep.bikeroute.R;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Utility class for querying cycle stands api based on gis data.

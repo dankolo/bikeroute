@@ -1,11 +1,9 @@
 package com.nanosheep.bikeroute.view.overlay;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import com.nanosheep.bikeroute.utility.Stands;
-
-import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
@@ -13,10 +11,8 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener;
 import org.osmdroid.views.overlay.ItemizedOverlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
-
-import android.content.Context;
-import android.os.Handler;
-import android.os.Message;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This file is part of BikeRoute.
@@ -43,8 +39,6 @@ import android.os.Message;
  */
 
 public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
-	/** Update thread. **/
-	private Thread update;
 	/** Reference to map view to draw markers over. **/
 	private final MapView mv;
 	/** Markers list for use by thread. **/
@@ -60,9 +54,9 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 	public LiveMarkers(final MapView mOsmv, final Context ctxt) {
 		mv = mOsmv;
 		context = ctxt.getApplicationContext();
-		mOverlays = new ArrayList<OverlayItem>();
-		iOverlay = new ItemizedIconOverlay<OverlayItem>(ctxt, mOverlays,
-				this);
+		mOverlays = new ArrayList<OverlayItem>(1);
+		iOverlay = new ItemizedIconOverlay<OverlayItem>(mOverlays,
+				this, mv.getResourceProxy());
 	}
 
 	/**
@@ -71,7 +65,7 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 	 */
 
 	public void refresh(final GeoPoint p) {
-		update = new Thread() {
+		Thread update = new Thread() {
 			private static final int MSG = 0;
 			@Override
 			public void run() {
@@ -96,8 +90,7 @@ public class LiveMarkers implements OnItemGestureListener<OverlayItem> {
 			}
 			mOverlays.clear();
 			mOverlays.addAll(markers);
-			iOverlay = new ItemizedIconOverlay<OverlayItem>(
-					context, mOverlays, LiveMarkers.this);
+			iOverlay = new ItemizedIconOverlay<OverlayItem>(mOverlays, LiveMarkers.this, mv.getResourceProxy());
 			mv.getOverlays().add(iOverlay);
 			mv.postInvalidate();
 		}

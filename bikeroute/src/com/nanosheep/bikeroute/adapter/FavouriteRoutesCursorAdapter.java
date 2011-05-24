@@ -3,13 +3,12 @@
  */
 package com.nanosheep.bikeroute.adapter;
 
-import com.nanosheep.bikeroute.R;
-
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
+import com.nanosheep.bikeroute.R;
 
 /**
  * An adapter for displaying saved route objects.

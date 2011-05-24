@@ -3,18 +3,6 @@
  */
 package com.nanosheep.bikeroute;
 
-import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
-import com.nanosheep.bikeroute.utility.route.Route;
-
-import org.achartengine.ChartFactory;
-import org.achartengine.model.XYMultipleSeriesDataset;
-import org.achartengine.renderer.XYMultipleSeriesRenderer;
-
-import com.nanosheep.bikeroute.R;
-
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
@@ -23,13 +11,16 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.Window;
+import android.view.*;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.nanosheep.bikeroute.adapter.DirectionListAdapter;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
+import com.nanosheep.bikeroute.utility.route.Route;
+import org.achartengine.ChartFactory;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
 
 /**
  * A class for displaying a list of directions.

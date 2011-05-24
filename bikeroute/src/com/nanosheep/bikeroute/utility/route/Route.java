@@ -1,23 +1,21 @@
 package com.nanosheep.bikeroute.utility.route;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.savarese.spatial.GenericPoint;
+import com.savarese.spatial.KDTree;
+import com.savarese.spatial.NearestNeighbors;
+import com.savarese.spatial.NearestNeighbors.Entry;
 import org.achartengine.chart.PointStyle;
 import org.achartengine.model.XYMultipleSeriesDataset;
 import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
-import android.graphics.Color;
-import android.os.Bundle;
-import android.util.Log;
-
-import com.nanosheep.bikeroute.utility.Convert;
-import com.savarese.spatial.GenericPoint;
-import com.savarese.spatial.KDTree;
-import com.savarese.spatial.NearestNeighbors;
-import com.savarese.spatial.NearestNeighbors.Entry;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This file is part of BikeRoute.
@@ -43,8 +41,8 @@ import com.savarese.spatial.NearestNeighbors.Entry;
  */
 public class Route {
 	private String name;
-	private List<PGeoPoint> points;
-	private List<Segment> segments;
+	private final List<PGeoPoint> points;
+	private final List<Segment> segments;
 	private String copyright;
 	private String warning;
 	private String country;
@@ -312,6 +310,9 @@ public class Route {
 	    renderer.setLabelsColor(Color.LTGRAY);
 	    renderer.setYTitle("m");
 	    renderer.setXTitle("km");
+	    renderer.setYAxisMax(elevations.getMaxY() + 200);
+		renderer.setPanEnabled(false, false);
+		renderer.setZoomEnabled(false, false);
 	    return renderer;
 	  }
 

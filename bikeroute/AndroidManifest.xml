@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.nanosheep.bikeroute" android:versionCode="1132" android:versionName="Beta 1132">
+    package="com.nanosheep.bikeroute" android:versionCode="1135" android:versionName="Beta 1135">
 
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
@@ -8,10 +8,11 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
     
 
     <application android:label="@string/app_name"
-            android:icon="@drawable/bikeroute" android:name="BikeRouteApp" android:debuggable="true">
+            android:icon="@drawable/bikeroute" android:name="BikeRouteApp" android:debuggable="false">
 
 
        <activity android:name="com.nanosheep.bikeroute.Navigate" android:label="BikeRoute">
@@ -22,7 +23,7 @@
        </activity>
        <activity android:name="com.nanosheep.bikeroute.LiveRouteMap" android:label="Map" 
        android:theme="@android:style/Theme.NoTitleBar" android:launchMode="singleTask"
-       android:finishOnTaskLaunch="true" android:screenOrientation="portrait" android:configChanges="orientation">
+       android:finishOnTaskLaunch="true">
     	<intent-filter>
         	<action android:name="android.intent.action.VIEW" />
         	<category android:name="android.intent.category.DEFAULT" />

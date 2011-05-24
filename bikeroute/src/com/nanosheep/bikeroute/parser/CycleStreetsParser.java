@@ -1,20 +1,17 @@
 package com.nanosheep.bikeroute.parser;
 
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
-
-import org.xml.sax.Attributes;
-
-
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
+import org.xml.sax.Attributes;
 
 /**
  * An xml parser for the CycleStreets.net journey planner API.
@@ -85,9 +82,9 @@ public class CycleStreetsParser extends XMLParser implements Parser {
 				if ("segment".equals(type)) {
 					 StringBuffer sBuf = new StringBuffer();
 					  if (!"unknown".equals(turnString)) {
-						 
-						  sBuf.append(Character.toUpperCase(
-								  turnString.charAt(0)) + turnString.substring(1));
+
+                          sBuf.append(Character.toUpperCase(
+                                  turnString.charAt(0))).append(turnString.substring(1));
 						  sBuf.append(" at ");
 					  }
 					  sBuf.append(nameString);

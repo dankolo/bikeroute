@@ -1,8 +1,5 @@
 package com.nanosheep.bikeroute.utility;
 
-import org.osmdroid.util.GeoPoint;
-
-import com.nanosheep.bikeroute.R;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -10,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.location.LocationManager;
+import com.nanosheep.bikeroute.R;
+import org.osmdroid.util.GeoPoint;
 /**
  * Display an alert on return to the location the bike was parked at.
  * 

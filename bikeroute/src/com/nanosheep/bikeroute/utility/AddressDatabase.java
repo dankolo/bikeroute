@@ -46,7 +46,6 @@ public class AddressDatabase {
                "CREATE TABLE " + ADDRESS_TABLE_NAME + " (" + ADDRESS + " TEXT PRIMARY KEY);";
 		private static final String DATABASE_NAME = "bikeroute_db";
 
-	   private Context context;
 	   private SQLiteDatabase db;
 
 	   private static SQLiteStatement insertStmt;
@@ -56,8 +55,7 @@ public class AddressDatabase {
 	   private AddressDatabaseHelper openHelper;
 
 	   public AddressDatabase(Context context) {
-	      this.context = context.getApplicationContext();
-	      openHelper = new AddressDatabaseHelper(this.context);
+	      openHelper = new AddressDatabaseHelper(context.getApplicationContext());
 	      this.db = openHelper.getWritableDatabase();
 	   }
 	   

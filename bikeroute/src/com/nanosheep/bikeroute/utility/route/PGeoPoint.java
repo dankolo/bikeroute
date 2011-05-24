@@ -3,11 +3,10 @@
  */
 package com.nanosheep.bikeroute.utility.route;
 
-import org.osmdroid.util.GeoPoint;
-
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
+import org.osmdroid.util.GeoPoint;
 
 /**
  * Wrapper for GeoPoint to make parcelable

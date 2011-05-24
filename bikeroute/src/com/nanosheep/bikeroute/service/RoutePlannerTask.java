@@ -3,18 +3,16 @@
  */
 package com.nanosheep.bikeroute.service;
 
+import android.content.Intent;
+import android.location.Location;
+import android.os.AsyncTask;
+import com.nanosheep.bikeroute.R;
 import com.nanosheep.bikeroute.utility.Parking;
 import com.nanosheep.bikeroute.utility.Stands;
 import com.nanosheep.bikeroute.utility.route.PGeoPoint;
 import com.nanosheep.bikeroute.utility.route.RouteManager;
 import com.nanosheep.bikeroute.utility.route.RouteManager.GeocodeConnectException;
 import com.nanosheep.bikeroute.utility.route.RouteManager.GeocodeException;
-
-import com.nanosheep.bikeroute.R;
-
-import android.content.Intent;
-import android.location.Location;
-import android.os.AsyncTask;
 
 /**
  * Search task, 

@@ -28,4 +28,14 @@
 <item>MapQuest</item>
 <item>Google</item>
 </string-array>
+<string-array name="tileEntries">
+    <item>MapQuest</item>
+    <item>Cyclemap</item>
+    <item>Default</item>
+</string-array>
+<string-array name="tileValues">
+    <item>MapquestOSM</item>
+    <item>CycleMap</item>
+    <item>Mapnik</item>
+</string-array>
 </resources>

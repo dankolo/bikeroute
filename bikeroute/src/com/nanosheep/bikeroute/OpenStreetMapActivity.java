@@ -1,17 +1,15 @@
 package com.nanosheep.bikeroute;
 
-import org.osmdroid.DefaultResourceProxyImpl;
+import android.app.Activity;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.view.MotionEvent;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.MyLocationOverlay;
 
-import com.nanosheep.bikeroute.R;
-
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.view.MotionEvent;
+import com.nanosheep.bikeroute.utility.ResourceProxyImpl;
 
 /**
  * Based on osmdroid default map view activity.
@@ -59,7 +57,7 @@ public class OpenStreetMapActivity extends Activity {
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mResourceProxy = new DefaultResourceProxyImpl(getApplicationContext());
+        mResourceProxy = new ResourceProxyImpl(getApplicationContext());
 
         mPrefs = getSharedPreferences(getString(R.string.prefs_name), MODE_PRIVATE);
 
@@ -83,7 +81,6 @@ public class OpenStreetMapActivity extends Activity {
     @Override
     protected void onResume() {
     	System.gc();
-        mOsmv.setTileSource(TileSourceFactory.MAPNIK);
         if(mPrefs.getBoolean(getString(R.string.prefs_showlocation), false)) {
                 this.mLocationOverlay.enableMyLocation();
         }
@@ -104,7 +101,7 @@ public class OpenStreetMapActivity extends Activity {
     @Override
 	public boolean onTouchEvent(final MotionEvent event) {
 			if (event.getAction() == MotionEvent.ACTION_MOVE) {
-				this.mLocationOverlay.followLocation(false);
+				this.mLocationOverlay.disableFollowLocation();
 			}
 	        return super.onTouchEvent(event);
 	}

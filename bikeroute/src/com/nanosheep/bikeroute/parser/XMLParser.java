@@ -1,18 +1,17 @@
 package com.nanosheep.bikeroute.parser;
 
-import java.net.URL;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.zip.GZIPInputStream;
-import java.io.InputStream;
-
+import android.util.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.zip.GZIPInputStream;
 
 /**
  * This file is part of BikeRoute.

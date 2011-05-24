@@ -3,18 +3,15 @@
  */
 package com.nanosheep.bikeroute;
 
-import java.util.Iterator;
-
-import com.nanosheep.bikeroute.utility.Convert;
-import com.nanosheep.bikeroute.utility.route.Segment;
-
-import com.nanosheep.bikeroute.R;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.view.MenuItem;
+import com.nanosheep.bikeroute.utility.Convert;
+import com.nanosheep.bikeroute.utility.route.Segment;
+
+import java.util.Iterator;
 
 /**
  * Speaking route map.
@@ -65,13 +62,13 @@ public class SpeechRouteMap extends RouteMap implements OnInitListener {
 	}
 	
 	@Override
-	public void onStart() {
+	public void onResume() {
 		tts = mSettings.getBoolean("tts", false);
 		//Initialize tts if in use.
         if (tts) {
         	directionsTts = new TextToSpeech(this, this);
         }
-        super.onStart();
+        super.onResume();
 	}
 	
 	@Override

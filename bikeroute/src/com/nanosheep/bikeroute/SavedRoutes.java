@@ -3,14 +3,12 @@
  */
 package com.nanosheep.bikeroute;
 
-import com.nanosheep.bikeroute.utility.RouteDatabase;
-
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnDismissListener;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -21,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import com.nanosheep.bikeroute.utility.RouteDatabase;
 
 /**
  * Activity for browsing/selecting favourite routes.
@@ -47,9 +46,7 @@ import android.widget.SimpleCursorAdapter;
  * @version Jan 25, 2011
  */
 public class SavedRoutes extends ListActivity {
-        
-    private CursorAdapter dataSource;
-    
+
     private RouteDatabase db;
     
     private Cursor data;
@@ -70,8 +67,7 @@ public class SavedRoutes extends ListActivity {
     	db = app.getRouteDB();
         data = db.getRoutes();
         
-        dataSource = new SimpleCursorAdapter(this, R.layout.row, data, fields, new int[] {R.id.routename, R.id.routeby });
-        setListAdapter(dataSource);
+        setListAdapter(new SimpleCursorAdapter(this, R.layout.row, data, fields, new int[] {R.id.routename, R.id.routeby }));
         
         //Context menu for deleting saved routes
         registerForContextMenu(getListView());

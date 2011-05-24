@@ -3,8 +3,8 @@
  */
 package com.nanosheep.bikeroute.service;
 
-import com.nanosheep.bikeroute.utility.route.Route;
 import android.content.Context;
+import com.nanosheep.bikeroute.utility.route.Route;
 
 
 /**

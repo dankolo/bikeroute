@@ -1,11 +1,11 @@
 package com.nanosheep.bikeroute.utility.route;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import android.os.Parcel;
-import android.os.Parcelable;
 
 /**
  * Holds a segment of a route - a road name, the points
@@ -183,12 +183,9 @@ public class Segment implements Parcelable{
 	
 	@Override
 	public boolean equals(Object o) {
-		if ((o instanceof Segment) && ((Segment)o).getInstruction().equals(instruction)
-				&& ((Segment)o).getDistance() == distance) {
-			return true;
+        return (o instanceof Segment) && ((Segment) o).getInstruction().equals(instruction)
+                && ((Segment) o).getDistance() == distance;
 		}
-		return false;
-	}
 	
 	 public static final Parcelable.Creator CREATOR =
 	        new Parcelable.Creator() {

@@ -1,21 +1,19 @@
 package com.nanosheep.bikeroute.parser;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import com.nanosheep.bikeroute.utility.route.PGeoPoint;
-import com.nanosheep.bikeroute.utility.route.Route;
-import com.nanosheep.bikeroute.utility.route.Segment;
-
-import org.xml.sax.Attributes;
-
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Log;
 import android.util.Xml;
+import com.nanosheep.bikeroute.utility.route.PGeoPoint;
+import com.nanosheep.bikeroute.utility.route.Route;
+import com.nanosheep.bikeroute.utility.route.Segment;
+import org.xml.sax.Attributes;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 /**
  * An xml parser for routes from other BikeRoutes.
@@ -151,7 +149,6 @@ public class BikeRouteParser extends XMLParser implements Parser {
 			} catch (SecurityException e) {
 				e.printStackTrace();
 			}
-			boolean b = false;
 			return fIn;
 	}
 }

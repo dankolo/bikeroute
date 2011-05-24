@@ -1,31 +1,22 @@
 package com.nanosheep.bikeroute.utility.route;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.List;
-import java.util.Locale;
-
-import org.osmdroid.util.GeoPoint;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.preference.PreferenceManager;
-
 import android.util.Log;
-
-import com.nanosheep.bikeroute.constants.BikeRouteConsts;
-import com.nanosheep.bikeroute.parser.BikeRouteParser;
-import com.nanosheep.bikeroute.parser.CycleStreetsParser;
-import com.nanosheep.bikeroute.parser.GoogleDirectionsParser;
-import com.nanosheep.bikeroute.parser.GoogleElevationParser;
-import com.nanosheep.bikeroute.parser.MapQuestParser;
-import com.nanosheep.bikeroute.parser.Parser;
-import com.nanosheep.bikeroute.utility.Convert;
-
 import com.nanosheep.bikeroute.R;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+import com.nanosheep.bikeroute.parser.*;
+import com.nanosheep.bikeroute.utility.Convert;
+import org.osmdroid.util.GeoPoint;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.util.List;
+import java.util.Locale;
 
 
 /**
