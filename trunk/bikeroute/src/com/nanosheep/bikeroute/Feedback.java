@@ -19,6 +19,8 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.utility.MyHttpClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
@@ -191,6 +193,7 @@ public class Feedback extends Activity {
 			reqString += "&name=" + URLEncoder.encode(name);
 			reqString += "&email=" + URLEncoder.encode(email);
 			HttpUriRequest request = new HttpPut(reqString);
+			request.addHeader("User-Agent", BikeRouteConsts.AGENT);
 	        try {
 				final HttpResponse response = new MyHttpClient(Feedback.this).execute(request);
 			} catch (Exception e) {

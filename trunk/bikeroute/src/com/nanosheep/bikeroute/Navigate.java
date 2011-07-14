@@ -31,6 +31,7 @@ import com.nanosheep.bikeroute.utility.contacts.AbstractContactAccessor;
 import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.Route;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -63,6 +64,8 @@ public class Navigate extends Activity implements RouteListener {
 	private transient AutoCompleteTextView startAddressField;
 	/** End address box. **/
 	private transient AutoCompleteTextView endAddressField;
+	/** Waypoint address box. **/
+	private transient AutoCompleteTextView wayAddressField;
 
 	/** Parking manager. */
 	private Parking prk;
@@ -85,6 +88,13 @@ public class Navigate extends Activity implements RouteListener {
 	
 	/** Route id generator. **/
 	Random random;
+	
+	/** Layout row for destination. **/
+	private View destRow;
+	/** Add via button. **/
+	private Button addViaBtn;
+	/** Remove via button. **/
+	private Button remViaBtn;
 	
 	
 	@Override
@@ -110,8 +120,12 @@ public class Navigate extends Activity implements RouteListener {
 	
 	//Initialise fields
 	startAddressField = (AutoCompleteTextView) findViewById(R.id.start_address_input);
-	endAddressField = (AutoCompleteTextView) findViewById(R.id.end_address_input);		
+	wayAddressField = (AutoCompleteTextView) findViewById(R.id.way_address_input);
+	endAddressField = (AutoCompleteTextView) findViewById(R.id.end_address_input);	
+	destRow = findViewById(R.id.destRow);
 	final Button searchButton = (Button) findViewById(R.id.search_button);
+	addViaBtn = (Button) findViewById(R.id.add_button);
+	remViaBtn = (Button) findViewById(R.id.remove_button);
 	
 	//Initialise adapter
 	FindPlaceAdapter adapter = new FindPlaceAdapter(this,
@@ -119,8 +133,11 @@ public class Navigate extends Activity implements RouteListener {
 	startAddressField.setAdapter(adapter);
 	endAddressField.setAdapter(adapter);
 	
-	//Initialise search button
+	//Initialise buttons
 	searchButton.setOnClickListener(new SearchClickListener());
+	WaypointClickListener wayListn = new WaypointClickListener();
+	addViaBtn.setOnClickListener(wayListn);
+	remViaBtn.setOnClickListener(wayListn);
 	
 	/* Autofill starting location by reverse geocoding current
 	 * lat & lng
@@ -132,6 +149,8 @@ public class Navigate extends Activity implements RouteListener {
 		isSearching = (Boolean) data[2];
 		startAddressField.setText((String) data[3]);
 		endAddressField.setText((String) data[4]);
+		wayAddressField.setText((String) data[6]);
+		destRow.setVisibility((Integer) data[7]);
 		search = (RoutePlannerTask) data[5];
 		if(search != null) {
 			search.setListener(this);
@@ -193,10 +212,30 @@ public class Navigate extends Activity implements RouteListener {
 
 		@Override
 		public void onClick(final View view) {
+			ArrayList<String> addresses = new ArrayList<String>();
+			addresses.add(startAddressField.getText().toString());
+			addresses.add(wayAddressField.getText().toString());
+			if(destRow.getVisibility() == View.VISIBLE && 
+					!"".equals(endAddressField.getText().toString())) {
+				addresses.add(endAddressField.getText().toString());
+			}
 			searchIntent.putExtra(RoutePlannerTask.PLAN_TYPE, RoutePlannerTask.ADDRESS_PLAN);
-			searchIntent.putExtra(RoutePlannerTask.START_ADDRESS, startAddressField.getText().toString());
-			searchIntent.putExtra(RoutePlannerTask.END_ADDRESS, endAddressField.getText().toString());
+			searchIntent.putStringArrayListExtra(RoutePlannerTask.ADDRESSES, addresses);
 			requestRoute();
+		}
+	}
+	
+	private class WaypointClickListener implements OnClickListener {
+
+		@Override
+		public void onClick(final View view) {
+			if(destRow.getVisibility() == View.GONE) {
+				destRow.setVisibility(View.VISIBLE);
+				addViaBtn.setVisibility(View.INVISIBLE);
+			} else {
+				destRow.setVisibility(View.GONE);
+				addViaBtn.setVisibility(View.VISIBLE);
+			}
 		}
 	}
 	
@@ -382,6 +421,9 @@ public class Navigate extends Activity implements RouteListener {
 					if (!"".equals(endAddressField.getText().toString())) {
 						db.insert(endAddressField.getText().toString());
 					}
+					if (!"".equals(wayAddressField.getText().toString())) {
+						db.insert(wayAddressField.getText().toString());
+					}
 				} catch (Exception e) {
 					Log.e("ADB", "DB hiccup.");
 				}
@@ -436,12 +478,14 @@ public class Navigate extends Activity implements RouteListener {
 	
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-		Object[] objs = new Object[6];
+		Object[] objs = new Object[8];
 		objs[1] = mShownDialog;
 		objs[2] = isSearching;
 		objs[3] = startAddressField.getText().toString();
 		objs[4] = endAddressField.getText().toString();
 		objs[5] = search;
+		objs[6] = wayAddressField.getText().toString();
+		objs[7] = destRow.getVisibility();
 	    return objs;
 	}
 

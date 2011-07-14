@@ -3,6 +3,8 @@
  */
 package com.nanosheep.bikeroute.service;
 
+import java.util.ArrayList;
+
 import android.content.Intent;
 import android.location.Location;
 import android.os.AsyncTask;
@@ -64,6 +66,7 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
 	public static final String END_POINT = "end_point";
 	public static final String ROUTE_ID = "route_id";
 	public static final String FILE = "route_file";
+	public static final String ADDRESSES = "address_array";
 	private RouteManager planner;
     protected String startAddressInput;
     protected String endAddressInput;
@@ -94,15 +97,17 @@ public class RoutePlannerTask extends AsyncTask<Void, Void, Integer> {
         	planner.setRouteId(mIntent.getIntExtra(ROUTE_ID, 0));
     		final String startAddressInput = mIntent.getStringExtra(START_ADDRESS);
     		final String endAddressInput = mIntent.getStringExtra(END_ADDRESS);
+    		final ArrayList<String> addresses = mIntent.getStringArrayListExtra(ADDRESSES);
                 switch(mIntent.getIntExtra(PLAN_TYPE, ADDRESS_PLAN)) {
         		case ADDRESS_PLAN:
-        			if ("".equals(startAddressInput) || "".equals(endAddressInput)) {
+        			if ("".equals(addresses.get(0)) || "".equals(addresses.get(1))) {
         				msg = R.id.argerror;
         			} else {
         				msg = R.id.result_ok;
         				try {
-        					planner.setStart(startAddressInput);
-        					planner.setDest(endAddressInput);		
+        					planner.setAddresses(addresses);
+        					//planner.setStart(startAddressInput);
+        					//planner.setDest(endAddressInput);		
         				} catch (GeocodeException e) {
 							msg = R.id.geocodeerror;
 						} catch (GeocodeConnectException e) {

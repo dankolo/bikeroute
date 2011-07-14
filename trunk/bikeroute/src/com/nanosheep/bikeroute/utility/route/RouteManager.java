@@ -15,6 +15,7 @@ import org.osmdroid.util.GeoPoint;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -59,12 +60,15 @@ public class RouteManager {
 	/** Geocoder. **/
 	private final Geocoder geocoder;
 	private int id;
+	/** Route points. **/
+	private List<PGeoPoint> points;
 	
 	public RouteManager(final Context context) {
 		super();
 		ctxt = context.getApplicationContext();
 		planned = false;
 		geocoder = new Geocoder(ctxt);
+		points = new ArrayList<PGeoPoint>();
 	}
 	
 	public int showRoute(final String routeFile) {
@@ -89,8 +93,12 @@ public class RouteManager {
 	public int showRoute() {
 		clearRoute();
 		try {
-			country = geocoder.getFromLocation(Convert.asDegrees(dest.getLatitudeE6()),Convert.asDegrees(dest.getLongitudeE6()), 1).get(0).getCountryCode();
-			route = plan(start, dest);
+			country = geocoder.getFromLocation(Convert.asDegrees(
+					points.get(points.size()-1).getLatitudeE6()),Convert.asDegrees(
+							points.get(points.size()-1).getLongitudeE6()), 1).get(0).
+							getCountryCode();
+			//route = plan(start, dest);
+			route = plan(points);
 			route.setCountry(country);
 			if (RouteManager.this.route.getPoints().isEmpty()) {
 				throw new PlanException("Route is empty.");
@@ -106,6 +114,81 @@ public class RouteManager {
 			return R.id.plan_fail;
 		}
 		return R.id.result_ok;
+	}
+
+	private Route plan(List<PGeoPoint> pointsList) {
+		Parser parser;
+		
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(ctxt);
+		//Default router is cyclestreets in UK, MapQuest elsewhere.
+		String defaultRouter = Locale.getDefault().equals(Locale.UK) ? BikeRouteConsts.CS : BikeRouteConsts.MQ;
+		String router = settings.getString("router", defaultRouter);
+		
+		if (BikeRouteConsts.CS.equals(router)) {
+			String routeType = settings.getString("cyclestreetsJourneyPref", "balanced");
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.cs_api));
+			sBuf.append("start_lat=");
+			sBuf.append(Convert.asDegrees(pointsList.get(0).getLatitudeE6()));
+			sBuf.append("&start_lng=");
+			sBuf.append(Convert.asDegrees(pointsList.get(0).getLongitudeE6()));
+			sBuf.append("&way_lat=");
+			sBuf.append(Convert.asDegrees(pointsList.get(1).getLatitudeE6()));
+			sBuf.append("&way_lng=");
+			sBuf.append(Convert.asDegrees(pointsList.get(1).getLongitudeE6()));
+			if(pointsList.size() == 3) {
+				sBuf.append("&dest_lat=");
+				sBuf.append(Convert.asDegrees(pointsList.get(2).getLatitudeE6()));
+				sBuf.append("&dest_lng=");
+				sBuf.append(Convert.asDegrees(pointsList.get(2).getLongitudeE6()));
+			}
+			sBuf.append("&plan=");
+			sBuf.append(routeType);
+			sBuf.append("&route_id=");
+			sBuf.append(id);
+
+			parser = new CycleStreetsParser(sBuf
+				.toString());
+		} else if (BikeRouteConsts.G.equals(router)) {
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.us_api));
+			sBuf.append("origin=");
+			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
+			sBuf.append(',');
+			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
+			sBuf.append("&destination=");
+			sBuf.append(Convert.asDegrees(dest.getLatitudeE6()));
+			sBuf.append(',');
+			sBuf.append(Convert.asDegrees(dest.getLongitudeE6()));
+			if ("US".equals(country)) {
+				sBuf.append("&sensor=true&mode=bicycling");
+			} else {
+				sBuf.append("&sensor=true&mode=driving");
+			}
+		parser = new GoogleDirectionsParser(sBuf.toString());
+		} else {
+			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.mq_api));
+			sBuf.append(start.getLatitudeE6()/1E6);
+			sBuf.append(',');
+			sBuf.append(start.getLongitudeE6()/1E6);
+			sBuf.append("&to=");
+			sBuf.append(dest.getLatitudeE6()/1E6);
+			sBuf.append(',');
+			sBuf.append(dest.getLongitudeE6()/1E6);
+			sBuf.append("&generalize=0.1&shapeFormat=cmp");
+			parser = new MapQuestParser(sBuf.toString());
+		}
+		Route r =  parser.parse();
+		//Untidy.
+		//If not using cyclestreets, need to query elevations api for
+		//this route.
+		if (!BikeRouteConsts.CS.equals(router)) {
+			final StringBuffer elev = new StringBuffer(ctxt.getString(R.string.elev_api));
+			elev.append(URLEncoder.encode(r.getPolyline()));
+			parser = new GoogleElevationParser(elev.toString(), r);
+			r = parser.parse();
+		}
+		r.setCountry(country);
+		r.setRouteId(id);
+		return r;
 	}
 
 	public void setRouteId(int routeId) {
@@ -395,6 +478,15 @@ public class RouteManager {
 		public GeocodeConnectException() {}
 		public GeocodeConnectException(String detailMessage) {
 			super(detailMessage);
+		}
+	}
+	public void setAddresses(ArrayList<String> addresses) throws GeocodeException, GeocodeConnectException {
+		points.clear();
+		for(String str : addresses) {
+			Address address = addressFromName(str);
+			PGeoPoint p = new PGeoPoint(Convert.asMicroDegrees(address.getLatitude()),
+					Convert.asMicroDegrees(address.getLongitude()));
+			points.add(p);
 		}
 	}
 

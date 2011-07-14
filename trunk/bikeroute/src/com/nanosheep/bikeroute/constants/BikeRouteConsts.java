@@ -29,6 +29,9 @@ import android.view.Menu;
  */
 public final class BikeRouteConsts {
 	
+	/**Version number.**/
+	public static final int VERSION = 1136;
+	
 	
 	/** Osmdroid consts. **/
 	public static final int MENU_MY_LOCATION = Menu.FIRST;
@@ -50,6 +53,9 @@ public final class BikeRouteConsts {
 	public static final String MQ = "MapQuest";
 	/** CycleStreets. **/
 	public static final String CS = "CycleStreets";
+	
+	/** User Agent String. **/
+	public static final String AGENT = "Apache-HttpClient/BikeRoute "+VERSION;
 	
 	private BikeRouteConsts() { }
 }
