@@ -151,13 +151,13 @@ public class RouteManager {
 		} else if (BikeRouteConsts.G.equals(router)) {
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.us_api));
 			sBuf.append("origin=");
-			sBuf.append(Convert.asDegrees(start.getLatitudeE6()));
+			sBuf.append(Convert.asDegrees(pointsList.get(0).getLatitudeE6()));
 			sBuf.append(',');
-			sBuf.append(Convert.asDegrees(start.getLongitudeE6()));
+			sBuf.append(Convert.asDegrees(pointsList.get(0).getLongitudeE6()));
 			sBuf.append("&destination=");
-			sBuf.append(Convert.asDegrees(dest.getLatitudeE6()));
+			sBuf.append(Convert.asDegrees(pointsList.get(1).getLatitudeE6()));
 			sBuf.append(',');
-			sBuf.append(Convert.asDegrees(dest.getLongitudeE6()));
+			sBuf.append(Convert.asDegrees(pointsList.get(1).getLongitudeE6()));
 			if ("US".equals(country)) {
 				sBuf.append("&sensor=true&mode=bicycling");
 			} else {
@@ -166,13 +166,13 @@ public class RouteManager {
 		parser = new GoogleDirectionsParser(sBuf.toString());
 		} else {
 			final StringBuffer sBuf = new StringBuffer(ctxt.getString(R.string.mq_api));
-			sBuf.append(start.getLatitudeE6()/1E6);
+			sBuf.append(pointsList.get(0).getLatitudeE6()/1E6);
 			sBuf.append(',');
-			sBuf.append(start.getLongitudeE6()/1E6);
+			sBuf.append(pointsList.get(0).getLongitudeE6()/1E6);
 			sBuf.append("&to=");
-			sBuf.append(dest.getLatitudeE6()/1E6);
+			sBuf.append(pointsList.get(1).getLatitudeE6()/1E6);
 			sBuf.append(',');
-			sBuf.append(dest.getLongitudeE6()/1E6);
+			sBuf.append(pointsList.get(1).getLongitudeE6()/1E6);
 			sBuf.append("&generalize=0.1&shapeFormat=cmp");
 			parser = new MapQuestParser(sBuf.toString());
 		}
@@ -201,6 +201,7 @@ public class RouteManager {
 	 * @param start Start point.
 	 * @param dest Destination.
 	 * @return a list of segments for the route.
+	 * @deprecated
 	 */
 
 	private Route plan(final GeoPoint start, final GeoPoint dest) {
