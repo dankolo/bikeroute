@@ -16,12 +16,14 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.*;
 import android.view.View.OnClickListener;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import com.nanosheep.bikeroute.adapter.FindPlaceAdapter;
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
 import com.nanosheep.bikeroute.service.RouteListener;
 import com.nanosheep.bikeroute.service.RoutePlannerTask;
 import com.nanosheep.bikeroute.utility.AddressDatabase;
@@ -32,6 +34,7 @@ import com.nanosheep.bikeroute.utility.dialog.DialogFactory;
 import com.nanosheep.bikeroute.utility.route.Route;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -161,6 +164,14 @@ public class Navigate extends Activity implements RouteListener {
 	@Override
 	public void onStart() {
 		super.onStart();
+		String defaultRouter = Locale.getDefault().equals(Locale.UK) ? BikeRouteConsts.CS : BikeRouteConsts.MQ;
+		String router = PreferenceManager.getDefaultSharedPreferences(this).
+				getString("router", defaultRouter);
+		
+		if (!BikeRouteConsts.CS.equals(router)) {
+			destRow.setVisibility(View.GONE);
+			addViaBtn.setVisibility(View.GONE);
+		}
 		Thread t = new Thread() {
 			@Override
 			public void run() {
