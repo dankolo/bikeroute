@@ -43,6 +43,7 @@ public class Route {
 	private String name;
 	private final List<PGeoPoint> points;
 	private final List<Segment> segments;
+	private PGeoPoint waypoint;
 	private String copyright;
 	private String warning;
 	private String country;
@@ -401,5 +402,13 @@ public class Route {
 	 */
 	public String getRouter() {
 		return router;
+	}
+
+	public void setWaypoint(PGeoPoint waypoint) {
+		this.waypoint = waypoint;
+	}
+
+	public PGeoPoint getWaypoint() {
+		return waypoint;
 	}
 }

@@ -7,6 +7,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import com.nanosheep.bikeroute.constants.BikeRouteConsts;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -57,6 +59,7 @@ public class XMLParser {
 		try {
 			HttpUriRequest request = new HttpGet(feedUrl.toString());
 			request.addHeader("Accept-Encoding", "gzip");
+			request.addHeader("User-Agent", BikeRouteConsts.AGENT);
 	        final HttpResponse response = new DefaultHttpClient().execute(request);
 	        Header ce = response.getFirstHeader("Content-Encoding");
 	        String contentEncoding = null;
@@ -69,7 +72,7 @@ public class XMLParser {
 			}
 			return instream;
 		} catch (IOException e) {
-			Log.e(e.getMessage(), "XML parser - " + feedUrl);
+			Log.e("XML parser", e.getMessage() + feedUrl);
 			return null;
 		}
 	}

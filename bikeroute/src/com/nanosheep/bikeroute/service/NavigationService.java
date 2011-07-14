@@ -63,6 +63,8 @@ public class NavigationService extends Service implements LocationListener {
 	private Notification notification;
 	/** Intent for callbacks from notifier. **/
 	private PendingIntent contentIntent;
+	/** On route confidence. **/
+	private double routeConfidence;
 	
 	 /**
      * Class for clients to access.  Because we know this service always
@@ -92,6 +94,7 @@ public class NavigationService extends Service implements LocationListener {
         int icon = R.drawable.bikeroute;
         CharSequence tickerText = "";
         long when = System.currentTimeMillis();
+        routeConfidence = 1;
 
         notification = new Notification(icon, tickerText, when);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
@@ -138,18 +141,19 @@ public class NavigationService extends Service implements LocationListener {
     		PGeoPoint self = new PGeoPoint(location);
     		List<PGeoPoint> near = app.getRoute().nearest(self, 2);
     		
-    		double range = range(self, near.get(0), near.get(1)) - 50;
+    		double crossTrack = crossTrackError(self, near.get(0), near.get(1));
     		double accuracy = location.getAccuracy();
+    		double range = near.get(0).distanceTo(near.get(1));
     		
     		//Check we're still on the route.
     		
-    		/*if (range > accuracy) {
+    		if (crossTrack > (accuracy + range) ) {
     			update.putExtra((String) getText(R.string.replan), true);
     			String logMsg = "Range=" + range + ",Self="+self+",near points:" + near + ",near points dist=" + near.get(0).distanceTo(near.get(1)) + ",accuracy=" + accuracy;
     			Log.e("Replanned", logMsg);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.replanning), contentIntent);    	        
-    		} else*/ if (near.get(0).equals(app.getRoute().getEndPoint())) { //If we've arrived, shutdown and signal.
+    		} else if (near.get(0).equals(app.getRoute().getEndPoint())) { //If we've arrived, shutdown and signal.
     			update.putExtra((String) getText(R.string.arrived), true);
     			notification.setLatestEventInfo(app, getText(R.string.notify_title), 
     					getText(R.string.arrived), contentIntent);
@@ -208,12 +212,21 @@ public class NavigationService extends Service implements LocationListener {
 	 * @return the distance from p0 to the path in meters as a double.
 	 */
 	
-	private double range(final PGeoPoint p0, final PGeoPoint p1, final PGeoPoint p2) {
+	private double crossTrackError(final PGeoPoint p0, final PGeoPoint p1, final PGeoPoint p2) {
 		double dist = Math.asin(Math.sin(p1.distanceTo(p0)/BikeRouteConsts.EARTH_RADIUS) * 
 				Math.sin(p1.bearingTo(p0) - p1.bearingTo(p2))) * 
 				BikeRouteConsts.EARTH_RADIUS;
 		
 		return Math.abs(dist);
+	}
+	
+	private void updateRouteConfidence(Location location) {
+		PGeoPoint self = new PGeoPoint(location);
+		List<PGeoPoint> near = app.getRoute().nearest(self, 2);
+		
+		double crossTrack = crossTrackError(self, near.get(0), near.get(1));
+		double accuracy = location.getAccuracy();
+		double range = near.get(0).distanceTo(near.get(1));
 	}
 
 }
